@@ -10,6 +10,7 @@ import { CartProvider } from "@/components/cart/CartProvider";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { BottomNav } from "@/components/HeaderClient";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { alternates } from "@/lib/seo";
 import { themeCss } from "@/lib/theme-css";
@@ -67,6 +68,9 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <main id="main">{children}</main>
             <Footer settings={settings} />
             <WhatsAppButton number={settings.whatsappNumber} />
+            {/* Room for the phone bottom navigation so it never covers the footer */}
+            <div className="md:hidden" style={{ height: "calc(4rem + env(safe-area-inset-bottom, 0px))" }} aria-hidden />
+            <BottomNav signedIn={!!user} />
             <ServiceWorker />
           </CartProvider>
         </NextIntlClientProvider>

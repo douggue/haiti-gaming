@@ -53,7 +53,7 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 
 ```bash
 TEST_DATABASE_URL=postgresql://…/haiti_gaming_test npm test       # ledger, concurrency, idempotency, exchange, auto-refund, crypto, statements, Turnstile, Sentry (22 tests)
-# End-to-end (21 tests in 7 files) against a running server started with test-only switches:
+# End-to-end (24 tests in 9 files; e2e/setup.spec.ts runs only against an empty database) against a running server started with test-only switches:
 UPLOAD_DIR=$PWD/uploads AUTH_RATE_LIMIT=off ALLOW_MOCK_PAYMENTS=1 npm start
 npx playwright test e2e/journeys.spec.ts    # run each file on its own; each sets up the admin's 2FA from scratch
 ```

@@ -49,7 +49,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   return (
     <div className="lg:flex">
       <AdminNav items={all.filter((i) => can(user, i.perm))} user={{ name: user.name, role: user.role }} logo={settings.logoDarkUrl || settings.logoUrl} />
-      <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+      <main className="admin-main min-w-0 flex-1 p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8">{children}</main>
     </div>
   );
 }

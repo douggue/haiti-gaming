@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -7,7 +8,7 @@ import { localeNames, locales, type Locale } from "@/i18n/routing";
 import { setCurrency, saveLocalePreference } from "@/actions/prefs";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "./cart/CartProvider";
-import { CartIcon, CloseIcon, MenuIcon, MoonIcon, SunIcon } from "./Icons";
+import { CartIcon, CloseIcon, HomeIcon, MenuIcon, MoonIcon, StoreIcon, SunIcon, UserIcon, WalletIcon } from "./Icons";
 
 export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
   const t = useTranslations("common");
@@ -121,6 +122,8 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -135,7 +138,8 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
         <MenuIcon />
         <span className="sr-only">{t("menu")}</span>
       </button>
-      {open && (
+      {/* Rendered into <body>: the header's backdrop blur would otherwise trap this fixed panel inside the 64px header. */}
+      {open && mounted && createPortal(
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" id="mobile-menu">
           <button type="button" aria-label={t("close")} className="absolute inset-0 bg-midnight/60" onClick={() => setOpen(false)} />
           <div className="animate-rise absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-1 overflow-y-auto bg-surface p-4 shadow-2xl">
@@ -171,8 +175,50 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
               <ThemeToggle withLabel />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
+  );
+}
+
+/** Phone-only bottom navigation: the five places customers go most. */
+export function BottomNav({ signedIn }: { signedIn: boolean }) {
+  const t = useTranslations("common");
+  const pathname = usePathname();
+  const { count, ready } = useStore();
+  const items = [
+    { href: "/", label: t("home"), icon: HomeIcon, active: pathname === "/" },
+    { href: "/store", label: t("store"), icon: StoreIcon, active: pathname.startsWith("/store") || pathname.startsWith("/categories") || pathname.startsWith("/products") },
+    { href: "/cart", label: t("cart"), icon: CartIcon, active: pathname.startsWith("/cart") || pathname.startsWith("/checkout"), badge: ready ? count : 0 },
+    { href: signedIn ? "/account/wallet" : "/auth/login?next=/account/wallet", label: t("wallet"), icon: WalletIcon, active: pathname.startsWith("/account/wallet") },
+    { href: signedIn ? "/account" : "/auth/login", label: signedIn ? t("account") : t("signIn"), icon: UserIcon, active: (pathname.startsWith("/account") && !pathname.startsWith("/account/wallet")) || pathname.startsWith("/auth") },
+  ];
+  return (
+    <nav
+      aria-label={t("menu")}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur md:hidden"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)", paddingLeft: "env(safe-area-inset-left, 0px)", paddingRight: "env(safe-area-inset-right, 0px)" }}
+    >
+      <ul className="mx-auto grid h-16 max-w-md grid-cols-5">
+        {items.map(({ href, label, icon: Icon, active, badge }) => (
+          <li key={label} className="min-w-0">
+            <Link
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={`flex h-full flex-col items-center justify-center gap-0.5 text-[11px] font-semibold transition-colors ${active ? "text-primary" : "text-muted hover:text-text"}`}
+            >
+              <span className={`relative grid h-7 w-12 place-items-center rounded-full transition-colors ${active ? "bg-primary-soft" : ""}`}>
+                <Icon width={20} height={20} />
+                {!!badge && (
+                  <span className="absolute -right-0.5 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{badge}</span>
+                )}
+              </span>
+              <span className="max-w-full truncate px-1">{label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }

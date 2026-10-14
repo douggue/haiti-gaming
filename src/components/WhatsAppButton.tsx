@@ -9,7 +9,8 @@ export async function WhatsAppButton({ number, message }: { number: string; mess
       href={`https://wa.me/${number}?text=${text}`}
       target="_blank"
       rel="noopener"
-      className="fixed bottom-4 right-4 z-30 inline-flex h-14 items-center gap-2 rounded-full bg-[#1fa855] px-4 font-semibold text-white shadow-lg shadow-black/20 hover:bg-[#178a45] sm:bottom-6 sm:right-6"
+      style={{ bottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
+      className="fixed right-4 z-30 md:!bottom-6 md:right-6 inline-flex h-14 items-center gap-2 rounded-full bg-[#1fa855] px-4 font-semibold text-white shadow-lg shadow-black/20 hover:bg-[#178a45]"
       aria-label={t("whatsappHelp")}
     >
       <WhatsAppIcon />

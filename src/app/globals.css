@@ -160,3 +160,71 @@ body {
 .data-saver .blur-3xl {
   display: none;
 }
+
+/* Admin on phones: grid columns may shrink below their content, and tables turn into labeled cards. */
+.admin-main .grid > * {
+  min-width: 0;
+}
+@media (max-width: 639px) {
+  .rtable table,
+  .rtable tbody {
+    display: block;
+  }
+  .rtable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .rtable tr {
+    display: grid;
+    gap: 2px;
+    padding: 12px 14px;
+  }
+  .rtable td {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 12px;
+    row-gap: 2px;
+    align-items: center;
+    justify-items: end;
+    padding: 4px 0 !important;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  .rtable td > * {
+    grid-column: 2;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .rtable td[data-label]::before {
+    content: attr(data-label);
+    grid-column: 1;
+    grid-row: 1 / span 6;
+    align-self: start;
+    padding-top: 2px;
+    justify-self: start;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .rtable td[data-label=""] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rtable td[data-label=""] > * {
+    grid-column: 1;
+  }
+  .rtable td[data-label=""]::before {
+    content: none;
+  }
+  .rtable td:first-child {
+    font-weight: 600;
+  }
+  .rtable td:empty {
+    display: none;
+  }
+}

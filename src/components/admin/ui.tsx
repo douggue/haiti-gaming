@@ -1,3 +1,4 @@
+import { Children, Fragment, cloneElement, isValidElement } from "react";
 export function PageTitle({ title, sub, actions }: { title: string; sub?: string; actions?: React.ReactNode }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -10,14 +11,30 @@ export function PageTitle({ title, sub, actions }: { title: string; sub?: string
   );
 }
 
+/** Adds each column's header as a data-label on its cells, so phones can show rows as labeled cards. */
+function labelCells(children: React.ReactNode, head: string[]): React.ReactNode {
+  return Children.map(children, (row) => {
+    if (!isValidElement<{ children?: React.ReactNode }>(row)) return row;
+    if (row.type === Fragment) return cloneElement(row, {}, labelCells(row.props.children, head));
+    let i = 0;
+    const cells = Children.map(row.props.children, (cell) => {
+      if (!isValidElement(cell)) return cell;
+      const label = head[i++] ?? "";
+      return cloneElement(cell as React.ReactElement<Record<string, unknown>>, { "data-label": label });
+    });
+    return cloneElement(row, {}, cells);
+  });
+}
+
+/** Table on wide screens; on phones each row becomes a card with "Label · value" lines. */
 export function Table({ head, children, empty }: { head: string[]; children: React.ReactNode; empty?: boolean }) {
   return (
-    <div className="card overflow-x-auto">
-      <table className="w-full min-w-[640px] text-left text-sm">
+    <div className="card rtable overflow-x-auto">
+      <table className="w-full text-left text-sm sm:min-w-[640px]">
         <thead className="border-b border-border text-xs uppercase tracking-wide text-muted">
           <tr>{head.map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
         </thead>
-        <tbody className="divide-y divide-border">{children}</tbody>
+        <tbody className="divide-y divide-border">{labelCells(children, head)}</tbody>
       </table>
       {empty && <p className="p-8 text-center text-sm text-muted">Nothing here.</p>}
     </div>
