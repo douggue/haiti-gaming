@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { totp } from "./totp";
+import { staffLogin } from "./helpers";
 
 /**
  * Critical journeys from blueprint §20, run against a seeded database with MonCash in mock mode.
@@ -9,28 +9,12 @@ const stamp = Date.now();
 const customer = { name: "Jean Test", email: `jean.${stamp}@example.com`, password: "Kliyan2026!" };
 const admin = { email: process.env.E2E_ADMIN_EMAIL ?? "admin@haitigaming.test", password: process.env.E2E_ADMIN_PASSWORD ?? "AdminPassw0rd!2026" };
 const natcashRef = `NC${stamp}`.slice(0, 14);
-let adminSecret = process.env.E2E_ADMIN_TOTP_SECRET ?? "";
 
 test.describe.configure({ mode: "serial" });
 
+/** Staff sign-in through the shared helper (sets up 2FA the first time and answers security prompts). */
 async function adminLogin(page: Page) {
-  await page.goto("/admin/login");
-  await page.getByLabel("Email").fill(admin.email);
-  await page.getByLabel("Password").fill(admin.password);
-  await page.getByRole("button", { name: "Continue" }).click();
-  if (!adminSecret) {
-    // First sign-in: mandatory 2FA setup
-    await page.waitForURL("**/admin/setup-2fa");
-    await page.getByLabel("Confirm your password").fill(admin.password);
-    await page.getByRole("button", { name: "Continue" }).click();
-    adminSecret = (await page.locator("p.font-mono").textContent())!.trim();
-    await page.getByLabel("6-digit code").fill(totp(adminSecret));
-    await page.getByRole("button", { name: "Activate" }).click();
-  } else {
-    await page.locator("input[name=code]").fill(totp(adminSecret));
-    await page.getByRole("button", { name: "Verify" }).click();
-  }
-  await page.waitForURL(/\/admin$/);
+  await staffLogin(page);
 }
 
 test("customer registers in Kreyòl and buys a gift card with MonCash", async ({ page }) => {
@@ -69,7 +53,7 @@ test("customer submits a NatCash deposit", async ({ page }) => {
   await page.getByRole("button", { name: "Konekte" }).click();
   await page.waitForURL("**/ht/account");
   await page.goto("/ht/account/wallet/deposit");
-  await page.getByRole("button", { name: /NatCash/ }).click();
+  await page.getByRole("tab", { name: /NatCash/ }).click();
   await page.getByLabel("Montan (HTG)").fill("2500");
   await page.getByLabel("Referans tranzaksyon NatCash").fill(natcashRef);
   await page.getByRole("button", { name: "Voye depo a" }).click();
@@ -77,7 +61,7 @@ test("customer submits a NatCash deposit", async ({ page }) => {
 
   // The same reference cannot be used twice
   await page.goto("/ht/account/wallet/deposit");
-  await page.getByRole("button", { name: /NatCash/ }).click();
+  await page.getByRole("tab", { name: /NatCash/ }).click();
   await page.getByLabel("Montan (HTG)").fill("2500");
   await page.getByLabel("Referans tranzaksyon NatCash").fill(natcashRef);
   await page.getByRole("button", { name: "Voye depo a" }).click();
@@ -88,7 +72,6 @@ test("admin sets up 2FA and approves the NatCash deposit", async ({ page }) => {
   await adminLogin(page);
   await page.goto("/admin/payments");
   const card = page.locator(".card", { hasText: natcashRef });
-  page.once("dialog", (d) => d.accept());
   await card.getByRole("button", { name: "Approve" }).click();
   await expect(page.getByRole("row", { name: new RegExp(natcashRef) })).toContainText("SUCCEEDED");
 });

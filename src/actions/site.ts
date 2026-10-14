@@ -110,13 +110,25 @@ export async function saveManualMethod(form: FormData): Promise<R> {
     if (!recipientName || !recipientNumber) return { ok: false, error: "Recipient name and number/account are required" };
     const logo = String(form.get("logo") ?? "").trim();
     if (logo && !isOwnImageUrl(logo)) return { ok: false, error: "Invalid logo" };
+    const qrImage = String(form.get("qrImage") ?? "").trim();
+    if (qrImage && !isOwnImageUrl(qrImage)) return { ok: false, error: "Invalid QR image" };
+    const kind = form.get("kind") === "crypto" ? "crypto" : "mobile";
+    const network = kind === "crypto" ? String(form.get("network") ?? "").trim().slice(0, 40) : null;
+    if (kind === "crypto") {
+      if (!network) return { ok: false, error: "Crypto: say which network, e.g. BEP-20 (BSC)" };
+      // EVM (BSC, Polygon, Ethereum) or Tron address: a typo here would send customers' money to nobody.
+      if (!/^0x[0-9a-fA-F]{40}$/.test(recipientNumber) && !/^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(recipientNumber))
+        return { ok: false, error: "Crypto: that does not look like a wallet address (0x… with 42 characters, or T… for Tron)" };
+    }
     const data = {
       code, name, instructions: L("instructions", 600), recipientName, recipientNumber, logo: logo || null,
-      isEnabled: form.get("isEnabled") === "on", allowDeposits: form.get("allowDeposits") === "on", allowOrders: form.get("allowOrders") === "on",
+      kind, network, qrImage: qrImage || null, currency: kind === "crypto" ? ("USD" as const) : ("HTG" as const),
+      // Crypto credits the USD wallet only; orders are paid from the wallet afterwards.
+      isEnabled: form.get("isEnabled") === "on", allowDeposits: form.get("allowDeposits") === "on", allowOrders: kind === "crypto" ? false : form.get("allowOrders") === "on",
       sortOrder: Number(form.get("sortOrder") ?? 0) || 0,
     };
     const m = id ? await prisma.manualMethod.update({ where: { id }, data }) : await prisma.manualMethod.create({ data });
-    await audit(staff.id, id ? "payment_method.update" : "payment_method.create", "ManualMethod", m.id, { code, recipientNumber, isEnabled: data.isEnabled });
+    await audit(staff.id, id ? "payment_method.update" : "payment_method.create", "ManualMethod", m.id, { code, kind, network, recipientNumber, isEnabled: data.isEnabled });
     revalidatePath("/admin/payment-methods");
     return { ok: true, message: "Saved" };
   } catch (e) {

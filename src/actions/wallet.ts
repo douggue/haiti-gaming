@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { assertUser } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
-import { parseAmount } from "@/lib/money";
+import { parseAmount, usdToHtg } from "@/lib/money";
 import { createMoncashPayment, moncashAvailable } from "@/lib/payments/moncash";
 import { assertWithinNewAccountLimit, LimitExceededError } from "@/lib/risk";
 import { postExchange, quoteExchange } from "@/lib/wallet";
@@ -18,6 +18,8 @@ export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: 
 
 const refSchema = z.string().trim().min(4).max(40).regex(/^[A-Za-z0-9-]+$/);
 const phoneSchema = z.string().trim().max(20).optional();
+/** EVM (0x + 64 hex) or Tron (64 hex) transaction hash */
+const txHashSchema = z.string().trim().regex(/^(0x)?[0-9a-fA-F]{64}$/);
 
 /** Start a wallet deposit. MonCash returns a redirect URL; NatCash records the customer's reference for review. */
 export async function createDeposit(form: FormData): Promise<ActionResult<{ redirect?: string }>> {
@@ -30,11 +32,15 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
   const settings = await getSettings();
   const method = form.get("method");
   const amount = parseAmount(String(form.get("amount") ?? ""));
-  if (!amount || amount < settings.minDepositHtg || amount > settings.maxDepositHtg) return { ok: false, error: "amount" };
+  // Crypto methods credit the USD wallet: the amount is in USD, limits are compared in HTG.
+  const manual = method === "MANUAL" ? await prisma.manualMethod.findUnique({ where: { id: String(form.get("manualMethodId") ?? "") } }) : null;
+  const currency = manual?.currency ?? "HTG";
+  const amountHtg = amount ? (currency === "USD" ? usdToHtg(amount, settings.htgPerUsd) : amount) : 0;
+  if (!amount || amountHtg < settings.minDepositHtg || amountHtg > settings.maxDepositHtg) return { ok: false, error: "amount" };
 
   const dbUser = await prisma.user.findUniqueOrThrow({ where: { id: user.id } });
   try {
-    await assertWithinNewAccountLimit(prisma, dbUser, amount, settings);
+    await assertWithinNewAccountLimit(prisma, dbUser, amountHtg, settings);
   } catch (e) {
     if (e instanceof LimitExceededError) return { ok: false, error: "new_account_limit" };
     throw e;
@@ -50,12 +56,12 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
     let manualMethodId: string | null = null;
     if (method === "NATCASH" && !settings.natcashEnabled) return { ok: false, error: "method_unavailable" };
     if (method === "MANUAL") {
-      const m = await prisma.manualMethod.findUnique({ where: { id: String(form.get("manualMethodId") ?? "") } });
+      const m = manual;
       if (!m || !m.isEnabled || !m.allowDeposits) return { ok: false, error: "method_unavailable" };
       manualMethodId = m.id;
     }
-    const ref = refSchema.safeParse(form.get("reference"));
-    if (!ref.success) return { ok: false, error: "reference" };
+    const ref = (manual?.kind === "crypto" ? txHashSchema : refSchema).safeParse(form.get("reference"));
+    if (!ref.success) return { ok: false, error: manual?.kind === "crypto" ? "tx_hash" : "reference" };
     const phone = phoneSchema.safeParse(form.get("payerPhone") ?? undefined);
     let evidencePath: string | null = null;
     const file = form.get("evidence");
@@ -70,8 +76,8 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
     try {
       await prisma.paymentIntent.create({
         data: {
-          userId: user.id, provider: method, manualMethodId, amount, currency: "HTG", status: "REVIEW",
-          providerRef: ref.data.toUpperCase(), payerPhone: phone.success ? phone.data : null, evidencePath,
+          userId: user.id, provider: method, manualMethodId, amount, currency, status: "REVIEW",
+          providerRef: manual?.kind === "crypto" ? ref.data.toLowerCase() : ref.data.toUpperCase(), payerPhone: phone.success ? phone.data : null, evidencePath,
         },
       });
     } catch (e) {

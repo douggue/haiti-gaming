@@ -6,18 +6,27 @@ import { t } from "@/lib/text";
 import type { FieldDef } from "@/lib/orders";
 import { useStore } from "./cart/CartProvider";
 import { Price } from "./Money";
+import { formatMoney, parseAmount } from "@/lib/money";
+import { amountInRange, customerRate, quoteAmount } from "@/lib/amount";
+import type { ExchangePricing } from "@/lib/amount";
 
 type Variant = { id: string; name: Record<string, string>; priceHtg: number; salePriceHtg: number | null; inStock: boolean };
 type Props = {
   product: { id: string; slug: string; name: Record<string, string>; accent: string | null; image: string | null; fields: FieldDef[]; variants: Variant[] };
   saved: { id: string; label: string | null; values: Record<string, string> }[];
+  pricing?: ExchangePricing;
 };
 
-export function ProductPurchase({ product, saved }: Props) {
+export function ProductPurchase({ product, saved, pricing }: Props) {
   const tp = useTranslations("product");
   const locale = useLocale();
   const router = useRouter();
   const { add } = useStore();
+  const mode = pricing ?? null;
+  const [amountText, setAmountText] = useState(mode?.presets[0] ? String(mode.presets[0]) : "");
+  const amount = parseAmount(amountText);
+  const quote = mode && amount && amountInRange(mode, amount) ? quoteAmount(mode, amount) : null;
+  const usd = (minor: number) => formatMoney(minor, "USD", locale);
   const firstAvailable = product.variants.find((v) => v.inStock) ?? product.variants[0];
   const [variantId, setVariantId] = useState(firstAvailable?.id);
   const [qty, setQty] = useState(1);
@@ -29,6 +38,11 @@ export function ProductPurchase({ product, saved }: Props) {
   function submit(goToCart: boolean) {
     setError("");
     if (!variant || !variant.inStock) return;
+    if (mode && !quote) {
+      setError(tp("amountError", { min: usd(mode.min), max: usd(mode.max) }));
+      document.getElementById("amount")?.focus();
+      return;
+    }
     for (const f of product.fields) {
       if (f.required && !fields[f.key]?.trim()) {
         setError(`${t(f.label, locale)} *`);
@@ -40,11 +54,12 @@ export function ProductPurchase({ product, saved }: Props) {
       variantId: variant.id,
       productSlug: product.slug,
       productName: product.name,
-      variantName: variant.name,
+      variantName: quote ? { ht: usd(quote.amount), fr: usd(quote.amount), en: usd(quote.amount), es: usd(quote.amount) } : variant.name,
       accent: product.accent,
       image: product.image,
-      priceHtg: variant.salePriceHtg ?? variant.priceHtg,
-      quantity: qty,
+      priceHtg: quote ? quote.totalHtg : variant.salePriceHtg ?? variant.priceHtg,
+      ...(quote ? { amount: quote.amount, priceUsd: quote.totalUsd } : {}),
+      quantity: quote ? 1 : qty,
       fields: Object.fromEntries(product.fields.map((f) => [f.key, (fields[f.key] ?? "").trim()]).filter(([, v]) => v)),
     });
     setAdded(true);
@@ -54,6 +69,55 @@ export function ProductPurchase({ product, saved }: Props) {
 
   return (
     <div className="mt-6 space-y-6">
+      {mode ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-success/30 bg-success-soft px-4 py-3 text-success">
+            <span className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide">
+              <span className="h-2.5 w-2.5 rounded-full bg-success shadow-[0_0_0_4px_rgba(19,138,82,.18)]" aria-hidden />
+              {tp("rateToday")}
+            </span>
+            <span className="text-lg font-extrabold tabular-nums">1 USD = {new Intl.NumberFormat(locale === "en" ? "en-US" : "fr-HT", { maximumFractionDigits: 2 }).format(customerRate(mode))} HTG</span>
+          </div>
+          <div>
+            <label htmlFor="amount" className="label">{tp("enterUsd")}</label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-muted">$</span>
+              <input
+                id="amount"
+                className="input h-14 pl-9 text-xl font-bold"
+                inputMode="decimal"
+                autoComplete="off"
+                value={amountText}
+                onChange={(e) => setAmountText(e.target.value.replace(",", ".").replace(/[^\d.]/g, "").slice(0, 9))}
+                aria-describedby="amount-hint"
+              />
+            </div>
+            <p id="amount-hint" className="mt-1 text-xs text-muted">{tp("amountRange", { min: usd(mode.min), max: usd(mode.max) })}</p>
+            {mode.presets.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {mode.presets.map((p) => (
+                  <button key={p} type="button" onClick={() => setAmountText(String(p))} className={`min-h-10 rounded-xl border px-4 text-sm font-semibold ${amount === p * 100 ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface"}`}>
+                    ${p}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="space-y-2 rounded-2xl border border-border bg-surface-2 p-4" aria-live="polite">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-semibold text-muted">{t(product.name, locale)}:</span>
+              <span className="text-right">
+                <b className="text-lg tabular-nums">{quote ? usd(quote.amount) : "—"}</b>
+                {quote && quote.fee > 0 && <span className="ml-2 text-sm font-semibold text-warning">+ {usd(quote.fee)} {tp("fee")}</span>}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-semibold text-muted">{tp("youPay")}:</span>
+              <b className="text-xl tabular-nums">{quote ? formatMoney(quote.totalHtg, "HTG", locale) : "—"}</b>
+            </div>
+          </div>
+        </div>
+      ) : (
       <fieldset>
         <legend className="label">{tp("chooseOption")}</legend>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -78,6 +142,7 @@ export function ProductPurchase({ product, saved }: Props) {
           })}
         </div>
       </fieldset>
+      )}
 
       {product.fields.length > 0 && (
         <fieldset className="card space-y-4 p-4">
@@ -116,7 +181,7 @@ export function ProductPurchase({ product, saved }: Props) {
         </fieldset>
       )}
 
-      <div className="flex items-center gap-3">
+      {!mode && <div className="flex items-center gap-3">
         <label className="label mb-0" htmlFor="qty">{tp("quantity")}</label>
         <div className="flex items-center rounded-xl border border-border bg-surface">
           <button type="button" className="h-11 w-11 text-lg" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="−">−</button>
@@ -124,7 +189,7 @@ export function ProductPurchase({ product, saved }: Props) {
           <button type="button" className="h-11 w-11 text-lg" onClick={() => setQty(Math.min(10, qty + 1))} aria-label="+">+</button>
         </div>
         {variant && <Price htg={(variant.salePriceHtg ?? variant.priceHtg) * qty} className="ml-auto text-xl font-bold" />}
-      </div>
+      </div>}
 
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
 

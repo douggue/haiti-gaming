@@ -1,6 +1,7 @@
 import { prisma } from "../db";
 import { getSettings } from "../settings";
 import { creditPayment, chargeOrder } from "../wallet";
+import { usdToHtg } from "../money";
 import { addEvent, fulfillOrder } from "../orders";
 import { notify } from "../notify";
 import { InsufficientFundsError } from "../ledger";
@@ -31,7 +32,8 @@ export async function completePayment(
 
     // Large manual top-ups are held before they can be spent (blueprint §8). Order payments are not held;
     // high-value orders are reviewed through the order risk flag instead.
-    const hold = !intent.orderId && intent.provider !== "MONCASH" && intent.amount >= settings.holdThresholdHtg;
+    const amountHtg = intent.currency === "USD" ? usdToHtg(intent.amount, settings.htgPerUsd) : intent.amount;
+    const hold = !intent.orderId && intent.provider !== "MONCASH" && amountHtg >= settings.holdThresholdHtg;
     const updated = await tx.paymentIntent.update({
       where: { id: intent.id },
       data: {

@@ -6,7 +6,7 @@ import { verifyStepUp } from "@/actions/admin";
 type Result = { ok: true; message?: string } | { ok: false; error: string };
 
 /** Runs an action; if it needs a fresh 2FA confirmation, asks for the code once and retries. */
-async function withStepUp(run: () => Promise<Result>): Promise<Result> {
+export async function withStepUp(run: () => Promise<Result>): Promise<Result> {
   const first = await run();
   if (first.ok || first.error !== "STEP_UP_REQUIRED") return first;
   const code = window.prompt("Security check: enter the 6-digit code from your authenticator app to confirm this action.");

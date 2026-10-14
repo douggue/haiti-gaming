@@ -86,6 +86,9 @@ export default async function SettingsPage() {
             <Field name="natcashRecipientName" label="NatCash recipient name" value={s.natcashRecipientName} />
             <Field name="natcashRecipientPhone" label="NatCash recipient number" value={s.natcashRecipientPhone} />
           </div>
+          <div className="max-w-xs">
+            <ImageField name="natcashQrUrl" label="NatCash QR code (optional)" value={s.natcashQrUrl} folder="brand" aspect="aspect-square" hint="Screenshot of your NatCash merchant QR. Customers scan it on the deposit page. Empty = number only." />
+          </div>
         </section>
         <section className="card space-y-4 p-5">
           <h2 className="font-semibold">Business & support</h2>

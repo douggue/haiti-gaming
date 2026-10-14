@@ -686,6 +686,14 @@ model ManualMethod {
   recipientName   String
   recipientNumber String
   logo            String?
+  /// "mobile" (NatCash-like wallet, bank…) or "crypto" (recipientNumber holds the address)
+  kind            String          @default("mobile")
+  /// Crypto only: network shown to customers, e.g. "BEP-20 (BSC)"
+  network         String?
+  /// Optional QR image customers can scan (crypto addresses get a generated QR when empty)
+  qrImage         String?
+  /// Wallet credited by deposits: HTG for mobile money, USD for USDT
+  currency        Currency        @default(HTG)
   isEnabled       Boolean         @default(true)
   allowDeposits   Boolean         @default(true)
   allowOrders     Boolean         @default(true)

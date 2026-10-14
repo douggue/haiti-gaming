@@ -213,7 +213,8 @@ test("operations: reports + CSV, public order status, step-up and two-person app
   await staffLogin(f2, finance);
   await f2.goto("/admin/approvals");
   await f2.getByRole("row", { name: new RegExp(String(stamp)) }).getByRole("button", { name: "Approve" }).click();
-  await expect(f2.getByText("Approved and applied")).toBeVisible();
+  // The row moves to the decided list once the page refreshes, so check the decision rather than the short message.
+  await expect(f2.getByRole("row", { name: new RegExp(`${stamp}.*APPROVED`) })).toBeVisible();
   await a.goto(`/admin/customers?q=${encodeURIComponent(cust.email)}`);
   await a.getByRole("link", { name: cust.name }).click();
   await expect(a.getByText("20,050 HTG").first()).toBeVisible();

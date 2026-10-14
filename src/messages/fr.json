@@ -136,7 +136,13 @@
     "instant": "Livraison instantanée",
     "manual": "Livré par notre équipe",
     "related": "Vous aimerez aussi",
-    "notFound": "Produit introuvable"
+    "notFound": "Produit introuvable",
+    "rateToday": "Taux du jour",
+    "enterUsd": "Entrer le montant USD",
+    "fee": "frais",
+    "youPay": "Prix",
+    "amountRange": "Entre {min} et {max}",
+    "amountError": "Entrez un montant entre {min} et {max}."
   },
   "cart": {
     "title": "Votre panier",
@@ -175,7 +181,8 @@
       "new_account_limit": "Les nouveaux comptes ont une limite journalière. Essayez un montant plus petit ou contactez-nous.",
       "insufficient": "Le solde de votre portefeuille est insuffisant.",
       "account_restricted": "Votre compte ne peut pas passer de commande pour le moment. Contactez le support.",
-      "generic": "Impossible de passer votre commande. Veuillez réessayer."
+      "generic": "Impossible de passer votre commande. Veuillez réessayer.",
+      "invalid_amount": "Le montant n'est pas valide ou hors limites. Modifiez-le et réessayez."
     }
   },
   "order": {
@@ -288,7 +295,37 @@
       "FAILED": "Échoué",
       "REJECTED": "Refusé",
       "EXPIRED": "Expiré"
-    }
+    },
+    "sendTo": "Envoyer à",
+    "stepScan": "Scannez le QR ou envoyez au numéro.",
+    "stepSend": "Envoyez l'argent dans l'application {name}.",
+    "stepAmount": "Indiquez le montant envoyé ci-dessous.",
+    "stepRef": "Saisissez la référence de la transaction et envoyez.",
+    "refHelp": "Où trouver la référence ?",
+    "refHelpTitle": "Où est la référence ?",
+    "refHelpBody": "Après l'envoi, {name} vous envoie un SMS. La référence est le numéro après « ID » ou « Ref ».",
+    "refHelpExample": "Vous avez transféré 1500.00 HTG à {recipient}. ID: {ref}. Solde: 3250.00 HTG.",
+    "refHelpApp": "Pas de SMS ? Ouvrez l'application → Historique → touchez la transaction.",
+    "gotIt": "Je l'ai trouvée",
+    "uploadTitle": "Ajouter la capture d'écran",
+    "uploadHint": "Facultatif · photo ou capture d'écran",
+    "uploadChange": "Changer",
+    "uploadRemove": "Retirer",
+    "uploadBad": "Impossible de lire cette image. Essayez une autre capture.",
+    "moncashInfo": "Vous payez dans l'application MonCash. L'argent arrive automatiquement dans votre portefeuille.",
+    "cryptoNetwork": "Réseau",
+    "cryptoAddress": "Adresse de dépôt",
+    "cryptoWarn": "Envoyez uniquement de l'USDT, sur {network}. Tout envoi sur un autre réseau ou une autre devise sera perdu.",
+    "cryptoAmount": "Montant envoyé (USDT)",
+    "cryptoCredit": "Crédité sur votre portefeuille USD · 1 USDT = 1 $",
+    "cryptoMin": "Minimum {min}",
+    "txHash": "Hash de la transaction",
+    "txHashHint": "Il commence par 0x (66 caractères). Vous le trouvez dans l'historique de votre wallet.",
+    "txHashError": "Hash invalide. Copiez-le à nouveau depuis votre wallet (0x + 64 caractères).",
+    "cryptoSteps1": "Copiez l'adresse ou scannez le QR.",
+    "cryptoSteps2": "Envoyez de l'USDT sur {network} uniquement.",
+    "cryptoSteps3": "Collez le hash de la transaction et envoyez. Nous le vérifions sur la blockchain.",
+    "methodAuto": "Automatique"
   },
   "auth": {
     "loginTitle": "Se connecter",

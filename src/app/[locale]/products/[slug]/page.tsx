@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { minPrice, productCardInclude, searchProducts } from "@/lib/catalog";
 import { getDisplaySettings } from "@/lib/settings";
+import { isExchangeProduct } from "@/lib/amount";
 import { getUser } from "@/lib/session";
 import { t } from "@/lib/text";
 import { alternates } from "@/lib/seo";
@@ -113,6 +114,7 @@ export default async function ProductPage({ params }: { params: P }) {
                 inStock: stock ? (stock[v.id] ?? 0) > 0 : true,
               })),
             }}
+            pricing={isExchangeProduct(settings.moneyExchange, product.category) ? settings.moneyExchange : undefined}
             saved={saved.map((s) => ({ id: s.id, label: s.label, values: s.values as Record<string, string> }))}
           />
         </div>

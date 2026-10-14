@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getSavedCart, saveCart } from "@/actions/customer";
+import { priceIn } from "@/lib/money";
 
 export type CartLine = {
   key: string;
@@ -13,7 +14,15 @@ export type CartLine = {
   priceHtg: number;
   quantity: number;
   fields: Record<string, string>;
+  /** "Customer enters the amount" products: USD cents typed, and the price in USD (not converted at the store rate) */
+  amount?: number;
+  priceUsd?: number;
 };
+
+/** Unit price of a cart line in the display currency. */
+export function linePrice(l: Pick<CartLine, "priceHtg" | "priceUsd">, currency: "HTG" | "USD", htgPerUsd: number) {
+  return currency === "USD" && l.priceUsd != null ? l.priceUsd : priceIn(l.priceHtg, currency, htgPerUsd);
+}
 
 type StoreCtx = {
   currency: "HTG" | "USD";
@@ -30,8 +39,8 @@ type StoreCtx = {
 const Ctx = createContext<StoreCtx | null>(null);
 const STORAGE_KEY = "hg_cart_v1";
 
-function lineKey(variantId: string, fields: Record<string, string>) {
-  return `${variantId}:${Object.entries(fields).sort().map(([k, v]) => `${k}=${v}`).join("&")}`;
+function lineKey(variantId: string, fields: Record<string, string>, amount?: number) {
+  return `${variantId}:${amount ? `$${amount}:` : ""}${Object.entries(fields).sort().map(([k, v]) => `${k}=${v}`).join("&")}`;
 }
 
 export function CartProvider({ children, currency, htgPerUsd, signedIn = false }: { children: ReactNode; currency: "HTG" | "USD"; htgPerUsd: number; signedIn?: boolean }) {
@@ -72,7 +81,7 @@ export function CartProvider({ children, currency, htgPerUsd, signedIn = false }
   }, [lines, ready, signedIn]);
 
   const add = useCallback((line: Omit<CartLine, "key">) => {
-    const key = lineKey(line.variantId, line.fields);
+    const key = lineKey(line.variantId, line.fields, line.amount);
     setLines((prev) => {
       const existing = prev.find((l) => l.key === key);
       if (existing) return prev.map((l) => (l.key === key ? { ...l, quantity: Math.min(10, l.quantity + line.quantity) } : l));

@@ -11,7 +11,8 @@ import { completePayment, rejectPayment } from "@/lib/payments/complete";
 import { deliverItemManually, fulfillOrder, refundOrCancel, revealCode } from "@/lib/orders";
 import { adjustWallet } from "@/lib/wallet";
 import { parseAmount } from "@/lib/money";
-import { DEFAULT_SETTINGS, setSetting, type Settings } from "@/lib/settings";
+import { DEFAULT_SETTINGS, getSettings, setSetting, type ExchangePricing, type Settings } from "@/lib/settings";
+import { quoteAmount } from "@/lib/amount";
 import { notify } from "@/lib/notify";
 import { InsufficientFundsError } from "@/lib/ledger";
 import { isOwnImageUrl, savePublicImage, UploadError } from "@/lib/storage";
@@ -180,6 +181,7 @@ export async function saveProduct(form: FormData): Promise<R & { id?: string }> 
       fields: fields as Prisma.InputJsonValue,
     };
     const product = id ? await prisma.product.update({ where: { id }, data }) : await prisma.product.create({ data });
+    await syncExchangeVariants();
     await audit(staff.id, id ? "product.update" : "product.create", "Product", product.id, { slug });
     revalidatePath("/admin/products");
     revalidatePath("/", "layout");
@@ -187,6 +189,26 @@ export async function saveProduct(form: FormData): Promise<R & { id?: string }> 
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return { ok: false, error: "That slug is already used" };
     return fail(e);
+  }
+}
+
+/**
+ * Exchange products still need one active option for orders to point at.
+ * Its price is the cheapest possible order, so store cards show "from …".
+ */
+async function syncExchangeVariants() {
+  const settings = await getSettings();
+  const p = settings.moneyExchange;
+  if (!p.categoryId) return;
+  const from = quoteAmount(p, p.min).totalHtg;
+  const products = await prisma.product.findMany({
+    where: { OR: [{ categoryId: p.categoryId }, { category: { parentId: p.categoryId } }] },
+    select: { id: true, name: true, variants: { where: { isActive: true }, orderBy: { sortOrder: "asc" }, take: 1, select: { id: true } } },
+  });
+  for (const product of products) {
+    const first = product.variants[0];
+    if (first) await prisma.productVariant.update({ where: { id: first.id }, data: { priceHtg: from, salePriceHtg: null } });
+    else await prisma.productVariant.create({ data: { productId: product.id, name: product.name as Prisma.InputJsonValue, priceHtg: from } });
   }
 }
 
@@ -407,6 +429,7 @@ export async function saveSettings(form: FormData): Promise<R> {
     next.logoDarkUrl = img("logoDarkUrl");
     next.heroImageUrl = img("heroImageUrl");
     next.ogImageUrl = img("ogImageUrl");
+    next.natcashQrUrl = img("natcashQrUrl");
     for (const url of [next.socialFacebook, next.socialInstagram, next.socialTiktok, next.announcement?.link]) {
       if (url && !/^https:\/\//.test(url) && !url.startsWith("/")) return { ok: false, error: "Links must start with https:// or /" };
     }
@@ -680,5 +703,42 @@ export async function reconcileStatement(text: string, provider: string, days: n
     return { ok: true, result, rows: rows.length };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Error" };
+  }
+}
+
+/** Admin → Money exchange: market rate, margin and fee table shared by every amount product. */
+export async function saveMoneyExchange(input: ExchangePricing): Promise<R> {
+  try {
+    const staff = await assertStaff("settings.manage");
+    await assertStepUp();
+    const marketRate = Number(input.marketRate);
+    const margin = Number(input.margin);
+    const abovePercent = Number(input.abovePercent);
+    if (!(marketRate > 0 && marketRate < 10000)) return { ok: false, error: "Market rate must be a number like 130" };
+    if (!(margin >= 0 && margin < marketRate)) return { ok: false, error: "Margin must be 0 or more, and smaller than the market rate" };
+    if (!(abovePercent >= 0 && abovePercent <= 50)) return { ok: false, error: "The % above the last row must be between 0 and 50" };
+    const tiers = (Array.isArray(input.tiers) ? input.tiers : [])
+      .map((t) => ({ upTo: Math.round(Number(t.upTo)), fee: Math.round(Number(t.fee)) }))
+      .filter((t) => Number.isFinite(t.upTo) && Number.isFinite(t.fee));
+    if (tiers.length > 20) return { ok: false, error: "At most 20 rows" };
+    if (tiers.some((t) => t.upTo < 1 || t.fee < 0)) return { ok: false, error: "Each row needs an amount above $0 and a fee of $0 or more" };
+    tiers.sort((a, b) => a.upTo - b.upTo);
+    if (tiers.some((t, i) => i > 0 && t.upTo === tiers[i - 1].upTo)) return { ok: false, error: "Two rows have the same \"up to\" amount" };
+    const min = Math.round(Number(input.min));
+    const max = Math.round(Number(input.max));
+    if (!(min >= 1 && max >= min && max <= 100_000_00)) return { ok: false, error: "Minimum must be at least $0.01 and not more than the maximum" };
+    const presets = (Array.isArray(input.presets) ? input.presets : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 6);
+    const categoryId = input.categoryId ? String(input.categoryId) : null;
+    if (categoryId && !(await prisma.category.findUnique({ where: { id: categoryId } }))) return { ok: false, error: "Pick an existing category" };
+    const before = (await getSettings()).moneyExchange;
+    const next: ExchangePricing = { categoryId, marketRate, margin, min, max, presets, tiers, abovePercent };
+    await setSetting("moneyExchange", next);
+    // Keep the "from …" price on store cards in line with the new rate and fees.
+    await syncExchangeVariants();
+    await audit(staff.id, "exchange.update", "SiteSetting", null, { before, after: next });
+    revalidatePath("/", "layout");
+    return { ok: true, message: `Saved. Customers now get 1 USD = ${marketRate + margin} HTG.` };
+  } catch (e) {
+    return fail(e);
   }
 }

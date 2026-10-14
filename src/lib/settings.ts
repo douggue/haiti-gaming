@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "./db";
+import { DEFAULT_EXCHANGE, type ExchangePricing } from "./amount";
 
 export type Settings = {
   /** HTG per 1 USD (mid rate) */
@@ -23,6 +24,8 @@ export type Settings = {
   natcashRecipientName: string;
   natcashRecipientPhone: string;
   natcashInstructions: Record<string, string>;
+  /** Optional NatCash QR image customers scan on the deposit page */
+  natcashQrUrl: string;
   moncashEnabled: boolean;
   natcashEnabled: boolean;
   whatsappNumber: string;
@@ -55,7 +58,11 @@ export type Settings = {
   homepageHistory: { at: string; by: string; config: unknown }[];
   theme: ThemeConfig;
   themeHistory: { at: string; by: string; theme: ThemeConfig }[];
+  /** Rate and fee table shared by every "customer enters the amount" product (Admin → Money exchange) */
+  moneyExchange: ExchangePricing;
 };
+
+export type { ExchangePricing } from "./amount";
 
 export type NavLink = { label: Record<string, string>; href: string };
 
@@ -129,6 +136,7 @@ export const DEFAULT_SETTINGS: Settings = {
   natcashRecipientName: "Haiti Gaming",
   natcashRecipientPhone: "+509 0000 0000",
   natcashInstructions: {},
+  natcashQrUrl: "",
   moncashEnabled: true,
   natcashEnabled: true,
   whatsappNumber: "50900000000",
@@ -156,6 +164,7 @@ export const DEFAULT_SETTINGS: Settings = {
   navigation: { header: [], footer: [] },
   newsletterEnabled: false,
   maxAccountsPerDevice: 3,
+  moneyExchange: DEFAULT_EXCHANGE,
 };
 
 export async function getSettings(): Promise<Settings> {

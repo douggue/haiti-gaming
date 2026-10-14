@@ -3,9 +3,9 @@ import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { placeOrder } from "@/actions/checkout";
-import { formatMoney, priceIn } from "@/lib/money";
+import { formatMoney } from "@/lib/money";
 import { t } from "@/lib/text";
-import { useStore } from "./CartProvider";
+import { linePrice, useStore } from "./CartProvider";
 
 type Method = string; // "WALLET" | "MONCASH" | "NATCASH" | "MANUAL:<id>"
 type Manual = { id: string; name: string; instructions: string; logo: string | null };
@@ -23,7 +23,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   const [pending, start] = useTransition();
 
   const currency = method === "WALLET" ? walletCurrency : "HTG";
-  const total = store.lines.reduce((s, l) => s + priceIn(l.priceHtg, currency, store.htgPerUsd) * l.quantity, 0);
+  const total = store.lines.reduce((s, l) => s + linePrice(l, currency, store.htgPerUsd) * l.quantity, 0);
   const insufficient = method === "WALLET" && balances[walletCurrency] < total;
   const fmt = (n: number, c: "HTG" | "USD") => formatMoney(n, c, locale);
 
@@ -39,7 +39,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
     setError("");
     start(async () => {
       const res = await placeOrder({
-        items: store.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, fields: l.fields })),
+        items: store.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, fields: l.fields, ...(l.amount ? { amount: l.amount } : {}) })),
         currency,
         method: method.startsWith("MANUAL:") ? "MANUAL" : method,
         manualMethodId: method.startsWith("MANUAL:") ? method.slice(7) : undefined,
@@ -131,7 +131,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
                 <span className="block truncate">{t(l.productName, locale)}</span>
                 <span className="text-xs text-muted">{t(l.variantName, locale)} × {l.quantity}</span>
               </span>
-              <span className="shrink-0 font-medium">{fmt(priceIn(l.priceHtg, currency, store.htgPerUsd) * l.quantity, currency)}</span>
+              <span className="shrink-0 font-medium">{fmt(linePrice(l, currency, store.htgPerUsd) * l.quantity, currency)}</span>
             </li>
           ))}
         </ul>

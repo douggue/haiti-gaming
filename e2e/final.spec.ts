@@ -160,7 +160,7 @@ test("customer: announcement, menu, custom page, newsletter, manual deposit, rec
   // Deposit with the new manual method
   await c.goto("/ht/account/wallet/deposit");
   await c.waitForLoadState("networkidle");
-  await c.getByRole("button", { name: new RegExp(methodName) }).click();
+  await c.getByRole("tab", { name: new RegExp(methodName) }).click();
   await expect(c.getByText("Fè yon virman labank.")).toBeVisible();
   await c.getByLabel("Montan (HTG)").fill("1500");
   await c.getByLabel(new RegExp(`Referans tranzaksyon ${methodName}`)).fill(manualRef);

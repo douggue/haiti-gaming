@@ -136,7 +136,13 @@
     "instant": "Instant delivery",
     "manual": "Delivered by our team",
     "related": "You may also like",
-    "notFound": "Product not found"
+    "notFound": "Product not found",
+    "rateToday": "Today's rate",
+    "enterUsd": "Enter the USD amount",
+    "fee": "fee",
+    "youPay": "Price",
+    "amountRange": "Between {min} and {max}",
+    "amountError": "Enter an amount between {min} and {max}."
   },
   "cart": {
     "title": "Your cart",
@@ -175,7 +181,8 @@
       "new_account_limit": "New accounts have a daily limit. Please try a smaller amount or contact us.",
       "insufficient": "Your wallet balance is too low for this order.",
       "account_restricted": "Your account cannot place orders right now. Please contact support.",
-      "generic": "We could not place your order. Please try again."
+      "generic": "We could not place your order. Please try again.",
+      "invalid_amount": "The amount is invalid or outside the limits. Change it and try again."
     }
   },
   "order": {
@@ -288,7 +295,37 @@
       "FAILED": "Failed",
       "REJECTED": "Rejected",
       "EXPIRED": "Expired"
-    }
+    },
+    "sendTo": "Send to",
+    "stepScan": "Scan the QR or send to the number.",
+    "stepSend": "Send the money in the {name} app.",
+    "stepAmount": "Enter the amount you sent below.",
+    "stepRef": "Enter the transaction reference and submit.",
+    "refHelp": "Where do I find the reference?",
+    "refHelpTitle": "Where is the reference?",
+    "refHelpBody": "After you send, {name} texts you. The reference is the number after \"ID\" or \"Ref\".",
+    "refHelpExample": "You transferred 1500.00 HTG to {recipient}. ID: {ref}. Balance: 3250.00 HTG.",
+    "refHelpApp": "No text? Open the app → History → tap the transaction.",
+    "gotIt": "Got it",
+    "uploadTitle": "Add the screenshot",
+    "uploadHint": "Optional · photo or screenshot",
+    "uploadChange": "Change",
+    "uploadRemove": "Remove",
+    "uploadBad": "We can't read this image. Try another screenshot.",
+    "moncashInfo": "You pay in the MonCash app. The money reaches your wallet automatically.",
+    "cryptoNetwork": "Network",
+    "cryptoAddress": "Deposit address",
+    "cryptoWarn": "Send USDT only, on {network}. Anything sent on another network or in another coin is lost.",
+    "cryptoAmount": "Amount you sent (USDT)",
+    "cryptoCredit": "Credited to your USD wallet · 1 USDT = $1",
+    "cryptoMin": "Minimum {min}",
+    "txHash": "Transaction hash",
+    "txHashHint": "It starts with 0x (66 characters). Find it in your wallet's history.",
+    "txHashError": "That hash isn't valid. Copy it again from your wallet (0x + 64 characters).",
+    "cryptoSteps1": "Copy the address or scan the QR.",
+    "cryptoSteps2": "Send USDT on {network} only.",
+    "cryptoSteps3": "Paste the transaction hash and submit. We check it on the blockchain.",
+    "methodAuto": "Automatic"
   },
   "auth": {
     "loginTitle": "Sign in",

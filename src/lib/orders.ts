@@ -10,6 +10,7 @@ import { notify } from "./notify";
 import { t } from "./text";
 import { moncashAvailable } from "./payments/moncash";
 import { maybeRewardReferral } from "./referrals";
+import { amountInRange, isExchangeProduct, quoteAmount } from "./amount";
 
 export type FieldDef = {
   key: string;
@@ -23,6 +24,8 @@ export const cartItemSchema = z.object({
   variantId: z.string().min(1).max(64),
   quantity: z.number().int().min(1).max(10),
   fields: z.record(z.string().max(200)).default({}),
+  /** USD cents the customer typed, for "customer enters the amount" products */
+  amount: z.number().int().positive().max(100_000_00).optional(),
 });
 export const cartSchema = z.array(cartItemSchema).min(1).max(20);
 export type CartItemInput = z.infer<typeof cartItemSchema>;
@@ -72,13 +75,28 @@ export async function createOrder(input: {
 
   const variants = await prisma.productVariant.findMany({
     where: { id: { in: input.items.map((i) => i.variantId) }, isActive: true, product: { isPublished: true } },
-    include: { product: true },
+    include: { product: { include: { category: { select: { id: true, parentId: true } } } } },
   });
 
   const lines = input.items.map((item) => {
     const v = variants.find((x) => x.id === item.variantId);
     if (!v) throw new OrderError("unavailable");
     const fieldValues = validateFields(v.product.fields as FieldDef[], item.fields);
+    if (isExchangeProduct(settings.moneyExchange, v.product.category)) {
+      // The price is never taken from the browser: recomputed from the amount, the fee table and today's rate.
+      if (!item.amount || !amountInRange(settings.moneyExchange, item.amount)) throw new OrderError("invalid_amount");
+      const q = quoteAmount(settings.moneyExchange, item.amount);
+      const label = `$${(q.amount / 100).toFixed(2)}`;
+      return {
+        variantId: v.id,
+        productName: v.product.name as Prisma.InputJsonValue,
+        variantName: { ht: label, fr: label, en: label, es: label } as Prisma.InputJsonValue,
+        quantity: item.quantity,
+        unitPrice: currency === "USD" ? q.totalUsd : q.totalHtg,
+        unitHtg: q.totalHtg,
+        fieldValues: { ...fieldValues, amountUsd: (q.amount / 100).toFixed(2), feeUsd: (q.fee / 100).toFixed(2), rate: String(q.rate) },
+      };
+    }
     const unitHtg = v.salePriceHtg ?? v.priceHtg;
     return {
       variantId: v.id,

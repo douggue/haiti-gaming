@@ -22,6 +22,25 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return pageSeo(locale, "/", "");
 }
 
+
+/** Gaming icons between the words of the scrolling band (drawn, so they look the same on every phone). */
+const MARQUEE_ICONS = [
+  // gamepad
+  "M6 9h4M8 7v4M15 10h.01M18 12h.01M7.5 5h9A5.5 5.5 0 0 1 22 10.5v3a3.5 3.5 0 0 1-6.3 2.1L14.5 14h-5l-1.2 1.6A3.5 3.5 0 0 1 2 13.5v-3A5.5 5.5 0 0 1 7.5 5Z",
+  // diamond
+  "M6 3h12l4 6-10 12L2 9Z M2 9h20 M12 21 8 9l4-6 4 6Z",
+  // trophy
+  "M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z M17 6h3a3 3 0 0 1-3 4 M7 6H4a3 3 0 0 0 3 4",
+  // lightning
+  "M13 2 4 14h7l-1 8 9-12h-7Z",
+];
+function MarqueeIcon({ n }: { n: number }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-white/80" aria-hidden>
+      <path d={MARQUEE_ICONS[n % MARQUEE_ICONS.length]} />
+    </svg>
+  );
+}
 export default async function HomePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ preview?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -258,7 +277,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
             {[0, 1].map((copy) => (
               <div key={copy} className="display flex shrink-0 items-center gap-8 py-3.5 pr-8 text-lg font-bold sm:text-xl">
                 {marquee.map((w, i) => (
-                  <Fragment key={i}><span className="whitespace-nowrap">{w}</span><span className="opacity-60">✳</span></Fragment>
+                  <Fragment key={i}><span className="whitespace-nowrap">{w}</span><MarqueeIcon n={i} /></Fragment>
                 ))}
               </div>
             ))}

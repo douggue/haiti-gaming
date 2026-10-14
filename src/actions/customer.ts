@@ -83,6 +83,8 @@ const cartLine = z.object({
   priceHtg: z.number().int().nonnegative(),
   quantity: z.number().int().min(1).max(10),
   fields: z.record(z.string().max(200)),
+  amount: z.number().int().positive().optional(),
+  priceUsd: z.number().int().nonnegative().optional(),
 });
 
 /** The cart follows the customer across devices. Prices are re-checked on the server at checkout anyway. */

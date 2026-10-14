@@ -168,6 +168,21 @@ body {
 .marquee-track {
   display: flex;
   width: max-content;
+  /* Always moves (the band is the point): slower for visitors who ask for reduced motion, stopped only when the
+     store turns animations off or in data-saver mode. Touch or hover pauses it. */
+  animation: marquee 22s linear infinite;
+}
+.marquee:hover .marquee-track,
+.marquee:active .marquee-track {
+  animation-play-state: paused;
+}
+[data-motion="off"] .marquee-track {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation-duration: 60s;
+  }
 }
 
 /* ── Motion styles (Admin → Appearance): calm · lively · neon · off ──
@@ -175,12 +190,6 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .lift {
     transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-  }
-  .marquee-track {
-    animation: marquee 40s linear infinite;
-  }
-  [data-motion="off"] .marquee-track {
-    animation: none;
   }
 
   /* Calm: soft fades and small lifts */

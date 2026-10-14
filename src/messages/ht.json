@@ -136,7 +136,13 @@
     "instant": "Livrezon touswit",
     "manual": "Ekip nou an livre l",
     "related": "Ou ka renmen tou",
-    "notFound": "Nou pa jwenn pwodwi sa a"
+    "notFound": "Nou pa jwenn pwodwi sa a",
+    "rateToday": "To jodi a",
+    "enterUsd": "Antre kantite USD",
+    "fee": "frè",
+    "youPay": "Pri",
+    "amountRange": "Ant {min} ak {max}",
+    "amountError": "Antre yon montan ant {min} ak {max}."
   },
   "cart": {
     "title": "Panye ou",
@@ -175,7 +181,8 @@
       "new_account_limit": "Nouvo kont gen yon limit pa jou. Eseye yon pi piti montan oswa kontakte nou.",
       "insufficient": "Pa gen ase lajan nan bous ou pou kòmand sa a.",
       "account_restricted": "Kont ou pa ka pase kòmand kounye a. Tanpri kontakte sipò.",
-      "generic": "Nou pa t ka pase kòmand ou. Tanpri eseye ankò."
+      "generic": "Nou pa t ka pase kòmand ou. Tanpri eseye ankò.",
+      "invalid_amount": "Montan an pa bon oswa li pa nan limit yo. Chanje l epi eseye ankò."
     }
   },
   "order": {
@@ -288,7 +295,37 @@
       "FAILED": "Pa pase",
       "REJECTED": "Refize",
       "EXPIRED": "Ekspire"
-    }
+    },
+    "sendTo": "Voye bay",
+    "stepScan": "Eskane QR la oswa voye sou nimewo a.",
+    "stepSend": "Voye lajan an nan aplikasyon {name}.",
+    "stepAmount": "Ekri montan ou voye a anba a.",
+    "stepRef": "Mete referans tranzaksyon an epi voye.",
+    "refHelp": "Kote pou m jwenn referans lan?",
+    "refHelpTitle": "Kote referans lan ye?",
+    "refHelpBody": "Apre ou fin voye lajan an, {name} voye yon SMS ba ou. Referans lan se nimewo ki apre « ID » oswa « Ref ».",
+    "refHelpExample": "Ou transfere 1500.00 HTG bay {recipient}. ID: {ref}. Balans: 3250.00 HTG.",
+    "refHelpApp": "Pa jwenn SMS la? Louvri aplikasyon an → Istorik → tape sou tranzaksyon an.",
+    "gotIt": "Mwen jwenn li",
+    "uploadTitle": "Ajoute kapti ekran an",
+    "uploadHint": "Opsyonèl · foto oswa kapti ekran",
+    "uploadChange": "Chanje",
+    "uploadRemove": "Retire",
+    "uploadBad": "Nou pa ka li imaj sa a. Eseye yon lòt kapti ekran.",
+    "moncashInfo": "Ou pral peye nan aplikasyon MonCash. Lajan an antre nan bous ou otomatikman.",
+    "cryptoNetwork": "Rezo",
+    "cryptoAddress": "Adrès depo",
+    "cryptoWarn": "Voye USDT sèlman, sou {network}. Si ou voye sou yon lòt rezo oswa yon lòt monnen, lajan an ap pèdi.",
+    "cryptoAmount": "Montan ou voye (USDT)",
+    "cryptoCredit": "Kredite nan bous USD ou · 1 USDT = $1",
+    "cryptoMin": "Minimòm {min}",
+    "txHash": "Hash tranzaksyon an",
+    "txHashHint": "Li kòmanse ak 0x (66 karaktè). Ou jwenn li nan istorik wallet ou a.",
+    "txHashError": "Hash la pa bon. Kopye l ankò nan wallet ou (0x + 64 karaktè).",
+    "cryptoSteps1": "Kopye adrès la oswa eskane QR la.",
+    "cryptoSteps2": "Voye USDT sou {network} sèlman.",
+    "cryptoSteps3": "Kole hash tranzaksyon an epi voye. N ap verifye l sou blockchain lan.",
+    "methodAuto": "Otomatik"
   },
   "auth": {
     "loginTitle": "Konekte",

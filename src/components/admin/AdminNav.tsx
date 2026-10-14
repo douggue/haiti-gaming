@@ -1,48 +1,86 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Logo } from "../Logo";
+import { AdminIcon } from "./AdminIcons";
 import { MenuIcon, CloseIcon, HomeIcon, CartIcon, WalletIcon, ChatIcon, StoreIcon, UserIcon } from "../Icons";
 
-function AdminThemeToggle() {
+/** Light/dark for the back office, remembered separately from the store. */
+function useAdminTheme() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
   const toggle = () => {
-    const dark = !document.documentElement.classList.contains("dark");
-    document.documentElement.classList.toggle("dark", dark);
+    const next = !document.documentElement.classList.contains("dark");
+    document.documentElement.classList.toggle("dark", next);
+    setDark(next);
     try {
-      localStorage.setItem("hg_admin_theme", dark ? "dark" : "light");
+      localStorage.setItem("hg_admin_theme", next ? "dark" : "light");
     } catch {}
   };
-  return <button type="button" onClick={toggle} className="text-xs underline">Light / dark</button>;
+  return { dark, toggle };
 }
+
+const footerBtn = "group flex flex-1 flex-col items-center gap-1 rounded-xl border border-border bg-surface-2 px-2 py-2.5 text-[11px] font-semibold text-muted transition-colors hover:border-primary hover:text-primary";
 
 export function AdminNav({ items, user, logo }: { items: { href: string; label: string; group?: string; badge?: number }[]; user: { name: string; role: string }; logo?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const theme = useAdminTheme();
   const active = (h: string) => (h === "/admin" ? pathname === "/admin" : pathname.startsWith(h));
   const nav = (
     <nav className="flex flex-col gap-0.5" aria-label="Admin">
       {items.map((i, n) => (
         <div key={i.href}>
         {i.group && i.group !== items[n - 1]?.group && <p className="mb-1 mt-3 px-3 text-[11px] font-bold uppercase tracking-wider text-muted">{i.group}</p>}
-        <Link href={i.href} onClick={() => setOpen(false)} className={`flex min-h-10 items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold ${active(i.href) ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text"}`}>
-          {i.label}
-          {!!i.badge && <span className="rounded-full bg-warning-soft px-2 text-xs font-bold text-warning">{i.badge}</span>}
+        <Link
+          href={i.href}
+          onClick={() => setOpen(false)}
+          aria-current={active(i.href) ? "page" : undefined}
+          className={`group flex min-h-10 items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-semibold transition-colors ${active(i.href) ? "bg-primary text-white shadow-[0_8px_20px_-10px_var(--primary)]" : "text-muted hover:bg-surface-2 hover:text-text"}`}
+        >
+          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${active(i.href) ? "bg-white/15" : "bg-surface-2 text-primary group-hover:bg-primary-soft"}`}>
+            <AdminIcon name={i.href} />
+          </span>
+          <span className="min-w-0 flex-1 truncate">{i.label}</span>
+          {!!i.badge && <span className={`rounded-full px-2 text-xs font-bold ${active(i.href) ? "bg-white text-primary" : "bg-warning-soft text-warning"}`}>{i.badge}</span>}
         </Link>
         </div>
       ))}
     </nav>
   );
+  const initials = user.name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
   const footer = (
-    <div className="mt-auto space-y-2 border-t border-border pt-4 text-sm text-muted">
-      <p className="truncate font-semibold text-text">{user.name}</p>
-      <p className="text-xs">{user.role.replace("_", " ")}</p>
-      <div className="flex flex-wrap gap-3">
-        <AdminThemeToggle />
-        <a href="/ht" className="text-xs underline">View store</a>
-        <button type="button" className="text-xs underline" onClick={async () => { await authClient.signOut(); router.push("/admin/login"); }}>Sign out</button>
+    <div className="mt-auto space-y-3 border-t border-border pt-4">
+      <div className="flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-sm font-black text-white">{initials || "HG"}</span>
+        <span className="min-w-0">
+          <span className="block truncate text-sm font-bold text-text">{user.name}</span>
+          <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted">{user.role.replace("_", " ")}</span>
+        </span>
+      </div>
+      <div className="flex gap-2">
+        <button type="button" onClick={theme.toggle} className={footerBtn} aria-label={theme.dark ? "Switch to light mode" : "Switch to dark mode"}>
+          <AdminIcon name={theme.dark ? "sun" : "moon"} width={20} height={20} />
+          {theme.dark ? "Light" : "Dark"}
+        </button>
+        <a href="/ht" target="_blank" rel="noreferrer" className={footerBtn} aria-label="View the store (new tab)">
+          <AdminIcon name="eye" width={20} height={20} />
+          Store
+        </a>
+        <button
+          type="button"
+          className={`${footerBtn} hover:border-danger hover:text-danger`}
+          onClick={async () => {
+            await authClient.signOut();
+            router.push("/admin/login");
+          }}
+        >
+          <AdminIcon name="logout" width={20} height={20} />
+          Sign out
+        </button>
       </div>
     </div>
   );
