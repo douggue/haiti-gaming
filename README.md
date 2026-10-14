@@ -50,8 +50,8 @@ The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delive
 
 ## Deploying to Vercel
 
-1. **Database:** create a PostgreSQL database on Neon or Supabase. Set `DATABASE_URL` to the *pooled* connection string and `DIRECT_URL` to the direct one.
-2. **Storage:** create a Cloudflare R2 (or S3) bucket for NatCash payment screenshots and set the `S3_*` variables. Without it, customers can still pay with a reference number, but screenshots are skipped.
+1. **Database (Neon):** create a Neon project. Set `DATABASE_URL` to the **pooled** connection string (host contains `-pooler`; add `&pgbouncer=true` to the end) and `DIRECT_URL` to the **direct** one. Both are on Neon's "Connect" panel. You can also add Neon from Vercel → Storage, then copy its pooled/unpooled URLs into these two names.
+2. **Storage (Vercel Blob):** in Vercel → Storage, create a Blob store with **private** access and connect it to the project. That sets `BLOB_READ_WRITE_TOKEN`, which is used for NatCash payment screenshots. Without it, customers can still pay with a reference number, but screenshots are skipped.
 3. **Environment variables:** in Vercel → Settings → Environment Variables, add everything from `.env.example`. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to your real domain (e.g. `https://haitigaming.com`). Generate new `BETTER_AUTH_SECRET`, `ENCRYPTION_KEY` and `CRON_SECRET`. **Keep `ENCRYPTION_KEY` safe and never change it**: stored gift-card codes cannot be read without it.
 4. **Deploy:** import the repository in Vercel. The `vercel-build` script runs `prisma migrate deploy` automatically before each build.
 5. **First admin:** from your computer, with `DATABASE_URL`/`DIRECT_URL` pointing at production, run `npm run setup:admin -- --email you@example.com`, then sign in at `/admin/login` and set up 2FA. Optionally run `npm run db:seed` for demo products (delete the demo codes before launch).

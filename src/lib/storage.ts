@@ -1,12 +1,12 @@
 import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { get, put } from "@vercel/blob";
 import { randomToken } from "./crypto";
 
 /**
  * Private file storage for payment evidence.
- * - Production (Vercel): an S3-compatible bucket such as Cloudflare R2 (set S3_* env vars). Vercel's disk is not persistent.
+ * - Production: a private Vercel Blob store (connecting the store to the project sets BLOB_READ_WRITE_TOKEN). Vercel's disk is not persistent.
  * - Development: local `uploads/` folder when no bucket is configured.
  */
 const ROOT = process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads");
@@ -15,20 +15,13 @@ export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 
 export class UploadError extends Error {}
 
-let client: S3Client | null = null;
-function s3(): S3Client | null {
-  if (!process.env.S3_BUCKET) return null;
-  client ??= new S3Client({
-    region: process.env.S3_REGION ?? "auto",
-    endpoint: process.env.S3_ENDPOINT || undefined,
-    credentials: { accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "", secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "" },
-  });
-  return client;
+function blobEnabled() {
+  return !!process.env.BLOB_READ_WRITE_TOKEN || !!process.env.BLOB_STORE_ID;
 }
 
 /** True when uploads can be stored durably in this environment. */
 export function uploadsEnabled() {
-  return !!s3() || process.env.NODE_ENV !== "production" || !!process.env.UPLOAD_DIR;
+  return blobEnabled() || process.env.NODE_ENV !== "production" || !!process.env.UPLOAD_DIR;
 }
 
 export async function savePrivateImage(file: File, folder: string): Promise<string> {
@@ -43,10 +36,9 @@ export async function savePrivateImage(file: File, folder: string): Promise<stri
   if (!isJpeg && !isPng && !isWebp) throw new UploadError("type");
   const name = `${folder}/${Date.now()}-${randomToken(12)}.${ext}`;
 
-  const bucket = s3();
-  if (bucket) {
-    await bucket.send(new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: name, Body: buf, ContentType: file.type }));
-    return name;
+  if (blobEnabled()) {
+    const blob = await put(name, buf, { access: "private", contentType: file.type, addRandomSuffix: false });
+    return blob.pathname;
   }
   if (!uploadsEnabled()) throw new UploadError("storage");
   await mkdir(path.join(ROOT, folder), { recursive: true });
@@ -55,10 +47,10 @@ export async function savePrivateImage(file: File, folder: string): Promise<stri
 }
 
 export async function readPrivateFile(relPath: string): Promise<Buffer> {
-  const bucket = s3();
-  if (bucket) {
-    const res = await bucket.send(new GetObjectCommand({ Bucket: process.env.S3_BUCKET, Key: relPath }));
-    return Buffer.from(await res.Body!.transformToByteArray());
+  if (blobEnabled()) {
+    const res = await get(relPath, { access: "private", useCache: false });
+    if (!res || res.statusCode !== 200) throw new Error("File not found");
+    return Buffer.from(await new Response(res.stream).arrayBuffer());
   }
   const full = path.resolve(ROOT, relPath);
   if (!full.startsWith(path.resolve(ROOT) + path.sep)) throw new Error("Invalid path");
