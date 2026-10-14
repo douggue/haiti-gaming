@@ -16,6 +16,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [loading, setLoading] = useState(false);
   // Until JavaScript is ready the button stays disabled, so credentials are never sent by a native form submit.
   const [hydrated, setHydrated] = useState(false);
+  const [totp, setTotp] = useState(false);
+  const [useBackup, setUseBackup] = useState(false);
+  const t2 = useTranslations("auth2");
   useEffect(() => setHydrated(true), []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -46,9 +49,41 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       else setError(t("invalid"));
       return;
     }
+    if ((res.data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) {
+      setTotp(true);
+      return;
+    }
+    goNext();
+  }
+
+  function goNext() {
     const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/account";
     router.push(safeNext.replace(/^\/(ht|fr|en|es)(?=\/|$)/, "") || "/account");
     router.refresh();
+  }
+
+  async function onTotp(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const code = String(new FormData(e.currentTarget).get("code")).replace(/\s/g, "");
+    const r = useBackup ? await authClient.twoFactor.verifyBackupCode({ code }) : await authClient.twoFactor.verifyTotp({ code });
+    setLoading(false);
+    if (r.error) return setError(r.error.status === 429 ? t("tooMany") : t("invalid"));
+    goNext();
+  }
+
+  if (totp) {
+    return (
+      <form method="post" onSubmit={onTotp} className="card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
+        <h1 className="text-2xl font-bold tracking-tight">{t2("totpTitle")}</h1>
+        <p className="text-sm text-muted">{useBackup ? t2("backupIntro") : t2("totpIntro")}</p>
+        <input key={useBackup ? "b" : "t"} name="code" required autoFocus autoComplete="one-time-code" inputMode={useBackup ? "text" : "numeric"} aria-label={t2("totpTitle")} className="input text-center text-xl tracking-[0.3em]" />
+        {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
+        <button className="btn-primary w-full" disabled={loading}>{loading ? tc("loading") : t2("verify")}</button>
+        <button type="button" className="w-full text-center text-sm font-semibold text-primary" onClick={() => { setUseBackup(!useBackup); setError(""); }}>{useBackup ? t2("useApp") : t2("useBackup")}</button>
+      </form>
+    );
   }
 
   return (

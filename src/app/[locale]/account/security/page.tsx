@@ -3,11 +3,12 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { auth } from "@/lib/auth";
 import { getSession, requireUser } from "@/lib/session";
 import { SecurityForms } from "@/components/SecurityForms";
+import { TwoFactorSettings } from "@/components/TwoFactorSettings";
 
 export default async function SecurityPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireUser(locale);
+  const user = await requireUser(locale);
   const [ts, fmt, current, sessions] = await Promise.all([
     getTranslations("security"),
     getFormatter(),
@@ -18,6 +19,7 @@ export default async function SecurityPage({ params }: { params: Promise<{ local
     <div className="max-w-xl space-y-6">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{ts("title")}</h1>
       <SecurityForms />
+      <TwoFactorSettings enabled={!!user.twoFactorEnabled} />
       <section className="card p-5">
         <h2 className="mb-3 font-semibold">{ts("sessions")}</h2>
         <ul className="divide-y divide-border text-sm">

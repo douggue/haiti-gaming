@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma, type FulfillmentType, type Role } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { assertStaff } from "@/lib/session";
+import { assertStaff, assertStepUp } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { encrypt, hmac, randomToken } from "@/lib/crypto";
 import { completePayment, rejectPayment } from "@/lib/payments/complete";
@@ -274,6 +274,21 @@ export async function adjustCustomerWallet(form: FormData): Promise<R> {
     if (!amount) return { ok: false, error: "Enter an amount" };
     if (reason.length < 5) return { ok: false, error: "A reason (5+ characters) is required" };
     if (key.length < 10) return { ok: false, error: "Reload the page and try again" };
+    await assertStepUp();
+    const settings = await (await import("@/lib/settings")).getSettings();
+    const htgEquivalent = currency === "HTG" ? amount : Math.round(amount * settings.htgPerUsd);
+    if (htgEquivalent >= settings.approvalThresholdHtg) {
+      await prisma.pendingApproval.create({
+        data: {
+          kind: "wallet.adjust",
+          payload: { userId, currency, amount: amount * direction, reason, idempotencyKey: key },
+          summary: `${direction > 0 ? "Credit" : "Debit"} ${(amount / 100).toFixed(2)} ${currency}: ${reason}`,
+          requestedBy: staff.id,
+        },
+      });
+      await audit(staff.id, "wallet.adjust.requested", "User", userId, { currency, amount: amount * direction, reason });
+      return { ok: true, message: "Above the approval limit: sent to a second staff member (Admin → Approvals)." };
+    }
     await prisma.$transaction(async (tx) => {
       await adjustWallet(tx, { userId, currency, amount: amount * direction, reason, actorId: staff.id, idempotencyKey: key });
       await audit(staff.id, "wallet.adjust", "User", userId, { currency, amount: amount * direction, reason }, tx);
@@ -301,15 +316,23 @@ export async function setCustomerStatus(userId: string, status: "ACTIVE" | "REST
   }
 }
 
-export async function setStaffRole(email: string, role: Role): Promise<R> {
+export async function setStaffRole(email: string, roleInput: string): Promise<R> {
   try {
     const staff = await assertStaff("staff.manage");
+    await assertStepUp();
+    let role = roleInput as Role;
+    let customRoleId: string | null = null;
+    if (roleInput.startsWith("CUSTOM:")) {
+      role = "CUSTOM";
+      customRoleId = roleInput.slice(7);
+      await prisma.customRole.findUniqueOrThrow({ where: { id: customRoleId } });
+    }
     const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
     if (!user) return { ok: false, error: "No account with that email. Ask them to register first." };
     if (user.id === staff.id) return { ok: false, error: "You cannot change your own role" };
-    await prisma.user.update({ where: { id: user.id }, data: { role } });
+    await prisma.user.update({ where: { id: user.id }, data: { role, customRoleId } });
     await prisma.session.deleteMany({ where: { userId: user.id } }); // re-login picks up the new role and 2FA requirement
-    await audit(staff.id, "staff.role", "User", user.id, { role });
+    await audit(staff.id, "staff.role", "User", user.id, { role, customRoleId });
     revalidatePath("/admin/staff");
     return { ok: true };
   } catch (e) {
@@ -322,6 +345,7 @@ export async function setStaffRole(email: string, role: Role): Promise<R> {
 export async function saveSettings(form: FormData): Promise<R> {
   try {
     const staff = await assertStaff("settings.manage");
+    await assertStepUp();
     const num = (k: string) => Number(String(form.get(k) ?? "").replace(",", "."));
     const money = (k: string) => parseAmount(String(form.get(k) ?? "")) ?? 0;
     const str = (k: string) => String(form.get(k) ?? "").trim().slice(0, 300);
@@ -340,6 +364,11 @@ export async function saveSettings(form: FormData): Promise<R> {
       newAccountDays: Math.max(0, Math.min(90, Math.round(num("newAccountDays")))),
       newAccountDailyLimitHtg: money("newAccountDailyLimitHtg"),
       reviewOrderThresholdHtg: money("reviewOrderThresholdHtg"),
+      approvalThresholdHtg: money("approvalThresholdHtg"),
+      autoRefundHours: Math.max(0, Math.min(720, Math.round(num("autoRefundHours")))),
+      referralEnabled: form.get("referralEnabled") === "on",
+      referralRewardHtg: money("referralRewardHtg"),
+      referralMinOrderHtg: money("referralMinOrderHtg"),
       natcashRecipientName: str("natcashRecipientName"),
       natcashRecipientPhone: str("natcashRecipientPhone"),
       moncashEnabled: form.get("moncashEnabled") === "on",
@@ -435,6 +464,7 @@ export async function resetStaffTwoFactor(userId: string): Promise<R> {
   try {
     const staff = await assertStaff("staff.manage");
     if (userId === staff.id) return { ok: false, error: "You cannot reset your own two-factor authentication" };
+    await assertStepUp();
     await prisma.$transaction([
       prisma.twoFactor.deleteMany({ where: { userId } }),
       prisma.user.update({ where: { id: userId }, data: { twoFactorEnabled: false } }),
@@ -443,6 +473,150 @@ export async function resetStaffTwoFactor(userId: string): Promise<R> {
     await audit(staff.id, "staff.2fa_reset", "User", userId);
     revalidatePath("/admin/staff");
     return { ok: true, message: "Two-factor reset. They will set it up again at next sign-in." };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ───────────── Step-up (re-confirm 2FA) ─────────────
+
+/** Confirms the staff member's authenticator code; high-risk actions are then allowed for 10 minutes. */
+export async function verifyStepUp(code: string): Promise<R> {
+  try {
+    const { headers } = await import("next/headers");
+    const { auth } = await import("@/lib/auth");
+    const { getSession } = await import("@/lib/session");
+    const s = await getSession();
+    if (!s) return { ok: false, error: "Not signed in" };
+    const clean = code.replace(/\s/g, "");
+    if (!/^\d{6}$/.test(clean)) return { ok: false, error: "Enter the 6-digit code" };
+    await auth.api.verifyTOTP({ body: { code: clean }, headers: await headers() });
+    await prisma.stepUp.upsert({
+      where: { sessionToken: s.session.token },
+      create: { sessionToken: s.session.token, userId: s.user.id, until: new Date(Date.now() + 10 * 60_000) },
+      update: { until: new Date(Date.now() + 10 * 60_000) },
+    });
+    await audit(s.user.id, "staff.step_up", "User", s.user.id);
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Invalid code" };
+  }
+}
+
+// ───────────── Two-person approvals ─────────────
+
+export async function decideApproval(id: string, decision: "APPROVED" | "REJECTED"): Promise<R> {
+  try {
+    const staff = await assertStaff("approvals.decide");
+    await assertStepUp();
+    const a = await prisma.pendingApproval.findUniqueOrThrow({ where: { id } });
+    if (a.status !== "PENDING") return { ok: false, error: "Already decided" };
+    if (a.requestedBy === staff.id) return { ok: false, error: "A different staff member must approve this" };
+    if (decision === "APPROVED" && a.kind === "wallet.adjust") {
+      const p = a.payload as { userId: string; currency: "HTG" | "USD"; amount: number; reason: string; idempotencyKey: string };
+      await prisma.$transaction(async (tx) => {
+        await adjustWallet(tx, { ...p, actorId: staff.id, reason: `${p.reason} (approved by ${staff.name})` });
+        await audit(staff.id, "wallet.adjust", "User", p.userId, { ...p, requestedBy: a.requestedBy, approvalId: a.id }, tx);
+      });
+      await notify(p.userId, "wallet_adjusted", {}, "/account/wallet");
+    }
+    await prisma.pendingApproval.update({ where: { id }, data: { status: decision, decidedBy: staff.id, decidedAt: new Date() } });
+    await audit(staff.id, `approval.${decision.toLowerCase()}`, "PendingApproval", id, { kind: a.kind });
+    revalidatePath("/admin/approvals");
+    return { ok: true, message: decision === "APPROVED" ? "Approved and applied" : "Rejected" };
+  } catch (e) {
+    if (e instanceof InsufficientFundsError) return { ok: false, error: "Customer balance is too low for this debit" };
+    return fail(e);
+  }
+}
+
+// ───────────── Custom roles ─────────────
+
+export async function saveCustomRole(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("staff.manage");
+    await assertStepUp();
+    const { PERMISSIONS } = await import("@/lib/permissions");
+    const id = String(form.get("id") ?? "") || null;
+    const name = String(form.get("name") ?? "").trim().slice(0, 40);
+    if (name.length < 2) return { ok: false, error: "Give the role a name" };
+    const permissions = form.getAll("permissions").map(String).filter((p) => (PERMISSIONS as readonly string[]).includes(p) && p !== "staff.manage");
+    const role = id
+      ? await prisma.customRole.update({ where: { id }, data: { name, permissions } })
+      : await prisma.customRole.create({ data: { name, permissions } });
+    await audit(staff.id, id ? "role.update" : "role.create", "CustomRole", role.id, { name, permissions });
+    revalidatePath("/admin/staff");
+    return { ok: true, message: "Role saved" };
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return { ok: false, error: "A role with that name exists" };
+    return fail(e);
+  }
+}
+
+export async function deleteCustomRole(id: string): Promise<R> {
+  try {
+    const staff = await assertStaff("staff.manage");
+    await assertStepUp();
+    const users = await prisma.user.count({ where: { customRoleId: id } });
+    if (users > 0) return { ok: false, error: "Move the staff using this role first" };
+    await prisma.customRole.delete({ where: { id } });
+    await audit(staff.id, "role.delete", "CustomRole", id);
+    revalidatePath("/admin/staff");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ───────────── Support ─────────────
+
+export async function staffReply(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("support.manage");
+    const ticketId = String(form.get("ticketId"));
+    const body = String(form.get("message") ?? "").trim().slice(0, 5000);
+    const status = form.get("close") === "on" ? "CLOSED" : "WAITING_CUSTOMER";
+    if (!body) return { ok: false, error: "Write a reply" };
+    await prisma.$transaction([
+      prisma.supportMessage.create({ data: { ticketId, authorId: staff.id, body, fromStaff: true } }),
+      prisma.supportTicket.update({ where: { id: ticketId }, data: { status, assignedTo: staff.id } }),
+    ]);
+    await audit(staff.id, "support.reply", "SupportTicket", ticketId, { status });
+    revalidatePath(`/admin/support/${ticketId}`);
+    return { ok: true, message: "Reply sent" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function setTicketStatus(ticketId: string, status: "OPEN" | "CLOSED"): Promise<R> {
+  try {
+    const staff = await assertStaff("support.manage");
+    await prisma.supportTicket.update({ where: { id: ticketId }, data: { status } });
+    await audit(staff.id, "support.status", "SupportTicket", ticketId, { status });
+    revalidatePath(`/admin/support/${ticketId}`);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ───────────── Referrals ─────────────
+
+export async function decideReferral(id: string, decision: "PAY" | "REJECT"): Promise<R> {
+  try {
+    const staff = await assertStaff("referrals.manage");
+    const r = await prisma.referral.findUniqueOrThrow({ where: { id } });
+    if (r.status === "REWARDED") return { ok: false, error: "Already rewarded" };
+    if (decision === "PAY") {
+      const { payReferral } = await import("@/lib/referrals");
+      await payReferral(id, staff.id);
+    } else {
+      await prisma.referral.update({ where: { id }, data: { status: "REJECTED", note: `Rejected by ${staff.name}` } });
+    }
+    await audit(staff.id, `referral.${decision.toLowerCase()}`, "Referral", id);
+    revalidatePath("/admin/referrals");
+    return { ok: true };
   } catch (e) {
     return fail(e);
   }

@@ -51,7 +51,8 @@
     "footerTagline": "Recargas de juegos, tarjetas de regalo y suscripciones, pagadas con MonCash o NatCash.",
     "rights": "Todos los derechos reservados.",
     "followUs": "Síguenos",
-    "error": "Algo salió mal. Inténtalo de nuevo."
+    "error": "Algo salió mal. Inténtalo de nuevo.",
+    "news": "Noticias"
   },
   "home": {
     "eyebrow": "Hecho en Haití, para gamers",
@@ -80,7 +81,8 @@
     "faqTitle": "Preguntas frecuentes",
     "walletTitle": "Recarga tu billetera una vez y compra con un toque",
     "walletBody": "Agrega gourdes a tu billetera Haiti Gaming con MonCash o NatCash y paga cualquier pedido al instante.",
-    "walletCta": "Abrir mi billetera"
+    "walletCta": "Abrir mi billetera",
+    "newsTitle": "Últimas noticias"
   },
   "faq": {
     "q1": "¿Cuánto tarda la entrega?",
@@ -200,7 +202,8 @@
     "buyAgain": "Comprar de nuevo",
     "recipientNote": "Mensaje",
     "duplicateRef": "Esta referencia ya fue usada.",
-    "waitingDelivery": "Estamos preparando tu pedido. Te avisaremos cuando se entregue."
+    "waitingDelivery": "Estamos preparando tu pedido. Te avisaremos cuando se entregue.",
+    "shareStatus": "Copiar enlace de seguimiento"
   },
   "account": {
     "dashboard": "Panel",
@@ -221,7 +224,10 @@
     "security": "Seguridad",
     "emailUnverified": "Tu correo aún no está verificado.",
     "resendVerification": "Reenviar correo de confirmación",
-    "verificationSent": "Te enviamos un correo de confirmación."
+    "verificationSent": "Te enviamos un correo de confirmación.",
+    "support": "Soporte",
+    "referrals": "Invita amigos",
+    "privacy": "Privacidad"
   },
   "wallet": {
     "title": "Billetera",
@@ -327,7 +333,8 @@
     "order_fulfilled": "El pedido #{number} fue entregado.",
     "order_refunded": "El pedido #{number} fue reembolsado a tu billetera.",
     "exchange_done": "Tu cambio de moneda se completó.",
-    "wallet_adjusted": "Nuestro equipo ajustó tu billetera."
+    "wallet_adjusted": "Nuestro equipo ajustó tu billetera.",
+    "referral_rewarded": "Recibiste {amount} porque un amigo invitado hizo una compra."
   },
   "pages": {
     "aboutTitle": "Sobre Haiti Gaming",
@@ -380,5 +387,101 @@
       "Si una recarga se envió a un ID equivocado por un error de escritura, no podemos recuperarla.",
       "Escríbenos por WhatsApp con tu número de pedido ante cualquier problema."
     ]
+  },
+  "news": {
+    "title": "Noticias",
+    "subtitle": "Promociones, nuevos productos y anuncios.",
+    "empty": "Aún no hay noticias.",
+    "back": "Todas las noticias"
+  },
+  "support": {
+    "title": "Soporte",
+    "intro": "Haz una pregunta o reporta un problema. Nuestro equipo responde aquí.",
+    "new": "Nueva solicitud",
+    "subject": "Asunto",
+    "order": "Pedido (opcional)",
+    "noOrder": "Ningún pedido",
+    "message": "Mensaje",
+    "attach": "Captura (opcional)",
+    "send": "Enviar",
+    "empty": "Aún no tienes solicitudes.",
+    "reply": "Responder",
+    "closedNote": "Esta solicitud está cerrada. Envía un mensaje para reabrirla.",
+    "you": "Tú",
+    "team": "Equipo Haiti Gaming",
+    "back": "Todas las solicitudes",
+    "ticket": "Solicitud #{number}",
+    "statusOPEN": "Abierta",
+    "statusWAITING_CUSTOMER": "Esperando tu respuesta",
+    "statusCLOSED": "Cerrada",
+    "orWhatsapp": "¿Prisa? Escríbenos por WhatsApp."
+  },
+  "referrals": {
+    "title": "Invita amigos",
+    "intro": "Comparte tu enlace. Cuando un amigo se registre y su primer pedido ({min} o más) se entregue, recibes {reward} en tu billetera.",
+    "yourLink": "Tu enlace",
+    "share": "Compartir por WhatsApp",
+    "shareText": "Compra diamantes y tarjetas en Haiti Gaming, paga con MonCash o NatCash: {link}",
+    "invited": "Amigos invitados",
+    "rewarded": "Recompensas recibidas",
+    "earned": "Total ganado",
+    "history": "Historial",
+    "none": "Aún no has invitado a nadie.",
+    "off": "El programa de referidos no está activo ahora.",
+    "statusPENDING": "Esperando primer pedido",
+    "statusREWARDED": "Recompensado",
+    "statusREJECTED": "No válido"
+  },
+  "prefs": {
+    "title": "Preferencias de notificación",
+    "email": "Correos sobre pedidos y pagos",
+    "whatsapp": "Mensajes de WhatsApp sobre pedidos y pagos",
+    "marketing": "Promociones y novedades",
+    "note": "Las notificaciones en el sitio siempre están activas. Los mensajes de seguridad siempre se envían.",
+    "saved": "Guardado."
+  },
+  "privacy": {
+    "title": "Datos y privacidad",
+    "exportTitle": "Descargar tus datos",
+    "exportBody": "Un archivo con tu perfil, pedidos, historial de billetera y solicitudes de soporte. Los códigos de tarjetas no se incluyen por seguridad.",
+    "exportButton": "Descargar (JSON)",
+    "deleteTitle": "Eliminar mi cuenta",
+    "deleteBody": "Se borran tu nombre, correo y teléfono. Los registros de pedidos y pagos se conservan sin tu nombre, como exige la ley. Ya no podrás iniciar sesión.",
+    "deleteBalance": "Aún tienes dinero en tu billetera. Gástalo o contacta a soporte antes de eliminar la cuenta.",
+    "deletePending": "Tienes pedidos o pagos en curso. Espera a que terminen.",
+    "deleteConfirm": "Ingresa tu contraseña para confirmar",
+    "deleteButton": "Eliminar definitivamente",
+    "wrongPassword": "Contraseña incorrecta."
+  },
+  "twofa": {
+    "title": "Verificación en dos pasos",
+    "intro": "Protege tu cuenta con un código de una app (Google Authenticator, Authy…) cada vez que inicies sesión.",
+    "on": "Activada",
+    "off": "Desactivada",
+    "enable": "Activar",
+    "disable": "Desactivar",
+    "password": "Confirma tu contraseña",
+    "scan": "Escanea este código QR con la app y luego ingresa el código de 6 dígitos.",
+    "backup": "Códigos de respaldo (guárdalos, cada uno sirve una vez)",
+    "code": "Código de 6 dígitos",
+    "activate": "Activar",
+    "invalid": "Código no válido."
+  },
+  "auth2": {
+    "totpTitle": "Verificación en dos pasos",
+    "totpIntro": "Ingresa el código de 6 dígitos de tu app.",
+    "backupIntro": "Ingresa uno de tus códigos de respaldo.",
+    "verify": "Verificar",
+    "useBackup": "¿Sin teléfono? Usa un código de respaldo",
+    "useApp": "Usar la app"
+  },
+  "offline": {
+    "title": "Estás sin conexión",
+    "body": "Revisa tus datos móviles o Wi-Fi e inténtalo de nuevo. Tu carrito está guardado.",
+    "retry": "Reintentar"
+  },
+  "dataSaver": {
+    "label": "Ahorro de datos",
+    "hint": "Menos imágenes, sin animaciones."
   }
 }

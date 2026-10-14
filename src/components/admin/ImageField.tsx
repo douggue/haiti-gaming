@@ -22,7 +22,7 @@ export function ImageField({ name, label, value, folder, hint, aspect = "aspect-
       <span className="label">{label}</span>
       <input type="hidden" name={name} value={url} />
       <div className="flex items-start gap-3">
-        <div className={`grid w-32 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-border bg-surface-2 ${aspect}`}>
+        <div className={`grid w-24 shrink-0 place-items-center sm:w-32 overflow-hidden rounded-xl border border-dashed border-border bg-surface-2 ${aspect}`}>
           {url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt="" className="h-full w-full object-cover" />
@@ -30,12 +30,12 @@ export function ImageField({ name, label, value, folder, hint, aspect = "aspect-
             <span className="text-xs text-muted">No image</span>
           )}
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 flex-1 space-y-2">
           <input
             ref={input}
             type="file"
             accept="image/jpeg,image/png,image/webp"
-            className="block text-sm"
+            className="block w-full max-w-full text-sm file:mr-2 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-2"
             disabled={busy}
             onChange={async (e) => {
               const f = e.target.files?.[0];

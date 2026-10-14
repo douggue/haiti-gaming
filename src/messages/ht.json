@@ -51,7 +51,8 @@
     "footerTagline": "Rechaj jwèt, kat kado ak abònman, peye ak MonCash oswa NatCash.",
     "rights": "Tout dwa rezève.",
     "followUs": "Swiv nou",
-    "error": "Gen yon pwoblèm. Tanpri eseye ankò."
+    "error": "Gen yon pwoblèm. Tanpri eseye ankò.",
+    "news": "Nouvèl"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -80,7 +81,8 @@
     "faqTitle": "Kesyon yo poze souvan",
     "walletTitle": "Mete lajan nan bous ou yon fwa, achte nan yon sèl klik",
     "walletBody": "Mete goud nan bous Haiti Gaming ou ak MonCash oswa NatCash, epi peye nenpòt kòmand touswit.",
-    "walletCta": "Ouvri bous mwen"
+    "walletCta": "Ouvri bous mwen",
+    "newsTitle": "Dènye nouvèl"
   },
   "faq": {
     "q1": "Konbyen tan livrezon an pran?",
@@ -200,7 +202,8 @@
     "buyAgain": "Achte ankò",
     "recipientNote": "Mesaj",
     "duplicateRef": "Referans sa a te deja itilize.",
-    "waitingDelivery": "N ap prepare kòmand ou. N ap avèti w lè l livre."
+    "waitingDelivery": "N ap prepare kòmand ou. N ap avèti w lè l livre.",
+    "shareStatus": "Kopye lyen swivi a"
   },
   "account": {
     "dashboard": "Tablo bò",
@@ -221,7 +224,10 @@
     "security": "Sekirite",
     "emailUnverified": "Imèl ou poko verifye.",
     "resendVerification": "Voye imèl konfimasyon an ankò",
-    "verificationSent": "Nou voye yon imèl konfimasyon ba ou."
+    "verificationSent": "Nou voye yon imèl konfimasyon ba ou.",
+    "support": "Sipò",
+    "referrals": "Envite zanmi",
+    "privacy": "Konfidansyalite"
   },
   "wallet": {
     "title": "Bous",
@@ -327,7 +333,8 @@
     "order_fulfilled": "Kòmand #{number} livre.",
     "order_refunded": "Kòmand #{number} ranbouse nan bous ou.",
     "exchange_done": "Chanj lajan ou a fèt.",
-    "wallet_adjusted": "Ekip nou an ajiste bous ou."
+    "wallet_adjusted": "Ekip nou an ajiste bous ou.",
+    "referral_rewarded": "Ou resevwa {amount} paske yon zanmi ou te achte."
   },
   "pages": {
     "aboutTitle": "Konsènan Haiti Gaming",
@@ -380,5 +387,101 @@
       "Si yon rechaj ale sou move ID jwè akòz yon erè tape, nou pa ka rekipere l.",
       "Kontakte nou sou WhatsApp ak nimewo kòmand ou pou nenpòt pwoblèm."
     ]
+  },
+  "news": {
+    "title": "Nouvèl",
+    "subtitle": "Pwomosyon, nouvo pwodwi ak anons.",
+    "empty": "Poko gen nouvèl.",
+    "back": "Tout nouvèl yo"
+  },
+  "support": {
+    "title": "Sipò",
+    "intro": "Poze yon kesyon oswa rapòte yon pwoblèm. Ekip nou an ap reponn ou isit la.",
+    "new": "Nouvo demann",
+    "subject": "Sijè",
+    "order": "Kòmand (si gen youn)",
+    "noOrder": "Okenn kòmand",
+    "message": "Mesaj",
+    "attach": "Foto ekran (si w vle)",
+    "send": "Voye",
+    "empty": "Ou poko gen demann sipò.",
+    "reply": "Reponn",
+    "closedNote": "Demann sa a fèmen. Voye yon mesaj pou relouvri l.",
+    "you": "Ou",
+    "team": "Ekip Haiti Gaming",
+    "back": "Tout demann yo",
+    "ticket": "Demann #{number}",
+    "statusOPEN": "Ouvè",
+    "statusWAITING_CUSTOMER": "Repons ou bezwen",
+    "statusCLOSED": "Fèmen",
+    "orWhatsapp": "Prese? Ekri nou sou WhatsApp."
+  },
+  "referrals": {
+    "title": "Envite zanmi",
+    "intro": "Pataje lyen ou. Lè yon zanmi kreye kont li epi premye kòmand li ({min} oswa plis) livre, ou resevwa {reward} nan bous ou.",
+    "yourLink": "Lyen ou",
+    "share": "Pataje sou WhatsApp",
+    "shareText": "Achte dyaman ak kat kado sou Haiti Gaming, peye ak MonCash oswa NatCash: {link}",
+    "invited": "Zanmi envite",
+    "rewarded": "Rekonpans resevwa",
+    "earned": "Total ou genyen",
+    "history": "Istorik",
+    "none": "Ou poko envite pèsonn.",
+    "off": "Pwogram envitasyon an pa aktif kounye a.",
+    "statusPENDING": "An atant premye kòmand",
+    "statusREWARDED": "Rekonpanse",
+    "statusREJECTED": "Pa valab"
+  },
+  "prefs": {
+    "title": "Kijan nou kontakte w",
+    "email": "Imèl pou kòmand ak peman",
+    "whatsapp": "Mesaj WhatsApp pou kòmand ak peman",
+    "marketing": "Pwomosyon ak nouvo pwodwi",
+    "note": "Notifikasyon sou sit la toujou aktif. Mesaj sekirite (chanje modpas) toujou voye.",
+    "saved": "Anrejistre."
+  },
+  "privacy": {
+    "title": "Done ak konfidansyalite",
+    "exportTitle": "Telechaje done ou",
+    "exportBody": "Yon fichye ak pwofil ou, kòmand ou, istorik bous ou ak demann sipò ou. Kòd kat kado yo pa ladan l pou sekirite.",
+    "exportButton": "Telechaje (JSON)",
+    "deleteTitle": "Efase kont mwen",
+    "deleteBody": "Non ou, imèl ou ak telefòn ou ap efase. Nou kenbe dosye kòmand ak peman yo san non ou, paske lalwa mande sa. Ou p ap ka konekte ankò.",
+    "deleteBalance": "Ou gen lajan nan bous ou toujou. Depanse l oswa kontakte sipò anvan ou efase kont lan.",
+    "deletePending": "Ou gen kòmand oswa peman ki an kou. Tann yo fini anvan.",
+    "deleteConfirm": "Ekri modpas ou pou konfime",
+    "deleteButton": "Efase kont mwen nèt",
+    "wrongPassword": "Modpas la pa bon."
+  },
+  "twofa": {
+    "title": "Verifikasyon an 2 etap",
+    "intro": "Pwoteje kont ou ak yon kòd ki soti nan yon aplikasyon (Google Authenticator, Authy…) chak fwa w konekte.",
+    "on": "Aktive",
+    "off": "Pa aktive",
+    "enable": "Aktive l",
+    "disable": "Dezaktive l",
+    "password": "Konfime modpas ou",
+    "scan": "Eskane kòd QR sa a ak aplikasyon an, epi mete kòd 6 chif la.",
+    "backup": "Kòd sekou (sere yo kounye a, chak kòd mache yon fwa)",
+    "code": "Kòd 6 chif",
+    "activate": "Aktive",
+    "invalid": "Kòd la pa bon."
+  },
+  "auth2": {
+    "totpTitle": "Verifikasyon an 2 etap",
+    "totpIntro": "Mete kòd 6 chif ki nan aplikasyon ou an.",
+    "backupIntro": "Mete youn nan kòd sekou ou yo.",
+    "verify": "Verifye",
+    "useBackup": "Ou pa gen telefòn ou? Sèvi ak yon kòd sekou",
+    "useApp": "Sèvi ak aplikasyon an"
+  },
+  "offline": {
+    "title": "Ou pa konekte ak entènèt",
+    "body": "Verifye done mobil ou oswa Wi-Fi ou, epi eseye ankò. Panye ou toujou sere.",
+    "retry": "Eseye ankò"
+  },
+  "dataSaver": {
+    "label": "Ekonomize done",
+    "hint": "Mwens imaj, pa gen animasyon."
   }
 }

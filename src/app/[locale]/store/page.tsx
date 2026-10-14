@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getCategories, searchProducts } from "@/lib/catalog";
 import { t } from "@/lib/text";
-import { alternates } from "@/lib/seo";
+import { pageSeo } from "@/lib/seo";
 import { ProductCard } from "@/components/ProductCard";
 import { SearchIcon } from "@/components/Icons";
 
@@ -12,7 +12,7 @@ type SP = Promise<{ q?: string; category?: string; sort?: string }>;
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const ts = await getTranslations({ locale, namespace: "store" });
-  return { title: ts("title"), description: ts("subtitle"), alternates: alternates(locale, "/store") };
+  return pageSeo(locale, "/store", ts("title"), ts("subtitle"));
 }
 
 export default async function StorePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: SP }) {

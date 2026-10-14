@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ContentPage } from "@/components/ContentPage";
-import { alternates } from "@/lib/seo";
+import { pageSeo } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "pages" });
-  return { title: t("privacyTitle"), alternates: alternates(locale, "/privacy") };
+  return pageSeo(locale, "/privacy", t("privacyTitle"));
 }
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {

@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import type { Settings } from "@/lib/settings";
 import { Logo } from "./Logo";
 import { PinIcon } from "./Icons";
+import { DataSaverToggle } from "./DataSaverToggle";
 
 export async function Footer({ settings }: { settings: Settings }) {
   const t = await getTranslations("common");
@@ -32,6 +33,7 @@ export async function Footer({ settings }: { settings: Settings }) {
             <li><Link href="/store" className="hover:text-text">{t("store")}</Link></li>
             <li><Link href="/categories" className="hover:text-text">{t("categories")}</Link></li>
             <li><Link href="/guides" className="hover:text-text">{t("guides")}</Link></li>
+            <li><Link href="/news" className="hover:text-text">{t("news")}</Link></li>
             <li><Link href="/account/wallet" className="hover:text-text">{t("wallet")}</Link></li>
           </ul>
         </div>
@@ -68,6 +70,7 @@ export async function Footer({ settings }: { settings: Settings }) {
           )}
         </div>
       </div>
+      <div className="container-page pb-6"><DataSaverToggle /></div>
       <div className="border-t border-border py-5 text-center text-xs text-muted">
         © {new Date().getFullYear()} {settings.businessName}. {t("rights")}
       </div>

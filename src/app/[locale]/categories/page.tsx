@@ -3,13 +3,13 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getCategories } from "@/lib/catalog";
 import { t } from "@/lib/text";
-import { alternates } from "@/lib/seo";
+import { pageSeo } from "@/lib/seo";
 import { CategoryIcon } from "@/components/CategoryIcon";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const tc = await getTranslations({ locale, namespace: "common" });
-  return { title: tc("categories"), alternates: alternates(locale, "/categories") };
+  return pageSeo(locale, "/categories", tc("categories"));
 }
 
 export default async function CategoriesPage({ params }: { params: Promise<{ locale: string }> }) {

@@ -34,9 +34,32 @@ export type Settings = {
   /** Brand images (URLs). Empty = built-in logo / default artwork. */
   logoUrl: string;
   logoDarkUrl: string;
+  /** Wallet adjustments at or above this HTG-equivalent amount need a second staff approval */
+  approvalThresholdHtg: number;
+  /** Paid orders not delivered after this many hours are refunded to the wallet automatically (0 = off) */
+  autoRefundHours: number;
+  referralEnabled: boolean;
+  referralRewardHtg: number;
+  referralMinOrderHtg: number;
   heroImageUrl: string;
   ogImageUrl: string;
+  homepage: unknown;
+  homepageDraft: unknown;
+  homepageHistory: { at: string; by: string; config: unknown }[];
+  theme: ThemeConfig;
+  themeHistory: { at: string; by: string; theme: ThemeConfig }[];
 };
+
+export type ThemeConfig = {
+  primary: string;
+  primaryDark: string;
+  navy: string;
+  midnight: string;
+  radius: number;
+  animations: boolean;
+};
+
+export const DEFAULT_THEME: ThemeConfig = { primary: "#1467F5", primaryDark: "#3D82FF", navy: "#0D1B35", midnight: "#050B18", radius: 16, animations: true };
 
 // Amounts in minor units (centimes).
 export const DEFAULT_SETTINGS: Settings = {
@@ -66,8 +89,18 @@ export const DEFAULT_SETTINGS: Settings = {
   announcement: { enabled: false, text: {}, link: "" },
   logoUrl: "",
   logoDarkUrl: "",
+  approvalThresholdHtg: 1_000_000,
+  autoRefundHours: 24,
+  referralEnabled: false,
+  referralRewardHtg: 10_000,
+  referralMinOrderHtg: 50_000,
   heroImageUrl: "",
   ogImageUrl: "",
+  homepage: null,
+  homepageDraft: null,
+  homepageHistory: [],
+  theme: DEFAULT_THEME,
+  themeHistory: [],
 };
 
 export async function getSettings(): Promise<Settings> {

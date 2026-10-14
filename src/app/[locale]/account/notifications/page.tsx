@@ -4,16 +4,22 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { formatMoney } from "@/lib/money";
 import { markNotificationsRead } from "@/actions/account";
+import { PrefsForm } from "@/components/PrivacyForms";
+import { emailEnabled } from "@/lib/email";
 
 export default async function NotificationsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireUser(locale);
   const [tn, fmt] = await Promise.all([getTranslations("notifications"), getFormatter()]);
-  const items = await prisma.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50 });
+  const [items, me] = await Promise.all([
+    prisma.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.user.findUnique({ where: { id: user.id }, select: { notifyPrefs: true } }),
+  ]);
   const render = (type: string, params: Record<string, string | number>) => {
     const p = { ...params };
     if (typeof p.amount === "number") p.amount = formatMoney(p.amount, (p.currency as "HTG" | "USD") ?? "HTG", locale);
+    delete p.currency;
     return tn.has(type) ? tn(type, p) : type;
   };
   return (
@@ -46,6 +52,7 @@ export default async function NotificationsPage({ params }: { params: Promise<{ 
           })}
         </ul>
       )}
+      <div className="mt-8 max-w-xl"><PrefsForm prefs={(me?.notifyPrefs ?? {}) as Record<string, boolean>} emailOn={emailEnabled()} /></div>
     </div>
   );
 }

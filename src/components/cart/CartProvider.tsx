@@ -1,5 +1,6 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { getSavedCart, saveCart } from "@/actions/customer";
 
 export type CartLine = {
   key: string;
@@ -33,26 +34,42 @@ function lineKey(variantId: string, fields: Record<string, string>) {
   return `${variantId}:${Object.entries(fields).sort().map(([k, v]) => `${k}=${v}`).join("&")}`;
 }
 
-export function CartProvider({ children, currency, htgPerUsd }: { children: ReactNode; currency: "HTG" | "USD"; htgPerUsd: number }) {
+export function CartProvider({ children, currency, htgPerUsd, signedIn = false }: { children: ReactNode; currency: "HTG" | "USD"; htgPerUsd: number; signedIn?: boolean }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [ready, setReady] = useState(false);
 
+  const synced = useRef(false);
+
   useEffect(() => {
+    let local: CartLine[] = [];
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setLines(JSON.parse(raw));
+      if (raw) local = JSON.parse(raw);
     } catch {
       // storage unavailable (private mode) — cart works for this page view only
     }
+    setLines(local);
     setReady(true);
-  }, []);
+    // Signed in: merge the cart saved on the account (other devices) with this device's cart.
+    if (signedIn) {
+      getSavedCart().then((remote) => {
+        const merged = [...local];
+        for (const r of remote as CartLine[]) if (!merged.some((l) => l.key === r.key)) merged.push(r);
+        setLines(merged.slice(-20));
+        synced.current = true;
+      });
+    }
+  }, [signedIn]);
 
   useEffect(() => {
     if (!ready) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
     } catch {}
-  }, [lines, ready]);
+    if (!signedIn || !synced.current) return;
+    const id = setTimeout(() => saveCart(lines), 800);
+    return () => clearTimeout(id);
+  }, [lines, ready, signedIn]);
 
   const add = useCallback((line: Omit<CartLine, "key">) => {
     const key = lineKey(line.variantId, line.fields);

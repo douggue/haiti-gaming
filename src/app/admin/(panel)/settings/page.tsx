@@ -61,6 +61,16 @@ export default async function SettingsPage() {
             <Field name="newAccountDays" label="New account period (days)" value={s.newAccountDays} type="number" />
             <Field name="newAccountDailyLimitHtg" label="New account daily limit (HTG)" value={m(s.newAccountDailyLimitHtg)} />
             <Field name="reviewOrderThresholdHtg" label="Review orders from (HTG)" value={m(s.reviewOrderThresholdHtg)} hint="Codes are released only after a staff review." />
+            <Field name="approvalThresholdHtg" label="Second approval for wallet adjustments from (HTG)" value={m(s.approvalThresholdHtg)} hint="Another staff member must approve." />
+            <Field name="autoRefundHours" label="Auto-refund undelivered orders after (hours)" value={s.autoRefundHours} type="number" hint="0 = off. Runs with the scheduled job." />
+          </div>
+        </section>
+        <section className="card space-y-4 p-5">
+          <h2 className="font-semibold">Referral program</h2>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="referralEnabled" defaultChecked={s.referralEnabled} /> Referral program on</label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field name="referralRewardHtg" label="Reward to the referrer (HTG, store credit)" value={m(s.referralRewardHtg)} />
+            <Field name="referralMinOrderHtg" label="Friend's first order must be at least (HTG)" value={m(s.referralMinOrderHtg)} />
           </div>
         </section>
         <section className="card space-y-4 p-5">

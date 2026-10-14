@@ -11,7 +11,7 @@ export function ProductGallery({ name, accent, images }: { name: string; accent?
     <div className="space-y-3">
       <ProductArt name={name} accent={accent} image={images[active]} size="lg" priority />
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="ds-hide flex gap-2 overflow-x-auto pb-1">
           {images.map((src, i) => (
             <button
               key={src}

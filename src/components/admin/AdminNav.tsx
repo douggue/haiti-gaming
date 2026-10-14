@@ -33,7 +33,7 @@ export function AdminNav({ items, user, logo }: { items: { href: string; label: 
   );
   return (
     <>
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 bg-midnight p-4 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 overflow-y-auto bg-midnight p-4 lg:flex">
         <Link href="/admin" className="text-white"><Logo src={logo} /></Link>
         {nav}
         {footer}

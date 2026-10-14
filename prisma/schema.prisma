@@ -19,6 +19,8 @@ enum Role {
   CONTENT_EDITOR
   SUPPORT_AGENT
   FULFILLMENT
+  /// Permissions come from customRole
+  CUSTOM
 }
 
 enum AccountStatus {
@@ -45,6 +47,13 @@ model User {
   locale           String        @default("ht")
   displayCurrency  Currency      @default(HTG)
   twoFactorEnabled Boolean?      @default(false)
+  customRoleId     String?
+  customRole       CustomRole?   @relation(fields: [customRoleId], references: [id])
+  referralCode     String?       @unique
+  /// { email: boolean, whatsapp: boolean, marketing: boolean }
+  notifyPrefs      Json          @default("{\"email\":true,\"whatsapp\":true,\"marketing\":false}")
+  /// Cart saved to the account so it follows the customer across devices
+  savedCart        Json          @default("[]")
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -60,6 +69,10 @@ model User {
   savedPlayerIds SavedPlayerId[]
   riskFlags      RiskFlag[]
   auditEvents    AuditEvent[]
+  tickets        SupportTicket[]   @relation("TicketCustomer")
+  ticketMessages SupportMessage[]
+  referralsMade  Referral[]        @relation("Referrer")
+  referredBy     Referral?         @relation("Referred")
 
   @@map("user")
 }
@@ -504,4 +517,152 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, createdAt])
+}
+
+// ─────────────────────────────── Staff roles & sensitive actions ───────────────────────────────
+
+model CustomRole {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  permissions String[]
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Recent re-authentication (TOTP) for a session, required before high-risk admin actions.
+model StepUp {
+  sessionToken String   @id
+  userId       String
+  until        DateTime
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Large wallet adjustments need a second staff member to approve (two-person rule).
+model PendingApproval {
+  id           String         @id @default(cuid())
+  kind         String
+  payload      Json
+  summary      String
+  requestedBy  String
+  decidedBy    String?
+  status       ApprovalStatus @default(PENDING)
+  createdAt    DateTime       @default(now())
+  decidedAt    DateTime?
+
+  @@index([status])
+}
+
+// ─────────────────────────────── Support ───────────────────────────────
+
+enum TicketStatus {
+  OPEN
+  WAITING_CUSTOMER
+  CLOSED
+}
+
+model SupportTicket {
+  id         String           @id @default(cuid())
+  number     Int              @unique @default(autoincrement())
+  userId     String
+  user       User             @relation("TicketCustomer", fields: [userId], references: [id])
+  orderId    String?
+  subject    String
+  status     TicketStatus     @default(OPEN)
+  assignedTo String?
+  messages   SupportMessage[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([status, updatedAt])
+  @@index([userId])
+}
+
+model SupportMessage {
+  id             String        @id @default(cuid())
+  ticketId       String
+  ticket         SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId       String
+  author         User          @relation(fields: [authorId], references: [id])
+  fromStaff      Boolean       @default(false)
+  body           String
+  attachmentPath String?
+  createdAt      DateTime      @default(now())
+
+  @@index([ticketId, createdAt])
+}
+
+// ─────────────────────────────── Referrals ───────────────────────────────
+
+enum ReferralStatus {
+  PENDING
+  REWARDED
+  REJECTED
+}
+
+model Referral {
+  id           String         @id @default(cuid())
+  referrerId   String
+  referrer     User           @relation("Referrer", fields: [referrerId], references: [id])
+  referredId   String         @unique
+  referred     User           @relation("Referred", fields: [referredId], references: [id])
+  status       ReferralStatus @default(PENDING)
+  rewardAmount Int?
+  signupIp     String?
+  note         String?
+  createdAt    DateTime       @default(now())
+  rewardedAt   DateTime?
+
+  @@index([referrerId])
+}
+
+// ─────────────────────────────── Content & SEO ───────────────────────────────
+
+model NewsArticle {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       Json
+  excerpt     Json      @default("{}")
+  body        Json      @default("{}")
+  image       String?
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
+model RedirectRule {
+  id        String   @id @default(cuid())
+  /// Path without locale, e.g. "/old-free-fire"
+  from      String   @unique
+  /// Path without locale ("/products/free-fire-diamonds") or a full https URL
+  to        String
+  permanent Boolean  @default(true)
+  hits      Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+/// Title/description overrides for fixed pages ("/", "/store", "/guides", …)
+model PageSeo {
+  path        String   @id
+  title       Json     @default("{}")
+  description Json     @default("{}")
+  updatedAt   DateTime @updatedAt
+}
+
+/// Admin overrides of interface wording (message catalog keys like "home.heroTitle")
+model TranslationOverride {
+  locale    String
+  key       String
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@id([locale, key])
 }

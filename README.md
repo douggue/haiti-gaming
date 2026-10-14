@@ -31,6 +31,10 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 | Fulfillment | Encrypted code inventory (AES-256-GCM, dedupe by HMAC, `SKIP LOCKED` assignment), manual delivery with notes, automatic refund to wallet on cancel |
 | Fraud controls | One-time NatCash references (DB-unique), new-account daily limits, holds on large deposits, high-value order review queue, amount-mismatch flags, rate-limited auth |
 | Images | Upload in the admin (JPG/PNG/WebP, up to 5 MB, content-checked): product main image + gallery of up to 8, category images, logo (light and dark), homepage hero image, social-share image. Stored on Vercel Blob (public), served through Next.js image optimization (AVIF/WebP, responsive sizes). Anything without an image falls back to a generated tile, the category emoji or the built-in logo |
+| Operations | Automatic refund to the wallet for paid orders not delivered within N hours (setting, runs with the cron job); public order-tracking link (`/order-status/[id]?t=…`, no sign-in, codes stay private); reports with daily sales chart, top products, sales by payment method and CSV exports (orders, payments, ledger, customers) |
+| Staff controls | Re-confirmation with the authenticator code (10 minutes) before wallet adjustments, role changes, 2FA resets and settings; two-person approval for wallet adjustments above a threshold; custom roles with per-permission checkboxes |
+| Content | Homepage editor (reorder/hide sections, hero text per language, draft → preview → publish, version history); news articles with scheduling; SEO manager (page titles/descriptions per language, redirects for old links); translation editor for every interface text; theme editor (colors, rounding, animations) with contrast checks, live preview and rollback |
+| Customer extras | Support tickets with screenshots and staff replies; referral program (link, store-credit reward after the friend's first delivered order, same-network self-referrals rejected); notification preferences; cart saved to the account across devices; data export (JSON) and self-service account deletion; optional two-step verification for customers; offline page (service worker) and data-saver mode |
 | Admin | Dashboard, orders, payment review, risk queue, products/variants/categories in 4 languages, code import, customers (status, wallet adjustments), ledger, staff roles, settings (rate, limits, NatCash recipient, WhatsApp, announcement), audit log |
 | Accounts | Email sign-up/sign-in/sign-out; passwords checked against known breaches (Have I Been Pwned, k-anonymity, fails open); sign-up errors don't reveal registered emails; suspended accounts refused at sign-in; forgot/reset password (email via Resend when configured, otherwise WhatsApp support + one-time admin reset link, 1 hour, single use, signs out all devices); email verification once email is configured; staff backup codes and Super Admin 2FA reset |
 | Security | Argon2id, HttpOnly sessions, mandatory staff TOTP, server-side permission checks on every admin page and action, audit trail for approvals, adjustments, code reveals and role changes, security headers |
@@ -44,8 +48,10 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 ## Tests
 
 ```bash
-TEST_DATABASE_URL=postgresql://…/haiti_gaming_test npm test       # ledger, concurrency, idempotency, exchange, crypto (14 tests)
-npx playwright test                                              # journeys, image uploads and account security against a running dev server
+TEST_DATABASE_URL=postgresql://…/haiti_gaming_test npm test       # ledger, concurrency, idempotency, exchange, auto-refund, crypto (16 tests)
+# End-to-end (14 tests in 5 files) against a running server started with test-only switches:
+AUTH_RATE_LIMIT=off ALLOW_MOCK_PAYMENTS=1 npm start
+npx playwright test e2e/journeys.spec.ts    # run each file on its own; each sets up the admin's 2FA from scratch
 ```
 
 The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delivered; NatCash deposit and duplicate-reference rejection; admin 2FA setup and approval; wallet purchase of a manual top-up delivered by staff; HTG→USD exchange.
@@ -60,12 +66,16 @@ The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delive
 6. **MonCash:** until `MONCASH_CLIENT_ID`/`MONCASH_CLIENT_SECRET` are set, MonCash is hidden at checkout in production. In the MonCash merchant portal set the return URL to `https://<domain>/api/payments/moncash/return` and the alert URL to `https://<domain>/api/payments/moncash/callback`.
 7. **Cron:** `vercel.json` runs `/api/cron/maintenance` once a day (the Hobby plan limit). On the Pro plan, change the schedule to `*/10 * * * *` so missed MonCash callbacks are recovered and held deposits are released within minutes.
 
-## Not done yet (needs accounts, decisions or a later stage)
+## Waiting on your accounts (code is ready, switched off)
 
-- **Email** is ready but off: set `RESEND_API_KEY` and `EMAIL_FROM` once your domain is verified in Resend, and password-reset and verification emails start automatically. Order/deposit notification emails and **WhatsApp/SMS** messages are not sent yet (in-app only); they plug into `src/lib/notify.ts`.
-- **Phone sign-in**, **referrals**, **support tickets**, **news/CMS page builder**, **theme builder** and **analytics exports** from the blueprint are not built.
-- **Supplier API fulfillment**: products can be marked `SUPPLIER_API` but are delivered manually until a supplier adapter is written for a signed supplier.
-- **Roles** are the six starter roles in code (`src/lib/permissions.ts`), not an editable role builder.
-- **Background jobs** run through the cron route; Inngest is not wired in.
-- **Kreyòl, French and Spanish copy** was written without native review; have a native speaker check it before launch.
-- Legal review of the stored-value wallet and HTG/USD exchange is still required before launch.
+| Feature | What turns it on |
+| --- | --- |
+| Live MonCash | Merchant approval; set `MONCASH_CLIENT_ID`, `MONCASH_CLIENT_SECRET`, `MONCASH_MODE=live` |
+| Emails (password reset, verification, order and deposit notifications) | A domain verified in Resend; set `RESEND_API_KEY` and `EMAIL_FROM` |
+| WhatsApp notifications and phone sign-in | A WhatsApp Business account (Meta or Twilio); the hook is `src/lib/notify.ts` |
+| Automatic supplier delivery | A signed supplier and its API; products can already be marked `SUPPLIER_API` (delivered manually until then) |
+| USD card payments, Google sign-in | Stripe / Google Cloud accounts, later |
+
+Before launch: native-speaker review of the Kreyòl, French and Spanish text; legal review of the stored-value wallet and HTG/USD exchange; replace the demo products, demo codes and placeholder business details (Admin → Settings).
+
+**Never set `AUTH_RATE_LIMIT=off` or `ALLOW_MOCK_PAYMENTS=1` in production.** They exist only for automated tests.

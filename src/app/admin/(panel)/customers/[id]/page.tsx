@@ -23,7 +23,7 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
     getBalances(prisma, id),
     prisma.order.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.paymentIntent.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" }, take: 20 }),
-    can(staff.role, "wallet.view") ? prisma.ledgerEntry.findMany({ where: { account: { userId: id } }, orderBy: { createdAt: "desc" }, take: 30, include: { transaction: true } }) : Promise.resolve([]),
+    can(staff, "wallet.view") ? prisma.ledgerEntry.findMany({ where: { account: { userId: id } }, orderBy: { createdAt: "desc" }, take: 30, include: { transaction: true } }) : Promise.resolve([]),
     prisma.riskFlag.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" }, take: 10 }),
   ]);
   return (
@@ -35,7 +35,7 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
         <Stat label="USD available" value={formatMoney(balances.USD.available, "USD", "en")} />
         <Stat label="Orders" value={orders.length} />
       </div>
-      {can(staff.role, "customers.manage") && user.id !== staff.id && (
+      {can(staff, "customers.manage") && user.id !== staff.id && (
         <div className="mt-4 flex flex-wrap gap-2">
           {user.status !== "ACTIVE" && <ActionButton label="Set active" action={setCustomerStatus.bind(null, id, "ACTIVE")} />}
           {user.status !== "RESTRICTED" && <ActionButton label="Restrict (no orders)" action={setCustomerStatus.bind(null, id, "RESTRICTED")} />}
@@ -55,7 +55,7 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
             {payments.map((p) => <li key={p.id} className="flex justify-between py-2"><span>{p.provider} {p.providerRef && <span className="font-mono text-xs">{p.providerRef}</span>}</span><span>{formatMoney(p.amount, p.currency, "en")} · <StatusBadge status={p.status} label={p.status} /></span></li>)}
           </ul>
         </section>
-        {can(staff.role, "wallet.adjust") && (
+        {can(staff, "wallet.adjust") && (
           <ActionForm action={adjustCustomerWallet} className="card space-y-3 p-5" resetOnSuccess>
             <h2 className="font-semibold">Wallet adjustment</h2>
             <p className="text-xs text-muted">Creates a balanced ledger entry against the adjustment account. Logged with your name.</p>
@@ -70,7 +70,7 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
             <button className="btn-primary min-h-9 px-4 text-xs">Post adjustment</button>
           </ActionForm>
         )}
-        {can(staff.role, "customers.manage") && user.id !== staff.id && <ResetLinkButton action={createPasswordResetLink.bind(null, id)} />}
+        {can(staff, "customers.manage") && user.id !== staff.id && <ResetLinkButton action={createPasswordResetLink.bind(null, id)} />}
         {entries.length > 0 && (
           <section className="card p-5">
             <h2 className="mb-3 font-semibold">Ledger</h2>

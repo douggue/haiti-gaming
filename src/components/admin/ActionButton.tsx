@@ -1,8 +1,20 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { verifyStepUp } from "@/actions/admin";
 
 type Result = { ok: true; message?: string } | { ok: false; error: string };
+
+/** Runs an action; if it needs a fresh 2FA confirmation, asks for the code once and retries. */
+async function withStepUp(run: () => Promise<Result>): Promise<Result> {
+  const first = await run();
+  if (first.ok || first.error !== "STEP_UP_REQUIRED") return first;
+  const code = window.prompt("Security check: enter the 6-digit code from your authenticator app to confirm this action.");
+  if (!code) return { ok: false, error: "Cancelled: confirmation code required" };
+  const v = await verifyStepUp(code);
+  if (!v.ok) return v;
+  return run();
+}
 
 /** Runs a server action; optionally asks for a note/reason first and confirms destructive actions. */
 export function ActionButton({
@@ -36,7 +48,7 @@ export function ActionButton({
           }
           if (confirm && !window.confirm(confirm)) return;
           start(async () => {
-            const r = await action(note);
+            const r = await withStepUp(() => action(note));
             setMsg(r.ok ? { ok: true, text: r.message ?? "Done" } : { ok: false, text: r.error });
             router.refresh();
           });
@@ -62,7 +74,7 @@ export function ActionForm({ action, children, className, resetOnSuccess }: { ac
         const form = e.currentTarget;
         const fd = new FormData(form);
         start(async () => {
-          const r = await action(fd);
+          const r = await withStepUp(() => action(fd));
           setMsg(r.ok ? { ok: true, text: r.message ?? "Saved" } : { ok: false, text: r.error });
           if (r.ok) {
             if (resetOnSuccess) form.reset();

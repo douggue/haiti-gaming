@@ -27,7 +27,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
     },
   });
   if (!order) notFound();
-  const manage = can(staff.role, "orders.manage");
+  const manage = can(staff, "orders.manage");
 
   return (
     <>
@@ -67,7 +67,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
               )}
             </div>
           )}
-          {can(staff.role, "codes.reveal") && order.items.some((i) => i._count.codes > 0) && <RevealCodes action={revealOrderCodes.bind(null, order.id)} />}
+          {can(staff, "codes.reveal") && order.items.some((i) => i._count.codes > 0) && <RevealCodes action={revealOrderCodes.bind(null, order.id)} />}
         </div>
         <div className="space-y-4">
           <section className="card p-5 text-sm">
@@ -75,6 +75,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
             <Link href={`/admin/customers/${order.userId}`} className="font-medium text-primary">{order.user.name}</Link>
             <p className="text-muted">{order.user.email} {order.user.phone && `· ${order.user.phone}`}</p>
             {order.recipientNote && <p className="mt-2"><span className="text-muted">Note:</span> {order.recipientNote}</p>}
+            <p className="mt-2 break-all text-xs"><span className="text-muted">Tracking link:</span> {`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${order.user.locale}/order-status/${order.id}?t=${order.accessToken}`}</p>
           </section>
           <section className="card p-5 text-sm">
             <h2 className="mb-2 font-semibold">Payments</h2>

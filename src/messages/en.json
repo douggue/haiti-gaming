@@ -51,7 +51,8 @@
     "footerTagline": "Game top-ups, gift cards and subscriptions, paid with MonCash or NatCash.",
     "rights": "All rights reserved.",
     "followUs": "Follow us",
-    "error": "Something went wrong. Please try again."
+    "error": "Something went wrong. Please try again.",
+    "news": "News"
   },
   "home": {
     "eyebrow": "Made in Haiti, for gamers",
@@ -80,7 +81,8 @@
     "faqTitle": "Frequently asked questions",
     "walletTitle": "Top up your wallet once, buy in one tap",
     "walletBody": "Add gourdes to your Haiti Gaming wallet with MonCash or NatCash, then pay for any order instantly.",
-    "walletCta": "Open my wallet"
+    "walletCta": "Open my wallet",
+    "newsTitle": "Latest news"
   },
   "faq": {
     "q1": "How long does delivery take?",
@@ -200,7 +202,8 @@
     "buyAgain": "Buy again",
     "recipientNote": "Message",
     "duplicateRef": "This reference was already used.",
-    "waitingDelivery": "We are preparing your order. You will be notified when it is delivered."
+    "waitingDelivery": "We are preparing your order. You will be notified when it is delivered.",
+    "shareStatus": "Copy tracking link"
   },
   "account": {
     "dashboard": "Dashboard",
@@ -221,7 +224,10 @@
     "security": "Security",
     "emailUnverified": "Your email is not verified yet.",
     "resendVerification": "Resend confirmation email",
-    "verificationSent": "We sent you a confirmation email."
+    "verificationSent": "We sent you a confirmation email.",
+    "support": "Support",
+    "referrals": "Invite friends",
+    "privacy": "Privacy"
   },
   "wallet": {
     "title": "Wallet",
@@ -327,7 +333,8 @@
     "order_fulfilled": "Order #{number} has been delivered.",
     "order_refunded": "Order #{number} was refunded to your wallet.",
     "exchange_done": "Your currency exchange is complete.",
-    "wallet_adjusted": "Your wallet was adjusted by our team."
+    "wallet_adjusted": "Your wallet was adjusted by our team.",
+    "referral_rewarded": "You received {amount} because a friend you invited made a purchase."
   },
   "pages": {
     "aboutTitle": "About Haiti Gaming",
@@ -380,5 +387,101 @@
       "If a top-up was sent to the wrong player ID because of a typing error, we cannot recover it.",
       "Contact us on WhatsApp with your order number for any problem."
     ]
+  },
+  "news": {
+    "title": "News",
+    "subtitle": "Promotions, new products and announcements.",
+    "empty": "No news yet.",
+    "back": "All news"
+  },
+  "support": {
+    "title": "Support",
+    "intro": "Ask a question or report a problem. Our team replies here.",
+    "new": "New request",
+    "subject": "Subject",
+    "order": "Order (optional)",
+    "noOrder": "No order",
+    "message": "Message",
+    "attach": "Screenshot (optional)",
+    "send": "Send",
+    "empty": "No support requests yet.",
+    "reply": "Reply",
+    "closedNote": "This request is closed. Send a message to reopen it.",
+    "you": "You",
+    "team": "Haiti Gaming team",
+    "back": "All requests",
+    "ticket": "Request #{number}",
+    "statusOPEN": "Open",
+    "statusWAITING_CUSTOMER": "Waiting for you",
+    "statusCLOSED": "Closed",
+    "orWhatsapp": "In a hurry? Message us on WhatsApp."
+  },
+  "referrals": {
+    "title": "Invite friends",
+    "intro": "Share your link. When a friend signs up and their first order ({min} or more) is delivered, you get {reward} in your wallet.",
+    "yourLink": "Your link",
+    "share": "Share on WhatsApp",
+    "shareText": "Buy diamonds and gift cards on Haiti Gaming, pay with MonCash or NatCash: {link}",
+    "invited": "Friends invited",
+    "rewarded": "Rewards received",
+    "earned": "Total earned",
+    "history": "History",
+    "none": "You haven't invited anyone yet.",
+    "off": "The referral program isn't active right now.",
+    "statusPENDING": "Waiting for first order",
+    "statusREWARDED": "Rewarded",
+    "statusREJECTED": "Not eligible"
+  },
+  "prefs": {
+    "title": "Notification preferences",
+    "email": "Emails about orders and payments",
+    "whatsapp": "WhatsApp messages about orders and payments",
+    "marketing": "Promotions and new products",
+    "note": "On-site notifications are always on. Security messages are always sent.",
+    "saved": "Saved."
+  },
+  "privacy": {
+    "title": "Data & privacy",
+    "exportTitle": "Download your data",
+    "exportBody": "A file with your profile, orders, wallet history and support requests. Gift-card codes are left out for security.",
+    "exportButton": "Download (JSON)",
+    "deleteTitle": "Delete my account",
+    "deleteBody": "Your name, email and phone are erased. Order and payment records are kept without your name, as the law requires. You won't be able to sign in again.",
+    "deleteBalance": "You still have money in your wallet. Spend it or contact support before deleting your account.",
+    "deletePending": "You have orders or payments in progress. Wait until they're finished.",
+    "deleteConfirm": "Enter your password to confirm",
+    "deleteButton": "Permanently delete my account",
+    "wrongPassword": "Wrong password."
+  },
+  "twofa": {
+    "title": "Two-step verification",
+    "intro": "Protect your account with a code from an authenticator app (Google Authenticator, Authy…) each time you sign in.",
+    "on": "On",
+    "off": "Off",
+    "enable": "Turn on",
+    "disable": "Turn off",
+    "password": "Confirm your password",
+    "scan": "Scan this QR code with the app, then enter the 6-digit code.",
+    "backup": "Backup codes (save them now, each works once)",
+    "code": "6-digit code",
+    "activate": "Activate",
+    "invalid": "Invalid code."
+  },
+  "auth2": {
+    "totpTitle": "Two-step verification",
+    "totpIntro": "Enter the 6-digit code from your authenticator app.",
+    "backupIntro": "Enter one of your backup codes.",
+    "verify": "Verify",
+    "useBackup": "No phone? Use a backup code",
+    "useApp": "Use the app instead"
+  },
+  "offline": {
+    "title": "You're offline",
+    "body": "Check your mobile data or Wi-Fi and try again. Your cart is saved.",
+    "retry": "Try again"
+  },
+  "dataSaver": {
+    "label": "Data saver",
+    "hint": "Fewer images, no animations."
   }
 }

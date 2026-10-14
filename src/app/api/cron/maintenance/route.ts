@@ -3,19 +3,22 @@ import { prisma } from "@/lib/db";
 import { verifyMoncashIntent } from "@/lib/payments/verify";
 import { releaseHold } from "@/lib/wallet";
 import { notify } from "@/lib/notify";
+import { getSettings } from "@/lib/settings";
+import { refundOrCancel } from "@/lib/orders";
 
 /**
  * Scheduled maintenance (call every 5–10 minutes with `Authorization: Bearer $CRON_SECRET`, e.g. Vercel Cron or Inngest):
  * - re-checks pending MonCash payments in case a callback was lost
  * - releases held deposits whose hold period ended
  * - expires abandoned payment intents
+ * - refunds paid orders that were not delivered within `autoRefundHours` (nothing delivered, no open risk review)
  */
 export async function GET(req: NextRequest) {
   if (!process.env.CRON_SECRET || req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const now = new Date();
-  const result = { moncashChecked: 0, holdsReleased: 0, expired: 0 };
+  const result = { moncashChecked: 0, holdsReleased: 0, expired: 0, autoRefunded: 0 };
 
   const pending = await prisma.paymentIntent.findMany({
     where: { provider: "MONCASH", status: "PENDING", createdAt: { gte: new Date(now.getTime() - 86_400_000) } },
@@ -48,5 +51,28 @@ export async function GET(req: NextRequest) {
     data: { status: "EXPIRED" },
   });
   result.expired = expired.count;
+
+  const settings = await getSettings();
+  if (settings.autoRefundHours > 0) {
+    const cutoff = new Date(now.getTime() - settings.autoRefundHours * 3_600_000);
+    const stuck = await prisma.order.findMany({
+      where: {
+        status: { in: ["PAID", "PROCESSING"] },
+        paidAt: { lt: cutoff },
+        items: { none: { status: "DELIVERED" } },
+        riskFlags: { none: { status: "OPEN" } },
+      },
+      select: { id: true },
+      take: 50,
+    });
+    for (const o of stuck) {
+      try {
+        await refundOrCancel(o.id, null, `Not delivered within ${settings.autoRefundHours} hours: refunded automatically`);
+        result.autoRefunded++;
+      } catch (e) {
+        console.error("Auto-refund failed", o.id, e);
+      }
+    }
+  }
   return NextResponse.json(result);
 }

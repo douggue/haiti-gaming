@@ -9,6 +9,7 @@ import { assertWithinNewAccountLimit, flag } from "./risk";
 import { notify } from "./notify";
 import { t } from "./text";
 import { moncashAvailable } from "./payments/moncash";
+import { maybeRewardReferral } from "./referrals";
 
 export type FieldDef = {
   key: string;
@@ -181,6 +182,7 @@ export async function fulfillOrder(orderId: string, actorId?: string | null) {
   if (result?.fulfilled) {
     const o = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
     await notify(o.userId, "order_fulfilled", { number: o.number }, `/account/orders/${o.id}`);
+    await maybeRewardReferral(o.userId).catch((e) => console.error("referral reward failed", e));
   }
   return result;
 }

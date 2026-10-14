@@ -146,3 +146,17 @@ body {
     transform: none;
   }
 }
+
+/* Data saver (toggle in the footer, or the browser's Save-Data signal): no decorative images, no motion. */
+.data-saver .ds-hide {
+  display: none !important;
+}
+.data-saver *,
+.data-saver *::before,
+.data-saver *::after {
+  animation: none !important;
+  transition: none !important;
+}
+.data-saver .blur-3xl {
+  display: none;
+}

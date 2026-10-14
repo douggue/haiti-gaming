@@ -1,4 +1,10 @@
+import ht from "@/messages/ht.json";
+import fr from "@/messages/fr.json";
+import en from "@/messages/en.json";
+import es from "@/messages/es.json";
 import { prisma, type Tx } from "./db";
+import { emailEnabled, sendEmail } from "./email";
+import { formatMoney } from "./money";
 
 export type NotificationType =
   | "deposit_approved"
@@ -8,8 +14,24 @@ export type NotificationType =
   | "order_fulfilled"
   | "order_refunded"
   | "exchange_done"
-  | "wallet_adjusted";
+  | "wallet_adjusted"
+  | "referral_rewarded";
 
+const CATALOGS: Record<string, { notifications: Record<string, string> }> = { ht, fr, en, es };
+
+function render(type: string, params: Record<string, string | number>, locale: string) {
+  const template = (CATALOGS[locale] ?? ht).notifications[type] ?? ht.notifications[type as keyof typeof ht.notifications] ?? type;
+  return template.replace(/\{(\w+)\}/g, (_, k: string) => {
+    const v = params[k];
+    if (k === "amount" && typeof v === "number") return formatMoney(v, (params.currency as "HTG" | "USD") ?? "HTG", locale);
+    return v === undefined ? "" : String(v);
+  });
+}
+
+/**
+ * In-app notification, plus an email when email is configured and the customer keeps email notifications on.
+ * WhatsApp delivery plugs in here once a WhatsApp Business account is connected.
+ */
 export async function notify(
   userId: string,
   type: NotificationType,
@@ -18,5 +40,20 @@ export async function notify(
   db: Tx = prisma,
 ) {
   await db.notification.create({ data: { userId, type, params, link } });
-  // Email and WhatsApp delivery plug in here once providers are configured (blueprint §15).
+  if (!emailEnabled()) return;
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true, locale: true, status: true, notifyPrefs: true } });
+    const prefs = (user?.notifyPrefs ?? {}) as { email?: boolean };
+    if (!user || user.status === "CLOSED" || prefs.email === false) return;
+    const text = render(type, params, user.locale);
+    const url = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${user.locale}${link ?? "/account"}`;
+    await sendEmail({
+      to: user.email,
+      subject: `Haiti Gaming: ${text.slice(0, 80)}`,
+      text: `${text}\n\n${url}`,
+      html: `<p style="font-family:Arial,sans-serif;font-size:15px">${text.replace(/[<>&]/g, "")}</p><p><a href="${url}" style="font-family:Arial,sans-serif;color:#1467F5">${url}</a></p>`,
+    });
+  } catch (e) {
+    console.error("notification email failed", e);
+  }
 }

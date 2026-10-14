@@ -11,6 +11,10 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { alternates } from "@/lib/seo";
+import { themeCss } from "@/lib/theme-css";
+import { cookies, headers } from "next/headers";
+import { getUser } from "@/lib/session";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import "../globals.css";
 
 export const viewport: Viewport = {
@@ -41,24 +45,28 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-  const [settings, currency, t] = await Promise.all([getSettings(), getDisplayCurrency(), getTranslations("common")]);
+  const [settings, currency, t, user, hdrs, jar] = await Promise.all([getSettings(), getDisplayCurrency(), getTranslations("common"), getUser(), headers(), cookies()]);
+  // Data saver: the visitor's toggle, or the browser's Save-Data signal.
+  const dataSaver = jar.get("hg_ds")?.value === "1" || (jar.get("hg_ds")?.value !== "0" && hdrs.get("save-data") === "on");
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning className={dataSaver ? "data-saver" : undefined}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {themeCss(settings.theme) && <style dangerouslySetInnerHTML={{ __html: themeCss(settings.theme) }} />}
       </head>
       <body className="min-h-dvh antialiased">
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2">
           {t("skipToContent")}
         </a>
         <NextIntlClientProvider>
-          <CartProvider currency={currency} htgPerUsd={settings.htgPerUsd}>
+          <CartProvider currency={currency} htgPerUsd={settings.htgPerUsd} signedIn={!!user}>
             <AnnouncementBar settings={settings} locale={locale} />
             <Header />
             <main id="main">{children}</main>
             <Footer settings={settings} />
             <WhatsAppButton number={settings.whatsappNumber} />
+            <ServiceWorker />
           </CartProvider>
         </NextIntlClientProvider>
       </body>

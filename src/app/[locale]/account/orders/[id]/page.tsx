@@ -25,12 +25,13 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
     },
   });
   if (!order) notFound();
-  const [to, tc, fmt, settings] = await Promise.all([getTranslations("order"), getTranslations("common"), getFormatter(), getSettings()]);
+  const [to, tc, fmt, settings, ts] = await Promise.all([getTranslations("order"), getTranslations("common"), getFormatter(), getSettings(), getTranslations("support")]);
 
   const codes = order.items.flatMap((i) => i.codes);
   if (codes.length > 0) await audit(user.id, "code.view.customer", "Order", order.id, { codes: codes.length });
 
-  const helpText = encodeURIComponent(`${tc("whatsappMessage")} ${to("title", { number: order.number })}`);
+  const statusUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${locale}/order-status/${order.id}?t=${order.accessToken}`;
+  const helpText = encodeURIComponent(`${tc("whatsappMessage")} ${to("title", { number: order.number })} ${statusUrl}`);
   const lastPayment = order.payments[0];
 
   return (
@@ -131,9 +132,13 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         </ol>
       </section>
 
-      <a href={`https://wa.me/${settings.whatsappNumber}?text=${helpText}`} target="_blank" rel="noopener" className="btn-secondary">
-        <WhatsAppIcon width={18} height={18} className="text-[#1fa855]" /> {to("getHelp")}
-      </a>
+      <div className="flex flex-wrap gap-3">
+        <a href={`https://wa.me/${settings.whatsappNumber}?text=${helpText}`} target="_blank" rel="noopener" className="btn-secondary">
+          <WhatsAppIcon width={18} height={18} className="text-[#1fa855]" /> {to("getHelp")}
+        </a>
+        <CopyButton value={statusUrl} label={to("shareStatus")} done={to("copied")} />
+        <Link href={`/account/support?order=${order.id}`} className="btn-secondary">{ts("new")}</Link>
+      </div>
     </div>
   );
 }

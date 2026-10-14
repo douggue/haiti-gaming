@@ -7,6 +7,7 @@ import { hash, verify } from "@node-rs/argon2";
 import { prisma } from "./db";
 import { emailEnabled, sendPasswordResetEmail, sendVerificationEmail } from "./email";
 import { isPasswordBreached } from "./password-check";
+import { recordReferral } from "./referrals";
 
 // Argon2id parameters (OWASP recommended minimums)
 const argonOpts = { memoryCost: 19456, timeCost: 2, parallelism: 1, algorithm: 2 as const };
@@ -70,6 +71,22 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
   },
   databaseHooks: {
+    user: {
+      create: {
+        // Link the new account to the friend who invited them (cookie set from ?ref=CODE links).
+        after: async (user, ctx) => {
+          try {
+            const h = (ctx as { headers?: Headers; request?: Request } | null)?.headers ?? (ctx as { request?: Request } | null)?.request?.headers;
+            const cookie = h?.get("cookie") ?? "";
+            const code = /(?:^|;\s*)hg_ref=([A-Z0-9]{6,12})/i.exec(cookie)?.[1];
+            const ip = h?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+            await recordReferral(user.id, code, ip);
+          } catch (e) {
+            console.error("referral link failed", e);
+          }
+        },
+      },
+    },
     session: {
       create: {
         // Suspended or closed accounts are refused at sign-in, not after.
@@ -83,7 +100,8 @@ export const auth = betterAuth({
     },
   },
   rateLimit: {
-    enabled: true,
+    // Only for automated test runs where every sign-in comes from one address. Never set this in production.
+    enabled: process.env.AUTH_RATE_LIMIT !== "off",
     storage: "database",
     window: 60,
     max: 100,

@@ -17,6 +17,7 @@ export async function Header() {
     { href: "/store", label: t("store") },
     { href: "/categories", label: t("categories") },
     { href: "/guides", label: t("guides") },
+    { href: "/news", label: t("news") },
     { href: "/faq", label: t("faq") },
   ];
 

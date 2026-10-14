@@ -51,7 +51,8 @@
     "footerTagline": "Recharges de jeux, cartes cadeaux et abonnements, payés avec MonCash ou NatCash.",
     "rights": "Tous droits réservés.",
     "followUs": "Suivez-nous",
-    "error": "Une erreur est survenue. Veuillez réessayer."
+    "error": "Une erreur est survenue. Veuillez réessayer.",
+    "news": "Actualités"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",
@@ -80,7 +81,8 @@
     "faqTitle": "Questions fréquentes",
     "walletTitle": "Rechargez votre portefeuille une fois, achetez en un clic",
     "walletBody": "Ajoutez des gourdes à votre portefeuille Haiti Gaming avec MonCash ou NatCash, puis payez n'importe quelle commande instantanément.",
-    "walletCta": "Ouvrir mon portefeuille"
+    "walletCta": "Ouvrir mon portefeuille",
+    "newsTitle": "Dernières actualités"
   },
   "faq": {
     "q1": "Combien de temps prend la livraison ?",
@@ -200,7 +202,8 @@
     "buyAgain": "Acheter à nouveau",
     "recipientNote": "Message",
     "duplicateRef": "Cette référence a déjà été utilisée.",
-    "waitingDelivery": "Nous préparons votre commande. Vous serez averti à la livraison."
+    "waitingDelivery": "Nous préparons votre commande. Vous serez averti à la livraison.",
+    "shareStatus": "Copier le lien de suivi"
   },
   "account": {
     "dashboard": "Tableau de bord",
@@ -221,7 +224,10 @@
     "security": "Sécurité",
     "emailUnverified": "Votre e-mail n'est pas encore vérifié.",
     "resendVerification": "Renvoyer l'e-mail de confirmation",
-    "verificationSent": "Un e-mail de confirmation vous a été envoyé."
+    "verificationSent": "Un e-mail de confirmation vous a été envoyé.",
+    "support": "Assistance",
+    "referrals": "Parrainage",
+    "privacy": "Confidentialité"
   },
   "wallet": {
     "title": "Portefeuille",
@@ -327,7 +333,8 @@
     "order_fulfilled": "La commande n° {number} a été livrée.",
     "order_refunded": "La commande n° {number} a été remboursée sur votre portefeuille.",
     "exchange_done": "Votre conversion est effectuée.",
-    "wallet_adjusted": "Votre portefeuille a été ajusté par notre équipe."
+    "wallet_adjusted": "Votre portefeuille a été ajusté par notre équipe.",
+    "referral_rewarded": "Vous avez reçu {amount} grâce à un ami parrainé."
   },
   "pages": {
     "aboutTitle": "À propos de Haiti Gaming",
@@ -380,5 +387,101 @@
       "Si une recharge a été envoyée sur un mauvais ID suite à une erreur de saisie, nous ne pouvons pas la récupérer.",
       "Contactez-nous sur WhatsApp avec votre numéro de commande pour tout problème."
     ]
+  },
+  "news": {
+    "title": "Actualités",
+    "subtitle": "Promotions, nouveaux produits et annonces.",
+    "empty": "Aucune actualité pour le moment.",
+    "back": "Toutes les actualités"
+  },
+  "support": {
+    "title": "Assistance",
+    "intro": "Posez une question ou signalez un problème. Notre équipe vous répond ici.",
+    "new": "Nouvelle demande",
+    "subject": "Sujet",
+    "order": "Commande (facultatif)",
+    "noOrder": "Aucune commande",
+    "message": "Message",
+    "attach": "Capture d'écran (facultatif)",
+    "send": "Envoyer",
+    "empty": "Aucune demande pour l'instant.",
+    "reply": "Répondre",
+    "closedNote": "Cette demande est fermée. Envoyez un message pour la rouvrir.",
+    "you": "Vous",
+    "team": "Équipe Haiti Gaming",
+    "back": "Toutes les demandes",
+    "ticket": "Demande n° {number}",
+    "statusOPEN": "Ouverte",
+    "statusWAITING_CUSTOMER": "En attente de votre réponse",
+    "statusCLOSED": "Fermée",
+    "orWhatsapp": "Pressé ? Écrivez-nous sur WhatsApp."
+  },
+  "referrals": {
+    "title": "Parrainage",
+    "intro": "Partagez votre lien. Quand un ami crée son compte et que sa première commande ({min} ou plus) est livrée, vous recevez {reward} sur votre portefeuille.",
+    "yourLink": "Votre lien",
+    "share": "Partager sur WhatsApp",
+    "shareText": "Achète des diamants et cartes cadeaux sur Haiti Gaming, paiement MonCash ou NatCash : {link}",
+    "invited": "Amis invités",
+    "rewarded": "Récompenses reçues",
+    "earned": "Total gagné",
+    "history": "Historique",
+    "none": "Vous n'avez encore invité personne.",
+    "off": "Le parrainage n'est pas actif pour le moment.",
+    "statusPENDING": "En attente de la 1re commande",
+    "statusREWARDED": "Récompensé",
+    "statusREJECTED": "Non valide"
+  },
+  "prefs": {
+    "title": "Préférences de notification",
+    "email": "E-mails sur les commandes et paiements",
+    "whatsapp": "Messages WhatsApp sur les commandes et paiements",
+    "marketing": "Promotions et nouveautés",
+    "note": "Les notifications sur le site restent actives. Les messages de sécurité sont toujours envoyés.",
+    "saved": "Enregistré."
+  },
+  "privacy": {
+    "title": "Données et confidentialité",
+    "exportTitle": "Télécharger vos données",
+    "exportBody": "Un fichier avec votre profil, vos commandes, l'historique du portefeuille et vos demandes d'assistance. Les codes de cartes cadeaux n'y figurent pas, par sécurité.",
+    "exportButton": "Télécharger (JSON)",
+    "deleteTitle": "Supprimer mon compte",
+    "deleteBody": "Votre nom, e-mail et téléphone seront effacés. Les enregistrements de commandes et de paiements sont conservés de façon anonyme, comme la loi l'exige. Vous ne pourrez plus vous connecter.",
+    "deleteBalance": "Il reste de l'argent sur votre portefeuille. Dépensez-le ou contactez l'assistance avant de supprimer le compte.",
+    "deletePending": "Vous avez des commandes ou paiements en cours. Attendez qu'ils soient terminés.",
+    "deleteConfirm": "Saisissez votre mot de passe pour confirmer",
+    "deleteButton": "Supprimer définitivement",
+    "wrongPassword": "Mot de passe incorrect."
+  },
+  "twofa": {
+    "title": "Validation en deux étapes",
+    "intro": "Protégez votre compte avec un code d'application (Google Authenticator, Authy…) à chaque connexion.",
+    "on": "Activée",
+    "off": "Désactivée",
+    "enable": "Activer",
+    "disable": "Désactiver",
+    "password": "Confirmez votre mot de passe",
+    "scan": "Scannez ce code QR avec l'application, puis saisissez le code à 6 chiffres.",
+    "backup": "Codes de secours (gardez-les, chacun fonctionne une fois)",
+    "code": "Code à 6 chiffres",
+    "activate": "Activer",
+    "invalid": "Code invalide."
+  },
+  "auth2": {
+    "totpTitle": "Validation en deux étapes",
+    "totpIntro": "Saisissez le code à 6 chiffres de votre application.",
+    "backupIntro": "Saisissez un de vos codes de secours.",
+    "verify": "Vérifier",
+    "useBackup": "Pas votre téléphone ? Utilisez un code de secours",
+    "useApp": "Utiliser l'application"
+  },
+  "offline": {
+    "title": "Vous êtes hors ligne",
+    "body": "Vérifiez vos données mobiles ou le Wi-Fi, puis réessayez. Votre panier est conservé.",
+    "retry": "Réessayer"
+  },
+  "dataSaver": {
+    "label": "Économie de données",
+    "hint": "Moins d'images, pas d'animations."
   }
 }

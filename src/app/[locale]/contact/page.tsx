@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ContentPage } from "@/components/ContentPage";
-import { alternates } from "@/lib/seo";
+import { pageSeo } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { WhatsAppIcon } from "@/components/Icons";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "pages" });
-  return { title: t("contactTitle"), alternates: alternates(locale, "/contact") };
+  return pageSeo(locale, "/contact", t("contactTitle"));
 }
 
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
