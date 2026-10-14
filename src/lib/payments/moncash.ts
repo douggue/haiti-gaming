@@ -104,3 +104,14 @@ export async function retrieveByTransaction(transactionId: string): Promise<Monc
     successful: json.payment.message?.toLowerCase() === "successful",
   };
 }
+
+/** MonCash is offered only when enabled in settings AND usable here (credentials set, or mock mode outside production). */
+export function moncashAvailable(enabledInSettings: boolean): boolean {
+  if (!enabledInSettings) return false;
+  try {
+    moncashMode();
+    return true;
+  } catch {
+    return false;
+  }
+}

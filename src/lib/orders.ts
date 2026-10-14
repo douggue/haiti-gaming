@@ -8,6 +8,7 @@ import { chargeOrder, refundOrder } from "./wallet";
 import { assertWithinNewAccountLimit, flag } from "./risk";
 import { notify } from "./notify";
 import { t } from "./text";
+import { moncashAvailable } from "./payments/moncash";
 
 export type FieldDef = {
   key: string;
@@ -60,7 +61,7 @@ export async function createOrder(input: {
 }) {
   const settings = await getSettings();
   const currency: Currency = input.method === "WALLET" ? input.currency : "HTG";
-  if (input.method === "MONCASH" && !settings.moncashEnabled) throw new OrderError("method_unavailable");
+  if (input.method === "MONCASH" && !moncashAvailable(settings.moncashEnabled)) throw new OrderError("method_unavailable");
   if (input.method === "NATCASH" && !settings.natcashEnabled) throw new OrderError("method_unavailable");
 
   const variants = await prisma.productVariant.findMany({

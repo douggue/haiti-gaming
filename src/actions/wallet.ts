@@ -6,13 +6,13 @@ import { prisma } from "@/lib/db";
 import { assertUser } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 import { parseAmount } from "@/lib/money";
-import { createMoncashPayment } from "@/lib/payments/moncash";
+import { createMoncashPayment, moncashAvailable } from "@/lib/payments/moncash";
 import { assertWithinNewAccountLimit, LimitExceededError } from "@/lib/risk";
 import { postExchange, quoteExchange } from "@/lib/wallet";
 import { InsufficientFundsError } from "@/lib/ledger";
 import { addEvent } from "@/lib/orders";
 import { notify } from "@/lib/notify";
-import { savePrivateImage, UploadError } from "@/lib/storage";
+import { savePrivateImage, uploadsEnabled, UploadError } from "@/lib/storage";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -36,7 +36,7 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
   }
 
   if (method === "MONCASH") {
-    if (!settings.moncashEnabled) return { ok: false, error: "method_unavailable" };
+    if (!moncashAvailable(settings.moncashEnabled)) return { ok: false, error: "method_unavailable" };
     const intent = await prisma.paymentIntent.create({ data: { userId: user.id, provider: "MONCASH", amount, currency: "HTG" } });
     return { ok: true, redirect: await createMoncashPayment(intent.id, amount) };
   }
@@ -48,7 +48,7 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
     const phone = phoneSchema.safeParse(form.get("payerPhone") ?? undefined);
     let evidencePath: string | null = null;
     const file = form.get("evidence");
-    if (file instanceof File && file.size > 0) {
+    if (file instanceof File && file.size > 0 && uploadsEnabled()) {
       try {
         evidencePath = await savePrivateImage(file, "evidence");
       } catch (e) {
@@ -83,7 +83,7 @@ export async function submitOrderNatcash(form: FormData): Promise<ActionResult> 
   if (!order) return { ok: false, error: "not_found" };
   let evidencePath: string | null = null;
   const file = form.get("evidence");
-  if (file instanceof File && file.size > 0) {
+  if (file instanceof File && file.size > 0 && uploadsEnabled()) {
     try {
       evidencePath = await savePrivateImage(file, "evidence");
     } catch {

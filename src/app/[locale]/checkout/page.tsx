@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { getBalances } from "@/lib/ledger";
 import { getSettings } from "@/lib/settings";
+import { moncashAvailable } from "@/lib/payments/moncash";
 import { CheckoutForm } from "@/components/cart/CheckoutForm";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -21,7 +22,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
     <div className="container-page py-8 sm:py-12">
       <CheckoutForm
         balances={{ HTG: balances.HTG.available, USD: balances.USD.available }}
-        moncashEnabled={settings.moncashEnabled}
+        moncashEnabled={moncashAvailable(settings.moncashEnabled)}
         natcashEnabled={settings.natcashEnabled}
       />
     </div>

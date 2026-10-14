@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireUser } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
+import { moncashAvailable } from "@/lib/payments/moncash";
 import { DepositForm } from "@/components/DepositForm";
 import { Link } from "@/i18n/navigation";
 
@@ -17,7 +18,7 @@ export default async function DepositPage({ params }: { params: Promise<{ locale
         <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">{tw("depositTitle")}</h1>
       </div>
       <DepositForm
-        moncash={s.moncashEnabled}
+        moncash={moncashAvailable(s.moncashEnabled)}
         natcash={s.natcashEnabled}
         recipientName={s.natcashRecipientName}
         recipientPhone={s.natcashRecipientPhone}

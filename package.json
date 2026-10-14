@@ -12,12 +12,15 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "setup:admin": "tsx scripts/create-admin.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1151.0",
     "@node-rs/argon2": "^2.2.2",
     "@prisma/client": "^6.19.3",
     "better-auth": "^1.7.7",

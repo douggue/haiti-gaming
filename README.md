@@ -50,14 +50,16 @@ The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delive
 
 ## Deploying to Vercel
 
-1. Create a managed PostgreSQL database (Neon or Supabase) and set the env vars from `.env.example` in Vercel.
-2. Build command `npm run build`; run `npm run db:deploy` against production before the first deploy.
-3. `vercel.json` schedules `/api/cron/maintenance` every 10 minutes (MonCash polling, hold release, expiry). Set `CRON_SECRET`; Vercel sends it automatically.
-4. In the MonCash merchant portal set the return URL to `https://<domain>/api/payments/moncash/return` and the alert URL to `/api/payments/moncash/callback`.
+1. **Database:** create a PostgreSQL database on Neon or Supabase. Set `DATABASE_URL` to the *pooled* connection string and `DIRECT_URL` to the direct one.
+2. **Storage:** create a Cloudflare R2 (or S3) bucket for NatCash payment screenshots and set the `S3_*` variables. Without it, customers can still pay with a reference number, but screenshots are skipped.
+3. **Environment variables:** in Vercel → Settings → Environment Variables, add everything from `.env.example`. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to your real domain (e.g. `https://haitigaming.com`). Generate new `BETTER_AUTH_SECRET`, `ENCRYPTION_KEY` and `CRON_SECRET`. **Keep `ENCRYPTION_KEY` safe and never change it**: stored gift-card codes cannot be read without it.
+4. **Deploy:** import the repository in Vercel. The `vercel-build` script runs `prisma migrate deploy` automatically before each build.
+5. **First admin:** from your computer, with `DATABASE_URL`/`DIRECT_URL` pointing at production, run `npm run setup:admin -- --email you@example.com`, then sign in at `/admin/login` and set up 2FA. Optionally run `npm run db:seed` for demo products (delete the demo codes before launch).
+6. **MonCash:** until `MONCASH_CLIENT_ID`/`MONCASH_CLIENT_SECRET` are set, MonCash is hidden at checkout in production. In the MonCash merchant portal set the return URL to `https://<domain>/api/payments/moncash/return` and the alert URL to `https://<domain>/api/payments/moncash/callback`.
+7. **Cron:** `vercel.json` runs `/api/cron/maintenance` once a day (the Hobby plan limit). On the Pro plan, change the schedule to `*/10 * * * *` so missed MonCash callbacks are recovered and held deposits are released within minutes.
 
 ## Not done yet (needs accounts, decisions or a later stage)
 
-- **Payment evidence storage** uses local disk (`src/lib/storage.ts`). Vercel's filesystem is not persistent: switch it to Cloudflare R2/S3 before production.
 - **Email** (verification, receipts) and **WhatsApp/SMS** notifications: notifications are stored in-app; provider adapters plug into `src/lib/notify.ts` once Resend/WhatsApp accounts exist. Email verification is therefore not enforced yet.
 - **Phone sign-in**, **referrals**, **support tickets**, **news/CMS page builder**, **theme builder** and **analytics exports** from the blueprint are not built.
 - **Supplier API fulfillment**: products can be marked `SUPPLIER_API` but are delivered manually until a supplier adapter is written for a signed supplier.
