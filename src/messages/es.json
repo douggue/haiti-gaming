@@ -219,7 +219,9 @@
     "noActivity": "Aún no hay actividad.",
     "profile": "Perfil",
     "security": "Seguridad",
-    "emailUnverified": "Tu correo aún no está verificado."
+    "emailUnverified": "Tu correo aún no está verificado.",
+    "resendVerification": "Reenviar correo de confirmación",
+    "verificationSent": "Te enviamos un correo de confirmación."
   },
   "wallet": {
     "title": "Billetera",
@@ -279,7 +281,23 @@
     "blocked": "Esta cuenta no está activa. Contacta a soporte.",
     "passwordHint": "Al menos 8 caracteres.",
     "tooMany": "Demasiados intentos. Espera un minuto.",
-    "exists": "Ya existe una cuenta con este correo."
+    "exists": "Ya existe una cuenta con este correo.",
+    "forgot": "¿Olvidaste tu contraseña?",
+    "forgotTitle": "Restablece tu contraseña",
+    "forgotIntro": "Ingresa el correo de tu cuenta. Te enviaremos un enlace para elegir una nueva contraseña.",
+    "forgotSend": "Enviar el enlace",
+    "forgotSent": "Si existe una cuenta con este correo, recibirás un enlace. Revisa tu bandeja de entrada (y spam).",
+    "forgotWhatsappIntro": "Por tu seguridad, nuestro equipo te ayuda a restablecer tu contraseña por WhatsApp. Escríbenos con el correo de tu cuenta: verificamos que eres tú y te enviamos un enlace.",
+    "forgotWhatsappButton": "Pedir ayuda por WhatsApp",
+    "forgotWhatsappMessage": "Hola Haiti Gaming, olvidé mi contraseña. El correo de mi cuenta es: {email}",
+    "emailPlaceholder": "Correo de tu cuenta",
+    "resetTitle": "Elige una nueva contraseña",
+    "resetSave": "Guardar nueva contraseña",
+    "resetDone": "Contraseña cambiada. Ya puedes iniciar sesión.",
+    "resetInvalid": "Este enlace ya no es válido o expiró. Solicita uno nuevo.",
+    "compromised": "Esta contraseña apareció en una filtración de datos. Elige otra.",
+    "signupFailed": "No pudimos crear una cuenta con estos datos. Si ya tienes una cuenta, inicia sesión o restablece tu contraseña.",
+    "backToLogin": "Volver a iniciar sesión"
   },
   "profile": {
     "title": "Perfil",

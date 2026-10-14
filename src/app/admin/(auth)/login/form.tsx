@@ -7,6 +7,7 @@ import { Logo } from "@/components/Logo";
 export function AdminLoginForm() {
   const router = useRouter();
   const [step, setStep] = useState<"password" | "totp">("password");
+  const [useBackup, setUseBackup] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -19,7 +20,10 @@ export function AdminLoginForm() {
     const f = new FormData(e.currentTarget);
     const res = await authClient.signIn.email({ email: String(f.get("email")), password: String(f.get("password")) });
     setBusy(false);
-    if (res.error) return setError(res.error.status === 429 ? "Too many attempts. Wait a minute." : "Invalid email or password.");
+    if (res.error) {
+      const code = (res.error as { code?: string }).code;
+      return setError(res.error.status === 429 ? "Too many attempts. Wait a minute." : code === "ACCOUNT_BLOCKED" ? "This account is suspended." : "Invalid email or password.");
+    }
     if ((res.data as { twoFactorRedirect?: boolean })?.twoFactorRedirect) return setStep("totp");
     router.push("/admin");
     router.refresh();
@@ -30,7 +34,7 @@ export function AdminLoginForm() {
     setBusy(true);
     setError("");
     const code = String(new FormData(e.currentTarget).get("code")).replace(/\s/g, "");
-    const res = await authClient.twoFactor.verifyTotp({ code });
+    const res = useBackup ? await authClient.twoFactor.verifyBackupCode({ code }) : await authClient.twoFactor.verifyTotp({ code });
     setBusy(false);
     if (res.error) return setError("Invalid code.");
     router.push("/admin");
@@ -50,10 +54,17 @@ export function AdminLoginForm() {
         </form>
       ) : (
         <form method="post" onSubmit={onTotp} className="mt-4 space-y-4">
-          <p className="text-sm text-muted">Enter the 6-digit code from your authenticator app.</p>
-          <input name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" required autoFocus className="input text-center text-2xl tracking-[0.4em]" />
+          <p className="text-sm text-muted">{useBackup ? "Enter one of your backup codes. Each code works once." : "Enter the 6-digit code from your authenticator app."}</p>
+          {useBackup ? (
+            <input key="backup" name="code" autoComplete="off" required autoFocus className="input text-center font-mono text-lg" aria-label="Backup code" />
+          ) : (
+            <input key="totp" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,7}" required autoFocus className="input text-center text-2xl tracking-[0.4em]" aria-label="Authenticator code" />
+          )}
           {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{error}</p>}
           <button className="btn-primary w-full" disabled={busy}>Verify</button>
+          <button type="button" className="w-full text-center text-sm text-primary" onClick={() => { setUseBackup(!useBackup); setError(""); }}>
+            {useBackup ? "Use authenticator app instead" : "Lost your phone? Use a backup code"}
+          </button>
         </form>
       )}
     </div>

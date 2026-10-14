@@ -37,10 +37,12 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           } as Parameters<typeof authClient.signUp.email>[0]);
     setLoading(false);
     if (res.error) {
-      const status = res.error.status;
+      const { status, code } = res.error as { status: number; code?: string };
       if (status === 429) setError(t("tooMany"));
-      else if (mode === "register" && (res.error.code === "USER_ALREADY_EXISTS" || status === 422)) setError(t("exists"));
-      else if (mode === "register") setError(res.error.message ?? tc("error"));
+      else if (code === "ACCOUNT_BLOCKED" || status === 403) setError(t("blocked"));
+      else if (code === "PASSWORD_COMPROMISED") setError(t("compromised"));
+      // Same message whether or not the email is registered, so the form can't be used to look up accounts.
+      else if (mode === "register") setError(t("signupFailed"));
       else setError(t("invalid"));
       return;
     }
@@ -81,6 +83,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           className="input"
         />
         {mode === "register" && <p className="mt-1 text-xs text-muted">{t("passwordHint")}</p>}
+        {mode === "login" && (
+          <Link href="/auth/forgot" className="mt-2 inline-block text-sm font-semibold text-primary">{t("forgot")}</Link>
+        )}
       </div>
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
       <button className="btn-primary w-full" disabled={loading || !hydrated}>

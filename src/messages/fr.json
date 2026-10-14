@@ -219,7 +219,9 @@
     "noActivity": "Aucune activité pour l'instant.",
     "profile": "Profil",
     "security": "Sécurité",
-    "emailUnverified": "Votre e-mail n'est pas encore vérifié."
+    "emailUnverified": "Votre e-mail n'est pas encore vérifié.",
+    "resendVerification": "Renvoyer l'e-mail de confirmation",
+    "verificationSent": "Un e-mail de confirmation vous a été envoyé."
   },
   "wallet": {
     "title": "Portefeuille",
@@ -279,7 +281,23 @@
     "blocked": "Ce compte n'est pas actif. Contactez le support.",
     "passwordHint": "Au moins 8 caractères.",
     "tooMany": "Trop de tentatives. Patientez une minute.",
-    "exists": "Un compte existe déjà avec cet e-mail."
+    "exists": "Un compte existe déjà avec cet e-mail.",
+    "forgot": "Mot de passe oublié ?",
+    "forgotTitle": "Réinitialiser votre mot de passe",
+    "forgotIntro": "Saisissez l'e-mail de votre compte. Nous vous enverrons un lien pour choisir un nouveau mot de passe.",
+    "forgotSend": "Envoyer le lien",
+    "forgotSent": "Si un compte existe avec cet e-mail, vous recevrez un lien. Vérifiez votre boîte de réception (et les spams).",
+    "forgotWhatsappIntro": "Pour votre sécurité, notre équipe vous aide à réinitialiser votre mot de passe sur WhatsApp. Écrivez-nous avec l'e-mail de votre compte : nous vérifions votre identité et vous envoyons un lien.",
+    "forgotWhatsappButton": "Demander de l'aide sur WhatsApp",
+    "forgotWhatsappMessage": "Bonjour Haiti Gaming, j'ai oublié mon mot de passe. L'e-mail de mon compte est : {email}",
+    "emailPlaceholder": "E-mail de votre compte",
+    "resetTitle": "Choisissez un nouveau mot de passe",
+    "resetSave": "Enregistrer le nouveau mot de passe",
+    "resetDone": "Mot de passe modifié. Vous pouvez vous connecter.",
+    "resetInvalid": "Ce lien n'est plus valide ou a expiré. Demandez-en un nouveau.",
+    "compromised": "Ce mot de passe est apparu dans une fuite de données. Choisissez-en un autre.",
+    "signupFailed": "Impossible de créer un compte avec ces informations. Si vous avez déjà un compte, connectez-vous ou réinitialisez votre mot de passe.",
+    "backToLogin": "Retour à la connexion"
   },
   "profile": {
     "title": "Profil",

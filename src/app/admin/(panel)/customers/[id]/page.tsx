@@ -6,7 +6,8 @@ import { can } from "@/lib/permissions";
 import { getBalances } from "@/lib/ledger";
 import { formatMoney } from "@/lib/money";
 import { randomToken } from "@/lib/crypto";
-import { adjustCustomerWallet, setCustomerStatus } from "@/actions/admin";
+import { adjustCustomerWallet, createPasswordResetLink, setCustomerStatus } from "@/actions/admin";
+import { ResetLinkButton } from "@/components/admin/ResetLinkButton";
 import { ActionButton, ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle, Stat } from "@/components/admin/ui";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -69,6 +70,7 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
             <button className="btn-primary min-h-9 px-4 text-xs">Post adjustment</button>
           </ActionForm>
         )}
+        {can(staff.role, "customers.manage") && user.id !== staff.id && <ResetLinkButton action={createPasswordResetLink.bind(null, id)} />}
         {entries.length > 0 && (
           <section className="card p-5">
             <h2 className="mb-3 font-semibold">Ledger</h2>

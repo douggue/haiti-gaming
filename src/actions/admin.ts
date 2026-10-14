@@ -405,3 +405,45 @@ export async function uploadImage(form: FormData): Promise<{ ok: true; url: stri
     return { ok: false, error: e instanceof Error ? e.message : "Upload failed" };
   }
 }
+
+// ───────────── Account recovery ─────────────
+
+/**
+ * One-time password reset link for a customer who contacted support (used while email is not configured).
+ * Uses Better Auth's own reset token format, valid 1 hour and single-use. Staff must verify identity first.
+ */
+export async function createPasswordResetLink(userId: string): Promise<{ ok: true; url: string; phone: string | null } | { ok: false; error: string }> {
+  try {
+    const staff = await assertStaff("customers.manage");
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    if (user.role !== "CUSTOMER" && staff.role !== "SUPER_ADMIN") return { ok: false, error: "Only a Super Admin can reset a staff password" };
+    const token = randomToken(24);
+    await prisma.verification.deleteMany({ where: { identifier: { startsWith: "reset-password:" }, value: user.id } });
+    await prisma.verification.create({
+      data: { id: randomToken(16), identifier: `reset-password:${token}`, value: user.id, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
+    });
+    await audit(staff.id, "password.reset_link", "User", user.id);
+    const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    return { ok: true, url: `${site}/${user.locale}/auth/reset?token=${token}`, phone: user.phone };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Error" };
+  }
+}
+
+/** Super Admin resets a staff member's lost authenticator; they set it up again at next sign-in. */
+export async function resetStaffTwoFactor(userId: string): Promise<R> {
+  try {
+    const staff = await assertStaff("staff.manage");
+    if (userId === staff.id) return { ok: false, error: "You cannot reset your own two-factor authentication" };
+    await prisma.$transaction([
+      prisma.twoFactor.deleteMany({ where: { userId } }),
+      prisma.user.update({ where: { id: userId }, data: { twoFactorEnabled: false } }),
+      prisma.session.deleteMany({ where: { userId } }),
+    ]);
+    await audit(staff.id, "staff.2fa_reset", "User", userId);
+    revalidatePath("/admin/staff");
+    return { ok: true, message: "Two-factor reset. They will set it up again at next sign-in." };
+  } catch (e) {
+    return fail(e);
+  }
+}

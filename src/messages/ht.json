@@ -219,7 +219,9 @@
     "noActivity": "Poko gen aktivite nan bous la.",
     "profile": "Pwofil",
     "security": "Sekirite",
-    "emailUnverified": "Imèl ou poko verifye."
+    "emailUnverified": "Imèl ou poko verifye.",
+    "resendVerification": "Voye imèl konfimasyon an ankò",
+    "verificationSent": "Nou voye yon imèl konfimasyon ba ou."
   },
   "wallet": {
     "title": "Bous",
@@ -279,7 +281,23 @@
     "blocked": "Kont sa a pa aktif. Tanpri kontakte sipò.",
     "passwordHint": "Omwen 8 karaktè.",
     "tooMany": "Twòp tantativ. Tanpri tann yon minit.",
-    "exists": "Gen yon kont ak imèl sa a deja."
+    "exists": "Gen yon kont ak imèl sa a deja.",
+    "forgot": "Ou bliye modpas ou?",
+    "forgotTitle": "Chanje modpas ou",
+    "forgotIntro": "Mete imèl kont ou. N ap voye yon lyen pou w chwazi yon nouvo modpas.",
+    "forgotSend": "Voye lyen an",
+    "forgotSent": "Si gen yon kont ak imèl sa a, n ap voye yon lyen ba ou. Gade imèl ou (ak dosye spam lan).",
+    "forgotWhatsappIntro": "Pou sekirite w, ekip nou an ap ede w chanje modpas ou sou WhatsApp. Ekri nou ak imèl kont ou, n ap verifye se ou epi n ap voye yon lyen ba ou.",
+    "forgotWhatsappButton": "Mande èd sou WhatsApp",
+    "forgotWhatsappMessage": "Bonjou Haiti Gaming, mwen bliye modpas mwen. Imèl kont mwen se: {email}",
+    "emailPlaceholder": "Imèl kont ou",
+    "resetTitle": "Chwazi yon nouvo modpas",
+    "resetSave": "Anrejistre nouvo modpas la",
+    "resetDone": "Modpas ou chanje. Ou ka konekte kounye a.",
+    "resetInvalid": "Lyen sa a pa bon ankò oswa li ekspire. Mande yon lòt.",
+    "compromised": "Modpas sa a te parèt nan yon fuit done sou entènèt. Chwazi yon lòt.",
+    "signupFailed": "Nou pa t ka kreye kont lan ak enfòmasyon sa yo. Si ou gen yon kont deja, konekte oswa chanje modpas ou.",
+    "backToLogin": "Retounen pou konekte"
   },
   "profile": {
     "title": "Pwofil",

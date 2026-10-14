@@ -32,6 +32,7 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 | Fraud controls | One-time NatCash references (DB-unique), new-account daily limits, holds on large deposits, high-value order review queue, amount-mismatch flags, rate-limited auth |
 | Images | Upload in the admin (JPG/PNG/WebP, up to 5 MB, content-checked): product main image + gallery of up to 8, category images, logo (light and dark), homepage hero image, social-share image. Stored on Vercel Blob (public), served through Next.js image optimization (AVIF/WebP, responsive sizes). Anything without an image falls back to a generated tile, the category emoji or the built-in logo |
 | Admin | Dashboard, orders, payment review, risk queue, products/variants/categories in 4 languages, code import, customers (status, wallet adjustments), ledger, staff roles, settings (rate, limits, NatCash recipient, WhatsApp, announcement), audit log |
+| Accounts | Email sign-up/sign-in/sign-out; passwords checked against known breaches (Have I Been Pwned, k-anonymity, fails open); sign-up errors don't reveal registered emails; suspended accounts refused at sign-in; forgot/reset password (email via Resend when configured, otherwise WhatsApp support + one-time admin reset link, 1 hour, single use, signs out all devices); email verification once email is configured; staff backup codes and Super Admin 2FA reset |
 | Security | Argon2id, HttpOnly sessions, mandatory staff TOTP, server-side permission checks on every admin page and action, audit trail for approvals, adjustments, code reveals and role changes, security headers |
 
 ### Ledger guarantees (enforced in PostgreSQL, not only in code)
@@ -44,7 +45,7 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 
 ```bash
 TEST_DATABASE_URL=postgresql://…/haiti_gaming_test npm test       # ledger, concurrency, idempotency, exchange, crypto (14 tests)
-npx playwright test                                              # end-to-end journeys + image uploads against a running dev server
+npx playwright test                                              # journeys, image uploads and account security against a running dev server
 ```
 
 The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delivered; NatCash deposit and duplicate-reference rejection; admin 2FA setup and approval; wallet purchase of a manual top-up delivered by staff; HTG→USD exchange.
@@ -61,7 +62,7 @@ The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delive
 
 ## Not done yet (needs accounts, decisions or a later stage)
 
-- **Email** (verification, receipts) and **WhatsApp/SMS** notifications: notifications are stored in-app; provider adapters plug into `src/lib/notify.ts` once Resend/WhatsApp accounts exist. Email verification is therefore not enforced yet.
+- **Email** is ready but off: set `RESEND_API_KEY` and `EMAIL_FROM` once your domain is verified in Resend, and password-reset and verification emails start automatically. Order/deposit notification emails and **WhatsApp/SMS** messages are not sent yet (in-app only); they plug into `src/lib/notify.ts`.
 - **Phone sign-in**, **referrals**, **support tickets**, **news/CMS page builder**, **theme builder** and **analytics exports** from the blueprint are not built.
 - **Supplier API fulfillment**: products can be marked `SUPPLIER_API` but are delivered manually until a supplier adapter is written for a signed supplier.
 - **Roles** are the six starter roles in code (`src/lib/permissions.ts`), not an editable role builder.

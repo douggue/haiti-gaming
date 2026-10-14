@@ -1,25 +1,59 @@
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
 import { hash, verify } from "@node-rs/argon2";
 import { prisma } from "./db";
+import { emailEnabled, sendPasswordResetEmail, sendVerificationEmail } from "./email";
+import { isPasswordBreached } from "./password-check";
 
 // Argon2id parameters (OWASP recommended minimums)
 const argonOpts = { memoryCost: 19456, timeCost: 2, parallelism: 1, algorithm: 2 as const };
+const site = () => process.env.NEXT_PUBLIC_SITE_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+
+type AuthUser = { email: string; name: string; locale?: string | null };
+
+// Sign-in also works from Vercel preview URLs and any extra origins listed in TRUSTED_ORIGINS (comma-separated).
+const trustedOrigins = [
+  ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+  ...(process.env.VERCEL_BRANCH_URL ? [`https://${process.env.VERCEL_BRANCH_URL}`] : []),
+  ...(process.env.TRUSTED_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+];
 
 export const auth = betterAuth({
   appName: "Haiti Gaming",
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  trustedOrigins,
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
-    // Email verification turns on once an email provider is configured (see /admin/settings).
+    // Customers can always sign in; verification is encouraged once email is configured, not forced.
     requireEmailVerification: false,
+    resetPasswordTokenExpiresIn: 60 * 60,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, token }) => {
+      const u = user as AuthUser;
+      await sendPasswordResetEmail(u, `${site()}/${u.locale ?? "ht"}/auth/reset?token=${token}`);
+    },
     password: {
-      hash: (password) => hash(password, argonOpts),
+      // Every new password (sign-up, reset, change) is checked against known data breaches before hashing.
+      hash: async (password) => {
+        if (await isPasswordBreached(password)) {
+          throw APIError.from("BAD_REQUEST", { code: "PASSWORD_COMPROMISED", message: "This password appeared in a data breach. Choose a different one." });
+        }
+        return hash(password, argonOpts);
+      },
       verify: ({ hash: hashed, password }) => verify(hashed, password),
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: emailEnabled(),
+    autoSignInAfterVerification: true,
+    expiresIn: 60 * 60 * 24,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerificationEmail(user as AuthUser, url);
     },
   },
   user: {
@@ -35,6 +69,19 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 14,
     updateAge: 60 * 60 * 24,
   },
+  databaseHooks: {
+    session: {
+      create: {
+        // Suspended or closed accounts are refused at sign-in, not after.
+        before: async (session) => {
+          const u = await prisma.user.findUnique({ where: { id: session.userId }, select: { status: true } });
+          if (u && (u.status === "SUSPENDED" || u.status === "CLOSED")) {
+            throw APIError.from("FORBIDDEN", { code: "ACCOUNT_BLOCKED", message: "This account is not active." });
+          }
+        },
+      },
+    },
+  },
   rateLimit: {
     enabled: true,
     storage: "database",
@@ -43,7 +90,11 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 60, max: 3 },
+      "/request-password-reset": { window: 300, max: 3 },
+      "/reset-password": { window: 60, max: 5 },
+      "/send-verification-email": { window: 300, max: 3 },
       "/two-factor/verify-totp": { window: 60, max: 5 },
+      "/two-factor/verify-backup-code": { window: 60, max: 5 },
     },
   },
   advanced: {

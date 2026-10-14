@@ -219,7 +219,9 @@
     "noActivity": "No wallet activity yet.",
     "profile": "Profile",
     "security": "Security",
-    "emailUnverified": "Your email is not verified yet."
+    "emailUnverified": "Your email is not verified yet.",
+    "resendVerification": "Resend confirmation email",
+    "verificationSent": "We sent you a confirmation email."
   },
   "wallet": {
     "title": "Wallet",
@@ -279,7 +281,23 @@
     "blocked": "This account is not active. Please contact support.",
     "passwordHint": "At least 8 characters.",
     "tooMany": "Too many attempts. Please wait a minute.",
-    "exists": "An account with this email already exists."
+    "exists": "An account with this email already exists.",
+    "forgot": "Forgot your password?",
+    "forgotTitle": "Reset your password",
+    "forgotIntro": "Enter your account email. We'll send you a link to choose a new password.",
+    "forgotSend": "Send the link",
+    "forgotSent": "If an account exists with this email, you'll receive a link. Check your inbox (and spam).",
+    "forgotWhatsappIntro": "For your security, our team helps you reset your password on WhatsApp. Message us with your account email: we check it's you and send you a reset link.",
+    "forgotWhatsappButton": "Get help on WhatsApp",
+    "forgotWhatsappMessage": "Hello Haiti Gaming, I forgot my password. My account email is: {email}",
+    "emailPlaceholder": "Your account email",
+    "resetTitle": "Choose a new password",
+    "resetSave": "Save new password",
+    "resetDone": "Password changed. You can sign in now.",
+    "resetInvalid": "This link is no longer valid or has expired. Request a new one.",
+    "compromised": "This password appeared in a data breach. Choose a different one.",
+    "signupFailed": "We couldn't create an account with these details. If you already have an account, sign in or reset your password.",
+    "backToLogin": "Back to sign in"
   },
   "profile": {
     "title": "Profile",

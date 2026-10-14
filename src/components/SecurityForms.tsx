@@ -26,7 +26,7 @@ export function SecurityForms() {
             revokeOtherSessions: true,
           });
           setBusy(false);
-          setMsg(r.error ? { ok: false, text: ta("invalid") } : { ok: true, text: ts("passwordChanged") });
+          setMsg(r.error ? { ok: false, text: (r.error as { code?: string }).code === "PASSWORD_COMPROMISED" ? ta("compromised") : ta("invalid") } : { ok: true, text: ts("passwordChanged") });
           if (!r.error) (e.target as HTMLFormElement).reset();
         }}
       >
