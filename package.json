@@ -14,7 +14,7 @@
     "setup:admin": "tsx scripts/create-admin.ts",
     "test": "vitest run",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "node scripts/vercel-build.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

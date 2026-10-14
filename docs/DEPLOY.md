@@ -101,7 +101,7 @@ The setup page closes for good after the first admin exists.
 ## If something goes wrong
 | Problem | Fix |
 |---|---|
-| Build says `DATABASE_URL` / `DATABASE_URL_UNPOOLED` not found | The Neon database isn't connected to this project for that environment (step 2.1). If Neon named the variables differently, add `DATABASE_URL_UNPOOLED` yourself: Neon console → Connect → turn **Connection pooling** off → copy |
+| Build says "No database connected" | Connect the Neon database to this project for Production **and** Preview (step 2.1), then redeploy. The build accepts the usual variable names (`DATABASE_URL`, `POSTGRES_URL`, `DATABASE_URL_UNPOOLED`, `POSTGRES_URL_NON_POOLING`) |
 | Setup page: "doesn't match CRON_SECRET" | Copy the value again with no spaces. After changing a variable, you must **redeploy** |
 | Setup page: "ENCRYPTION_KEY is missing or wrong" | It must be the output of `openssl rand -base64 32` (44 characters ending in `=`) |
 | "Invalid origin" when signing in on a custom domain | Set `NEXT_PUBLIC_SITE_URL` to that domain and redeploy |
