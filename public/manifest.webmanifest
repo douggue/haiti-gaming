@@ -1,0 +1,9 @@
+{
+  "name": "Haiti Gaming",
+  "short_name": "Haiti Gaming",
+  "start_url": "/ht",
+  "display": "standalone",
+  "background_color": "#050B18",
+  "theme_color": "#1467F5",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

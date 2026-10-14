@@ -1,0 +1,365 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { Prisma, type FulfillmentType, type Role } from "@prisma/client";
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { assertStaff } from "@/lib/session";
+import { audit } from "@/lib/audit";
+import { encrypt, hmac, randomToken } from "@/lib/crypto";
+import { completePayment, rejectPayment } from "@/lib/payments/complete";
+import { deliverItemManually, fulfillOrder, refundOrCancel, revealCode } from "@/lib/orders";
+import { adjustWallet } from "@/lib/wallet";
+import { parseAmount } from "@/lib/money";
+import { DEFAULT_SETTINGS, setSetting, type Settings } from "@/lib/settings";
+import { notify } from "@/lib/notify";
+import { InsufficientFundsError } from "@/lib/ledger";
+
+type R = { ok: true; message?: string } | { ok: false; error: string };
+const fail = (e: unknown): R => ({ ok: false, error: e instanceof Error ? e.message : "Unexpected error" });
+
+// ───────────── Payments ─────────────
+
+export async function approvePayment(intentId: string, note: string): Promise<R> {
+  try {
+    const staff = await assertStaff("payments.review");
+    const r = await completePayment(intentId, { actorId: staff.id, note: note.slice(0, 500) || undefined });
+    await audit(staff.id, "payment.approve", "PaymentIntent", intentId, { held: r.held, already: r.already });
+    revalidatePath("/admin/payments");
+    return { ok: true, message: r.already ? "Already approved" : r.held ? "Approved (held)" : "Approved" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function rejectPaymentAction(intentId: string, note: string): Promise<R> {
+  try {
+    const staff = await assertStaff("payments.review");
+    if (note.trim().length < 3) return { ok: false, error: "A reason is required" };
+    await rejectPayment(intentId, staff.id, note.trim());
+    await audit(staff.id, "payment.reject", "PaymentIntent", intentId, { note });
+    revalidatePath("/admin/payments");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ───────────── Orders ─────────────
+
+export async function runFulfillment(orderId: string): Promise<R> {
+  try {
+    const staff = await assertStaff("orders.manage");
+    const r = await fulfillOrder(orderId, staff.id);
+    await audit(staff.id, "order.fulfill.run", "Order", orderId, { result: r });
+    revalidatePath(`/admin/orders/${orderId}`);
+    return { ok: true, message: r?.fulfilled ? "Order fulfilled" : "Some items still need manual delivery or restock" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function deliverItem(itemId: string, note: string): Promise<R> {
+  try {
+    const staff = await assertStaff("orders.manage");
+    if (note.trim().length < 2) return { ok: false, error: "Write a delivery note for the customer" };
+    const item = await prisma.orderItem.findUniqueOrThrow({ where: { id: itemId }, include: { order: true } });
+    if (!["PAID", "PROCESSING"].includes(item.order.status)) return { ok: false, error: `Order is ${item.order.status}` };
+    const open = await prisma.riskFlag.count({ where: { orderId: item.orderId, status: "OPEN" } });
+    if (open) return { ok: false, error: "Resolve the open risk flag first" };
+    await deliverItemManually(itemId, note.trim(), staff.id);
+    await audit(staff.id, "order.item.deliver", "OrderItem", itemId, { orderId: item.orderId });
+    revalidatePath(`/admin/orders/${item.orderId}`);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function refundOrder(orderId: string, reason: string): Promise<R> {
+  try {
+    const staff = await assertStaff("orders.manage");
+    if (reason.trim().length < 3) return { ok: false, error: "A reason is required" };
+    const outcome = await refundOrCancel(orderId, staff.id, reason.trim());
+    await audit(staff.id, `order.${outcome}`, "Order", orderId, { reason });
+    revalidatePath(`/admin/orders/${orderId}`);
+    return { ok: true, message: outcome === "refunded" ? "Refunded to wallet" : "Order canceled" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function revealOrderCodes(orderId: string, reason: string): Promise<{ ok: true; codes: { item: string; code: string }[] } | { ok: false; error: string }> {
+  try {
+    const staff = await assertStaff("codes.reveal");
+    if (reason.trim().length < 3) return { ok: false, error: "A reason is required" };
+    const items = await prisma.orderItem.findMany({ where: { orderId }, include: { codes: true } });
+    await audit(staff.id, "code.view.staff", "Order", orderId, { reason });
+    return { ok: true, codes: items.flatMap((i) => i.codes.map((c) => ({ item: i.id, code: revealCode(c.codeEncrypted) }))) };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Error" };
+  }
+}
+
+// ───────────── Risk ─────────────
+
+export async function resolveRisk(flagId: string, decision: "APPROVED" | "REJECTED"): Promise<R> {
+  try {
+    const staff = await assertStaff("risk.manage");
+    const f = await prisma.riskFlag.update({
+      where: { id: flagId },
+      data: { status: decision, resolvedById: staff.id, resolvedAt: new Date() },
+    });
+    await audit(staff.id, `risk.${decision.toLowerCase()}`, "RiskFlag", flagId, { orderId: f.orderId });
+    if (f.orderId) {
+      if (decision === "APPROVED") await fulfillOrder(f.orderId, staff.id);
+      else await refundOrCancel(f.orderId, staff.id, "Rejected by risk review");
+    }
+    revalidatePath("/admin/risk");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ───────────── Catalog ─────────────
+
+const localized = (form: FormData, prefix: string) => ({
+  ht: String(form.get(`${prefix}_ht`) ?? "").trim(),
+  fr: String(form.get(`${prefix}_fr`) ?? "").trim(),
+  en: String(form.get(`${prefix}_en`) ?? "").trim(),
+  es: String(form.get(`${prefix}_es`) ?? "").trim(),
+});
+
+const fieldDefSchema = z.array(
+  z.object({
+    key: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{0,30}$/),
+    label: z.record(z.string().max(60)),
+    type: z.enum(["text", "email", "number", "tel"]),
+    required: z.boolean(),
+    placeholder: z.string().max(60).optional(),
+  }),
+).max(8);
+
+export async function saveProduct(form: FormData): Promise<R & { id?: string }> {
+  try {
+    const staff = await assertStaff("catalog.manage");
+    const id = String(form.get("id") ?? "") || null;
+    const slug = String(form.get("slug") ?? "").trim().toLowerCase();
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return { ok: false, error: "Slug must be lowercase letters, numbers and dashes" };
+    const name = localized(form, "name");
+    if (!name.ht && !name.fr) return { ok: false, error: "Name in Kreyòl or French is required" };
+    let fields: unknown;
+    try {
+      fields = fieldDefSchema.parse(JSON.parse(String(form.get("fields") || "[]")));
+    } catch {
+      return { ok: false, error: "Custom fields JSON is invalid" };
+    }
+    const data = {
+      slug,
+      categoryId: String(form.get("categoryId")),
+      name,
+      description: localized(form, "description"),
+      deliveryEstimate: localized(form, "delivery"),
+      seoTitle: localized(form, "seoTitle"),
+      seoDescription: localized(form, "seoDescription"),
+      accent: /^#[0-9a-fA-F]{6}$/.test(String(form.get("accent"))) ? String(form.get("accent")) : null,
+      fulfillmentType: String(form.get("fulfillmentType")) as FulfillmentType,
+      isPublished: form.get("isPublished") === "on",
+      isFeatured: form.get("isFeatured") === "on",
+      sortOrder: Number(form.get("sortOrder") ?? 0) || 0,
+      fields: fields as Prisma.InputJsonValue,
+    };
+    const product = id ? await prisma.product.update({ where: { id }, data }) : await prisma.product.create({ data });
+    await audit(staff.id, id ? "product.update" : "product.create", "Product", product.id, { slug });
+    revalidatePath("/admin/products");
+    revalidatePath("/", "layout");
+    return { ok: true, id: product.id };
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return { ok: false, error: "That slug is already used" };
+    return fail(e);
+  }
+}
+
+export async function saveVariant(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("catalog.manage");
+    const id = String(form.get("id") ?? "") || null;
+    const productId = String(form.get("productId"));
+    const price = parseAmount(String(form.get("price") ?? ""));
+    const saleRaw = String(form.get("salePrice") ?? "").trim();
+    const sale = saleRaw ? parseAmount(saleRaw) : null;
+    if (!price) return { ok: false, error: "Price is required (HTG)" };
+    if (saleRaw && (!sale || sale >= price)) return { ok: false, error: "Sale price must be lower than the price" };
+    const data = {
+      name: localized(form, "vname"),
+      priceHtg: price,
+      salePriceHtg: sale,
+      sortOrder: Number(form.get("sortOrder") ?? 0) || 0,
+      isActive: form.get("isActive") === "on",
+    };
+    const v = id ? await prisma.productVariant.update({ where: { id }, data }) : await prisma.productVariant.create({ data: { ...data, productId } });
+    await audit(staff.id, id ? "variant.update" : "variant.create", "ProductVariant", v.id, { productId, price, sale });
+    revalidatePath(`/admin/products/${productId}`);
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function saveCategory(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("catalog.manage");
+    const id = String(form.get("id") ?? "") || null;
+    const slug = String(form.get("slug") ?? "").trim().toLowerCase();
+    if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return { ok: false, error: "Invalid slug" };
+    const data = { slug, name: localized(form, "name"), icon: String(form.get("icon") ?? "").slice(0, 4) || null, sortOrder: Number(form.get("sortOrder") ?? 0) || 0, isVisible: form.get("isVisible") === "on" };
+    const c = id ? await prisma.category.update({ where: { id }, data }) : await prisma.category.create({ data });
+    await audit(staff.id, id ? "category.update" : "category.create", "Category", c.id, { slug });
+    revalidatePath("/admin/products");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Import codes, one per line. Duplicates (already in stock anywhere) are skipped. */
+export async function importCodes(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("codes.manage");
+    const variantId = String(form.get("variantId"));
+    const batchLabel = String(form.get("batchLabel") ?? "").slice(0, 60) || null;
+    const cost = String(form.get("cost") ?? "").trim();
+    const costHtg = cost ? parseAmount(cost) : null;
+    const lines = String(form.get("codes") ?? "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    if (lines.length === 0) return { ok: false, error: "Paste at least one code" };
+    if (lines.length > 2000) return { ok: false, error: "Import at most 2000 codes at a time" };
+    const variant = await prisma.productVariant.findUniqueOrThrow({ where: { id: variantId } });
+    const unique = [...new Set(lines)];
+    const res = await prisma.codeItem.createMany({
+      data: unique.map((c) => ({ variantId: variant.id, codeEncrypted: encrypt(c), codeHash: hmac(c), batchLabel, costHtg })),
+      skipDuplicates: true,
+    });
+    await audit(staff.id, "codes.import", "ProductVariant", variant.id, { imported: res.count, submitted: lines.length, batchLabel });
+    revalidatePath("/admin/codes");
+    // Orders waiting for this variant can now be fulfilled.
+    const waiting = await prisma.order.findMany({ where: { status: "PROCESSING", items: { some: { variantId, status: "PENDING" } } }, select: { id: true } });
+    for (const o of waiting) await fulfillOrder(o.id, staff.id);
+    return { ok: true, message: `Imported ${res.count} codes (${lines.length - res.count} duplicates skipped). ${waiting.length} waiting orders retried.` };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ───────────── Customers & wallet ─────────────
+
+export async function adjustCustomerWallet(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("wallet.adjust");
+    const userId = String(form.get("userId"));
+    const currency = form.get("currency") === "USD" ? "USD" : "HTG";
+    const direction = form.get("direction") === "debit" ? -1 : 1;
+    const amount = parseAmount(String(form.get("amount") ?? ""));
+    const reason = String(form.get("reason") ?? "").trim();
+    const key = String(form.get("idempotencyKey") ?? "");
+    if (!amount) return { ok: false, error: "Enter an amount" };
+    if (reason.length < 5) return { ok: false, error: "A reason (5+ characters) is required" };
+    if (key.length < 10) return { ok: false, error: "Reload the page and try again" };
+    await prisma.$transaction(async (tx) => {
+      await adjustWallet(tx, { userId, currency, amount: amount * direction, reason, actorId: staff.id, idempotencyKey: key });
+      await audit(staff.id, "wallet.adjust", "User", userId, { currency, amount: amount * direction, reason }, tx);
+    });
+    await notify(userId, "wallet_adjusted", {}, "/account/wallet");
+    revalidatePath(`/admin/customers/${userId}`);
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof InsufficientFundsError) return { ok: false, error: "Customer balance is too low for this debit" };
+    return fail(e);
+  }
+}
+
+export async function setCustomerStatus(userId: string, status: "ACTIVE" | "RESTRICTED" | "SUSPENDED"): Promise<R> {
+  try {
+    const staff = await assertStaff("customers.manage");
+    if (userId === staff.id) return { ok: false, error: "You cannot change your own status" };
+    await prisma.user.update({ where: { id: userId }, data: { status } });
+    if (status === "SUSPENDED") await prisma.session.deleteMany({ where: { userId } });
+    await audit(staff.id, "customer.status", "User", userId, { status });
+    revalidatePath(`/admin/customers/${userId}`);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function setStaffRole(email: string, role: Role): Promise<R> {
+  try {
+    const staff = await assertStaff("staff.manage");
+    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    if (!user) return { ok: false, error: "No account with that email. Ask them to register first." };
+    if (user.id === staff.id) return { ok: false, error: "You cannot change your own role" };
+    await prisma.user.update({ where: { id: user.id }, data: { role } });
+    await prisma.session.deleteMany({ where: { userId: user.id } }); // re-login picks up the new role and 2FA requirement
+    await audit(staff.id, "staff.role", "User", user.id, { role });
+    revalidatePath("/admin/staff");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+// ───────────── Settings ─────────────
+
+export async function saveSettings(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("settings.manage");
+    const num = (k: string) => Number(String(form.get(k) ?? "").replace(",", "."));
+    const money = (k: string) => parseAmount(String(form.get(k) ?? "")) ?? 0;
+    const str = (k: string) => String(form.get(k) ?? "").trim().slice(0, 300);
+    const rate = num("htgPerUsd");
+    if (!(rate > 1 && rate < 10_000)) return { ok: false, error: "Exchange rate looks wrong" };
+
+    const next: Partial<Settings> = {
+      htgPerUsd: rate,
+      exchangeSpreadBps: Math.max(0, Math.min(2000, Math.round(num("exchangeSpreadBps")))),
+      exchangeFeeBps: Math.max(0, Math.min(2000, Math.round(num("exchangeFeeBps")))),
+      exchangeQuoteSeconds: Math.max(30, Math.min(900, Math.round(num("exchangeQuoteSeconds")))),
+      minDepositHtg: money("minDepositHtg"),
+      maxDepositHtg: money("maxDepositHtg"),
+      holdThresholdHtg: money("holdThresholdHtg"),
+      holdHours: Math.max(0, Math.min(168, Math.round(num("holdHours")))),
+      newAccountDays: Math.max(0, Math.min(90, Math.round(num("newAccountDays")))),
+      newAccountDailyLimitHtg: money("newAccountDailyLimitHtg"),
+      reviewOrderThresholdHtg: money("reviewOrderThresholdHtg"),
+      natcashRecipientName: str("natcashRecipientName"),
+      natcashRecipientPhone: str("natcashRecipientPhone"),
+      moncashEnabled: form.get("moncashEnabled") === "on",
+      natcashEnabled: form.get("natcashEnabled") === "on",
+      whatsappNumber: str("whatsappNumber").replace(/\D/g, ""),
+      supportHours: str("supportHours"),
+      businessName: str("businessName") || DEFAULT_SETTINGS.businessName,
+      businessAddress: str("businessAddress"),
+      socialFacebook: str("socialFacebook"),
+      socialInstagram: str("socialInstagram"),
+      socialTiktok: str("socialTiktok"),
+      announcement: {
+        enabled: form.get("announcementEnabled") === "on",
+        text: { ht: str("announcement_ht"), fr: str("announcement_fr"), en: str("announcement_en"), es: str("announcement_es") },
+        link: str("announcementLink"),
+      },
+    };
+    for (const url of [next.socialFacebook, next.socialInstagram, next.socialTiktok, next.announcement?.link]) {
+      if (url && !/^https:\/\//.test(url) && !url.startsWith("/")) return { ok: false, error: "Links must start with https:// or /" };
+    }
+    for (const [k, v] of Object.entries(next)) await setSetting(k as keyof Settings, v as never);
+    await audit(staff.id, "settings.update", "SiteSetting", null, { keys: Object.keys(next), htgPerUsd: rate });
+    revalidatePath("/", "layout");
+    return { ok: true, message: "Settings saved" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function newIdempotencyKey() {
+  return randomToken(16);
+}

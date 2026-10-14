@@ -1,0 +1,92 @@
+import { requireStaff } from "@/lib/session";
+import { getSettings } from "@/lib/settings";
+import { moncashMode } from "@/lib/payments/moncash";
+import { saveSettings } from "@/actions/admin";
+import { ActionForm } from "@/components/admin/ActionButton";
+import { PageTitle } from "@/components/admin/ui";
+
+export const metadata = { title: "Settings" };
+
+const m = (n: number) => (n / 100).toFixed(2);
+
+function Field({ name, label, value, hint, type = "text" }: { name: string; label: string; value: string | number; hint?: string; type?: string }) {
+  return (
+    <label className="block">
+      <span className="label">{label}</span>
+      <input name={name} defaultValue={value} type={type} className="input" inputMode={type === "text" ? undefined : "decimal"} />
+      {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
+    </label>
+  );
+}
+
+export default async function SettingsPage() {
+  await requireStaff("settings.manage");
+  const s = await getSettings();
+  let mode = "mock";
+  try {
+    mode = moncashMode();
+  } catch {
+    mode = "not configured";
+  }
+  return (
+    <>
+      <PageTitle title="Settings" />
+      <ActionForm action={saveSettings} className="space-y-6">
+        <section className="card space-y-4 p-5">
+          <h2 className="font-semibold">Exchange rate & wallet</h2>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <Field name="htgPerUsd" label="HTG per 1 USD (mid rate)" value={s.htgPerUsd} type="number" hint="Used for USD prices and exchange." />
+            <Field name="exchangeSpreadBps" label="Exchange spread (basis points)" value={s.exchangeSpreadBps} type="number" hint="150 = 1.5% against the customer." />
+            <Field name="exchangeFeeBps" label="Exchange fee (basis points)" value={s.exchangeFeeBps} type="number" />
+            <Field name="exchangeQuoteSeconds" label="Quote validity (seconds)" value={s.exchangeQuoteSeconds} type="number" />
+            <Field name="minDepositHtg" label="Minimum deposit (HTG)" value={m(s.minDepositHtg)} />
+            <Field name="maxDepositHtg" label="Maximum deposit (HTG)" value={m(s.maxDepositHtg)} />
+          </div>
+        </section>
+        <section className="card space-y-4 p-5">
+          <h2 className="font-semibold">Fraud controls</h2>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <Field name="holdThresholdHtg" label="Hold NatCash deposits from (HTG)" value={m(s.holdThresholdHtg)} />
+            <Field name="holdHours" label="Hold period (hours)" value={s.holdHours} type="number" />
+            <Field name="newAccountDays" label="New account period (days)" value={s.newAccountDays} type="number" />
+            <Field name="newAccountDailyLimitHtg" label="New account daily limit (HTG)" value={m(s.newAccountDailyLimitHtg)} />
+            <Field name="reviewOrderThresholdHtg" label="Review orders from (HTG)" value={m(s.reviewOrderThresholdHtg)} hint="Codes are released only after a staff review." />
+          </div>
+        </section>
+        <section className="card space-y-4 p-5">
+          <h2 className="font-semibold">Payment methods</h2>
+          <p className="text-sm text-muted">MonCash adapter mode: <b>{mode}</b>. Credentials are set as environment variables (MONCASH_CLIENT_ID / MONCASH_CLIENT_SECRET / MONCASH_MODE), never in the database.</p>
+          <div className="flex flex-wrap gap-6 text-sm">
+            <label className="flex items-center gap-2"><input type="checkbox" name="moncashEnabled" defaultChecked={s.moncashEnabled} /> MonCash enabled</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="natcashEnabled" defaultChecked={s.natcashEnabled} /> NatCash enabled</label>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field name="natcashRecipientName" label="NatCash recipient name" value={s.natcashRecipientName} />
+            <Field name="natcashRecipientPhone" label="NatCash recipient number" value={s.natcashRecipientPhone} />
+          </div>
+        </section>
+        <section className="card space-y-4 p-5">
+          <h2 className="font-semibold">Business & support</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field name="businessName" label="Registered business name" value={s.businessName} />
+            <Field name="businessAddress" label="Address" value={s.businessAddress} />
+            <Field name="whatsappNumber" label="WhatsApp number (digits, with 509)" value={s.whatsappNumber} />
+            <Field name="supportHours" label="Support hours" value={s.supportHours} />
+            <Field name="socialFacebook" label="Facebook URL" value={s.socialFacebook} />
+            <Field name="socialInstagram" label="Instagram URL" value={s.socialInstagram} />
+            <Field name="socialTiktok" label="TikTok URL" value={s.socialTiktok} />
+          </div>
+        </section>
+        <section className="card space-y-4 p-5">
+          <h2 className="font-semibold">Announcement bar</h2>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="announcementEnabled" defaultChecked={s.announcement.enabled} /> Show announcement</label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {(["ht", "fr", "en", "es"] as const).map((l) => <Field key={l} name={`announcement_${l}`} label={`Text (${l.toUpperCase()})`} value={s.announcement.text[l] ?? ""} />)}
+            <Field name="announcementLink" label="Link (optional)" value={s.announcement.link} />
+          </div>
+        </section>
+        <button className="btn-primary">Save settings</button>
+      </ActionForm>
+    </>
+  );
+}

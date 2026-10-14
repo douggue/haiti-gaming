@@ -1,0 +1,27 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { assertUser } from "@/lib/session";
+
+const profile = z.object({
+  name: z.string().trim().min(1).max(80),
+  phone: z.string().trim().max(20).optional(),
+  locale: z.enum(["ht", "fr", "en", "es"]),
+  displayCurrency: z.enum(["HTG", "USD"]),
+});
+
+export async function updateProfile(form: FormData) {
+  const user = await assertUser();
+  const data = profile.safeParse(Object.fromEntries(form));
+  if (!data.success) return { ok: false as const };
+  await prisma.user.update({ where: { id: user.id }, data: { ...data.data, phone: data.data.phone || null } });
+  revalidatePath("/", "layout");
+  return { ok: true as const };
+}
+
+export async function markNotificationsRead() {
+  const user = await assertUser();
+  await prisma.notification.updateMany({ where: { userId: user.id, readAt: null }, data: { readAt: new Date() } });
+  revalidatePath("/", "layout");
+}

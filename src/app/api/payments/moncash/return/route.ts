@@ -1,0 +1,23 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { prisma } from "@/lib/db";
+import { retrieveByTransaction } from "@/lib/payments/moncash";
+import { verifyMoncashIntent } from "@/lib/payments/verify";
+
+/** Customer lands here after MonCash. We verify server-side, then send them to their order or wallet. */
+export async function GET(req: NextRequest) {
+  const url = req.nextUrl;
+  const locale = req.cookies.get("NEXT_LOCALE")?.value ?? "ht";
+  let ref = url.searchParams.get("ref") ?? url.searchParams.get("orderId");
+  const transactionId = url.searchParams.get("transactionId");
+  if (!ref && transactionId) ref = (await retrieveByTransaction(transactionId))?.reference ?? null;
+  if (!ref) return NextResponse.redirect(new URL(`/${locale}/account`, url));
+
+  try {
+    await verifyMoncashIntent(ref);
+  } catch (e) {
+    console.error("MonCash verification failed", e);
+  }
+  const intent = await prisma.paymentIntent.findUnique({ where: { id: ref } });
+  const dest = intent?.orderId ? `/${locale}/account/orders/${intent.orderId}` : `/${locale}/account/wallet`;
+  return NextResponse.redirect(new URL(dest, url));
+}
