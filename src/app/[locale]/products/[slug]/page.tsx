@@ -81,7 +81,7 @@ export default async function ProductPage({ params }: { params: P }) {
         <Link href="/store" className="hover:text-text">{tc("store")}</Link> /{" "}
         <Link href={`/categories/${product.category.slug}`} className="hover:text-text">{t(product.category.name, locale)}</Link>
       </nav>
-      <div className="mt-4 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="space-y-4">
           <ProductGallery name={name} accent={product.accent} images={[product.image, ...((product.gallery ?? []) as string[])].filter((x): x is string => !!x)} />
           <div className="card space-y-3 p-5 text-sm">

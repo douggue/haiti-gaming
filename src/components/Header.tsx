@@ -49,7 +49,10 @@ export async function Header() {
             <CurrencySwitch />
             <ThemeToggle />
           </div>
-          <Link href="/store" className="btn-ghost min-h-10 px-2.5 2xl:hidden" aria-label={t("search")}>
+          <div className="md:hidden">
+            <CurrencySwitch compact />
+          </div>
+          <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex 2xl:hidden" aria-label={t("search")}>
             <SearchIcon />
           </Link>
           {user && (
@@ -58,7 +61,10 @@ export async function Header() {
               {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-danger ring-2 ring-surface" />}
             </Link>
           )}
-          <CartButton />
+          {/* Phones: search and cart live in the bottom bar, leaving room for the currency toggle */}
+          <div className="hidden md:block">
+            <CartButton />
+          </div>
           {user ? (
             <Link href="/account" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex" aria-label={t("account")}>
               <span className="grid h-8 w-8 place-items-center rounded-full bg-navy text-xs font-bold text-white">

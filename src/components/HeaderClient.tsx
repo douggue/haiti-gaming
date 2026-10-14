@@ -30,23 +30,33 @@ export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
   );
 }
 
-export function CurrencySwitch() {
+/** HTG | USD toggle: prices everywhere switch at once; the choice is remembered (cookie and profile). */
+export function CurrencySwitch({ compact = false }: { compact?: boolean }) {
   const t = useTranslations("common");
   const { currency } = useStore();
+  const [shown, setShown] = useState(currency);
   const [pending, start] = useTransition();
+  useEffect(() => setShown(currency), [currency]);
+  const pick = (c: "HTG" | "USD") => {
+    if (c === shown || pending) return;
+    setShown(c); // highlight at once; prices update when the page refreshes
+    start(() => setCurrency(c));
+  };
   return (
-    <label className="relative">
-      <span className="sr-only">{t("currency")}</span>
-      <select
-        value={currency}
-        disabled={pending}
-        onChange={(e) => start(() => setCurrency(e.target.value as "HTG" | "USD"))}
-        className="min-h-10 cursor-pointer appearance-none rounded-lg border border-border bg-surface px-2.5 text-sm font-semibold"
-      >
-        <option value="HTG">HTG</option>
-        <option value="USD">USD</option>
-      </select>
-    </label>
+    <div role="radiogroup" aria-label={t("currency")} className={`inline-flex shrink-0 rounded-full border border-border bg-surface-2 p-0.5 ${pending ? "opacity-70" : ""}`}>
+      {(["HTG", "USD"] as const).map((c) => (
+        <button
+          key={c}
+          type="button"
+          role="radio"
+          aria-checked={shown === c}
+          onClick={() => pick(c)}
+          className={`rounded-full font-bold transition-colors ${compact ? "min-h-8 px-2 text-[11px]" : "min-h-9 px-3 text-xs"} ${shown === c ? "bg-primary text-white shadow-sm" : "text-muted hover:text-text"}`}
+        >
+          {c}
+        </button>
+      ))}
+    </div>
   );
 }
 
