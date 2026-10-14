@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -66,8 +67,8 @@ export default async function ProductPage({ params }: { params: P }) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: tc("store"), item: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/store` },
-      { "@type": "ListItem", position: 2, name: t(product.category.name, locale), item: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/categories/${product.category.slug}` },
+      { "@type": "ListItem", position: 1, name: tc("store"), item: `${siteUrl()}/${locale}/store` },
+      { "@type": "ListItem", position: 2, name: t(product.category.name, locale), item: `${siteUrl()}/${locale}/categories/${product.category.slug}` },
       { "@type": "ListItem", position: 3, name },
     ],
   };

@@ -1,4 +1,5 @@
 "use server";
+import { siteUrl } from "@/lib/site-url";
 import { revalidatePath } from "next/cache";
 import { Prisma, type FulfillmentType, type Role } from "@prisma/client";
 import { z } from "zod";
@@ -465,7 +466,7 @@ export async function createPasswordResetLink(userId: string): Promise<{ ok: tru
       data: { id: randomToken(16), identifier: `reset-password:${token}`, value: user.id, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
     });
     await audit(staff.id, "password.reset_link", "User", user.id);
-    const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const site = siteUrl();
     return { ok: true, url: `${site}/${user.locale}/auth/reset?token=${token}`, phone: user.phone };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Error" };

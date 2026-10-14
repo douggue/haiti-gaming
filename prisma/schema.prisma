@@ -6,7 +6,7 @@ datasource db {
   provider = "postgresql"
   url       = env("DATABASE_URL")
   // Direct (non-pooled) connection for migrations; on Neon/Supabase use the pooled URL above for the app.
-  directUrl = env("DIRECT_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // ─────────────────────────────── Auth (Better Auth) ───────────────────────────────

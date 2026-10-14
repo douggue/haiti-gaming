@@ -64,13 +64,14 @@ The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delive
 
 ## Deploying to Vercel
 
-1. **Database (Neon):** create a Neon project. Set `DATABASE_URL` to the **pooled** connection string (host contains `-pooler`; add `&pgbouncer=true` to the end) and `DIRECT_URL` to the **direct** one. Both are on Neon's "Connect" panel. You can also add Neon from Vercel → Storage, then copy its pooled/unpooled URLs into these two names.
-2. **Storage (Vercel Blob):** in Vercel → Storage, create a Blob store and connect it to the project. That sets `BLOB_READ_WRITE_TOKEN`. The same store holds **public** images (products, categories, logo, hero) and **private** NatCash payment screenshots that only staff can open. Without it, image uploads are disabled in production and screenshots are skipped.
-3. **Environment variables:** in Vercel → Settings → Environment Variables, add everything from `.env.example`. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to your real domain (e.g. `https://haitigaming.com`). Generate new `BETTER_AUTH_SECRET`, `ENCRYPTION_KEY` and `CRON_SECRET`. **Keep `ENCRYPTION_KEY` safe and never change it**: stored gift-card codes cannot be read without it.
-4. **Deploy:** import the repository in Vercel. The `vercel-build` script runs `prisma migrate deploy` automatically before each build.
-5. **First admin:** from your computer, with `DATABASE_URL`/`DIRECT_URL` pointing at production, run `npm run setup:admin -- --email you@example.com`, then sign in at `/admin/login` and set up 2FA. Optionally run `npm run db:seed` for demo products (delete the demo codes before launch).
-6. **MonCash:** until `MONCASH_CLIENT_ID`/`MONCASH_CLIENT_SECRET` are set, MonCash is hidden at checkout in production. In the MonCash merchant portal set the return URL to `https://<domain>/api/payments/moncash/return` and the alert URL to `https://<domain>/api/payments/moncash/callback`.
-7. **Cron:** `vercel.json` runs `/api/cron/maintenance` once a day (the Hobby plan limit). On the Pro plan, change the schedule to `*/10 * * * *` so missed MonCash callbacks are recovered and held deposits are released within minutes.
+Step-by-step guide (no terminal needed after the code is on GitHub): [`docs/DEPLOY.md`](docs/DEPLOY.md). In short:
+
+1. Import the repository in Vercel (the `vercel-build` script runs `prisma migrate deploy` before each build).
+2. Storage: connect a **Neon** database (sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`) and a **Blob** store (sets `BLOB_READ_WRITE_TOKEN`).
+3. Add `BETTER_AUTH_SECRET`, `ENCRYPTION_KEY` and `CRON_SECRET` (each `openssl rand -base64 32`). **Never change `ENCRYPTION_KEY`** after launch: stored gift-card codes cannot be read without it.
+4. Redeploy, then open `/admin/setup` to create the first admin (setup code = `CRON_SECRET`) and optionally load the demo catalog. The page closes once an admin exists. (`npm run setup:admin` does the same from a terminal.)
+5. MonCash: until `MONCASH_CLIENT_ID`/`MONCASH_CLIENT_SECRET` are set, MonCash is hidden at checkout in production. In the MonCash merchant portal set the return URL to `https://<domain>/api/payments/moncash/return` and the alert URL to `https://<domain>/api/payments/moncash/callback`.
+6. Cron: `vercel.json` runs `/api/cron/maintenance` once a day (the Hobby plan limit). On the Pro plan, change the schedule to `*/10 * * * *` so missed MonCash callbacks are recovered and held deposits are released within minutes.
 
 ## Waiting on your accounts (code is ready, switched off)
 

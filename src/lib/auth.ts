@@ -10,10 +10,11 @@ import { isPasswordBreached } from "./password-check";
 import { recordReferral } from "./referrals";
 import { recordDevice } from "./devices";
 import { verifyTurnstile } from "./turnstile";
+import { siteUrl } from "./site-url";
 
 // Argon2id parameters (OWASP recommended minimums)
 const argonOpts = { memoryCost: 19456, timeCost: 2, parallelism: 1, algorithm: 2 as const };
-const site = () => process.env.NEXT_PUBLIC_SITE_URL ?? process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+const site = () => siteUrl();
 
 type AuthUser = { email: string; name: string; locale?: string | null };
 
@@ -21,6 +22,8 @@ type AuthUser = { email: string; name: string; locale?: string | null };
 const trustedOrigins = [
   ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
   ...(process.env.VERCEL_BRANCH_URL ? [`https://${process.env.VERCEL_BRANCH_URL}`] : []),
+  ...(process.env.VERCEL_PROJECT_PRODUCTION_URL ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`] : []),
+  ...(process.env.NEXT_PUBLIC_SITE_URL ? [process.env.NEXT_PUBLIC_SITE_URL] : []),
   ...(process.env.TRUSTED_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
 ];
 
@@ -76,6 +79,7 @@ export const auth = betterAuth({
     // Bot check on the forms bots attack (no-op until Turnstile keys are set).
     before: createAuthMiddleware(async (ctx) => {
       if (!["/sign-up/email", "/sign-in/email", "/request-password-reset"].includes(ctx.path)) return;
+      if (!ctx.request) return; // server-side calls (first-run setup, scripts) have no browser to challenge
       const h = ctx.headers;
       const ip = h?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
       if (!(await verifyTurnstile(h?.get("x-turnstile-token"), ip))) {

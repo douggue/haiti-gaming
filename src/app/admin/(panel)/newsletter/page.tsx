@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import { prisma } from "@/lib/db";
 import { requireStaff } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
@@ -17,7 +18,7 @@ export default async function NewsletterAdmin() {
     <>
       <PageTitle
         title="Newsletter"
-        sub={`Sign-up form: ${s.newsletterEnabled ? "on" : "off"} (Settings → Referral program section). Sending campaigns ${emailEnabled() ? "can use Resend" : "needs the Resend domain"}; until then export the list for another tool. Every email must include the unsubscribe link: ${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/ht/newsletter/unsubscribe?t=TOKEN`}
+        sub={`Sign-up form: ${s.newsletterEnabled ? "on" : "off"} (Settings → Referral program section). Sending campaigns ${emailEnabled() ? "can use Resend" : "needs the Resend domain"}; until then export the list for another tool. Every email must include the unsubscribe link: ${siteUrl()}/ht/newsletter/unsubscribe?t=TOKEN`}
         actions={<a className="btn-secondary" href="/api/admin/export?type=newsletter">Export CSV</a>}
       />
       <div className="mb-4 grid grid-cols-2 gap-3 sm:max-w-md"><Stat label="Subscribed" value={active} /><Stat label="Unsubscribed" value={subs.filter((x) => x.unsubscribedAt).length} /></div>

@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const [t, settings] = await Promise.all([getTranslations({ locale, namespace: "meta" }), getDisplaySettings()]);
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    metadataBase: new URL(siteUrl()),
     title: { default: t("title"), template: "%s · Haiti Gaming" },
     description: t("description"),
     alternates: alternates(locale, ""),

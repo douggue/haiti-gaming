@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -22,7 +23,7 @@ export default async function ReferralsPage({ params }: { params: Promise<{ loca
     );
   }
   const code = await ensureReferralCode(user.id);
-  const link = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${locale}?ref=${code}`;
+  const link = `${siteUrl()}/${locale}?ref=${code}`;
   const list = await prisma.referral.findMany({ where: { referrerId: user.id }, orderBy: { createdAt: "desc" }, include: { referred: { select: { name: true } } } });
   const earned = list.reduce((s, r) => s + (r.rewardAmount ?? 0), 0);
   const tone = { PENDING: "PENDING", REWARDED: "SUCCEEDED", REJECTED: "CANCELED" } as const;

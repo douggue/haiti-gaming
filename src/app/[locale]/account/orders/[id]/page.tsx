@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -32,7 +33,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   const codes = order.items.flatMap((i) => i.codes);
   if (codes.length > 0) await audit(user.id, "code.view.customer", "Order", order.id, { codes: codes.length });
 
-  const statusUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${locale}/order-status/${order.id}?t=${order.accessToken}`;
+  const statusUrl = `${siteUrl()}/${locale}/order-status/${order.id}?t=${order.accessToken}`;
   const helpText = encodeURIComponent(`${tc("whatsappMessage")} ${to("title", { number: order.number })} ${statusUrl}`);
   const lastPayment = order.payments[0];
 

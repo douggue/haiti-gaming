@@ -1,3 +1,4 @@
+import { siteUrl } from "./site-url";
 import ht from "@/messages/ht.json";
 import fr from "@/messages/fr.json";
 import en from "@/messages/en.json";
@@ -46,7 +47,7 @@ export async function notify(
     const prefs = (user?.notifyPrefs ?? {}) as { email?: boolean };
     if (!user || user.status === "CLOSED" || prefs.email === false) return;
     const text = render(type, params, user.locale);
-    const url = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/${user.locale}${link ?? "/account"}`;
+    const url = `${siteUrl()}/${user.locale}${link ?? "/account"}`;
     await sendEmail({
       to: user.email,
       subject: `Haiti Gaming: ${text.slice(0, 80)}`,

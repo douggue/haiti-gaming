@@ -1,3 +1,4 @@
+import { siteUrl } from "@/lib/site-url";
 import { Fragment } from "react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -42,7 +43,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     "@context": "https://schema.org",
     "@type": "Organization",
     name: settings.businessName,
-    url: process.env.NEXT_PUBLIC_SITE_URL,
+    url: siteUrl(),
     address: settings.businessAddress,
   };
   const faqJsonLd = {

@@ -39,7 +39,7 @@ The things to do when running the store: daily checks, backups, what to do when 
   For a store that holds customer money, use at least the Launch plan.
 - **Extra weekly copy**: keep one outside Neon in case the account itself has a problem.
   ```bash
-  pg_dump "$DIRECT_URL" --format=custom --no-owner -f haiti-gaming-$(date +%F).dump
+  pg_dump "$DATABASE_URL_UNPOOLED" --format=custom --no-owner -f haiti-gaming-$(date +%F).dump
   ```
   Store it somewhere private, such as an encrypted drive or a private cloud folder. Delete copies older than 3 months.
 - **Test a restore** every 3 months (section 4). A backup you have never restored is not a backup.
@@ -63,11 +63,11 @@ The things to do when running the store: daily checks, backups, what to do when 
 2. Open the new branch and check that the data looks right. You can point a local copy of the site at the branch's connection string.
 3. Then either:
    - Copy the missing rows back into the main branch (careful work: ask your developer), or
-   - Make the restored branch the primary one (Neon → branch → **Set as default**). Then update `DATABASE_URL` and `DIRECT_URL` in Vercel to the new branch's connection strings and redeploy.
+   - Make the restored branch the primary one (Neon → branch → **Set as default**). Then update `DATABASE_URL` and `DATABASE_URL_UNPOOLED` in Vercel to the new branch's connection strings and redeploy.
 
 **Restoring from a `pg_dump` file (new or empty database):**
 ```bash
-pg_restore --no-owner --clean --if-exists -d "$NEW_DIRECT_URL" haiti-gaming-2026-10-01.dump
+pg_restore --no-owner --clean --if-exists -d "$NEW_DATABASE_URL_UNPOOLED" haiti-gaming-2026-10-01.dump
 ```
 Then set the Vercel env vars to the new database and redeploy. Use the same `ENCRYPTION_KEY` as before.
 
@@ -124,7 +124,7 @@ Then set the Vercel env vars to the new database and redeploy. Use the same `ENC
 | `TURNSTILE_SECRET_KEY` | Rotate in Cloudflare → Turnstile → Vercel → redeploy | — |
 | `BLOB_READ_WRITE_TOKEN` | Set automatically by Vercel when the store is connected | — |
 | `ENCRYPTION_KEY` | **Do not change** without a re-encryption script. | Changing it makes existing codes unreadable. |
-| Database password | Neon → Roles → Reset password → update `DATABASE_URL` and `DIRECT_URL` → redeploy | A short outage between the reset and the redeploy. |
+| Database password | Neon → Roles → Reset password → update `DATABASE_URL` and `DATABASE_URL_UNPOOLED` → redeploy | A short outage between the reset and the redeploy. |
 
 After any change: open `/api/health` (with the bearer token) and Admin → Security → Services to confirm everything still shows **on**.
 

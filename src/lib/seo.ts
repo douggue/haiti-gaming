@@ -1,9 +1,10 @@
+import { siteUrl } from "./site-url";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { t } from "@/lib/text";
 import { locales } from "@/i18n/routing";
 
-const base = () => process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const base = () => siteUrl();
 
 /** Canonical + hreflang links for a localized path ("" for home, "/store", …). */
 export function alternates(locale: string, path: string) {
