@@ -8,6 +8,7 @@ export type CartLine = {
   productName: Record<string, string>;
   variantName: Record<string, string>;
   accent?: string | null;
+  image?: string | null;
   priceHtg: number;
   quantity: number;
   fields: Record<string, string>;

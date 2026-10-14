@@ -144,6 +144,7 @@ model Category {
   name        Json
   description Json?
   icon        String?
+  image       String?
   sortOrder   Int        @default(0)
   isVisible   Boolean    @default(true)
   parentId    String?
@@ -169,6 +170,8 @@ model Product {
   description      Json
   deliveryEstimate Json?
   image            String?
+  /// Additional product photos (URLs), shown as a gallery on the product page
+  gallery          Json             @default("[]")
   accent           String?
   isPublished      Boolean          @default(false)
   isFeatured       Boolean          @default(false)

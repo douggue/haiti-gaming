@@ -3,11 +3,13 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveProduct } from "@/actions/admin";
 import { LocalizedInputs } from "./LocalizedInputs";
+import { GalleryField, ImageField } from "./ImageField";
 
 type P = {
   id: string; slug: string; categoryId: string; accent: string; fulfillmentType: string; isPublished: boolean; isFeatured: boolean; sortOrder: number;
   name: Record<string, string>; description: Record<string, string>; delivery: Record<string, string>;
   seoTitle: Record<string, string>; seoDescription: Record<string, string>; fields: string;
+  image: string | null; gallery: string[];
 };
 
 const FIELD_EXAMPLE = `[
@@ -47,6 +49,10 @@ export function ProductForm({ product, categories }: { product?: P; categories: 
           </select>
         </label>
         <label><span className="label">Tile color</span><input name="accent" type="color" defaultValue={product?.accent ?? "#1467F5"} className="input h-11 p-1" /></label>
+      </div>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <ImageField name="image" label="Main image" value={product?.image} folder="products" hint="JPG, PNG or WebP, up to 5 MB. Square or 4:3 works best. Without an image, a colored tile with the initials is shown." />
+        <GalleryField name="gallery" label="Gallery (up to 8 extra photos)" value={product?.gallery} folder="products" />
       </div>
       <LocalizedInputs prefix="name" label="Name" value={product?.name} required />
       <LocalizedInputs prefix="description" label="Description" value={product?.description} textarea />

@@ -8,7 +8,8 @@ import { getUser } from "@/lib/session";
 import { t } from "@/lib/text";
 import { alternates } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
-import { ProductArt, ProductCard } from "@/components/ProductCard";
+import { ProductCard } from "@/components/ProductCard";
+import { ProductGallery } from "@/components/ProductGallery";
 import { ProductPurchase } from "@/components/ProductPurchase";
 import { BoltIcon, ShieldIcon } from "@/components/Icons";
 import type { FieldDef } from "@/lib/orders";
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   if (!p) return {};
   const title = t(p.seoTitle, locale) || t(p.name, locale);
   const description = t(p.seoDescription, locale) || t(p.description, locale).slice(0, 160);
-  return { title, description, alternates: alternates(locale, `/products/${slug}`), openGraph: { title, description } };
+  return { title, description, alternates: alternates(locale, `/products/${slug}`), openGraph: { title, description, ...(p.image ? { images: [p.image] } : {}) } };
 }
 
 export default async function ProductPage({ params }: { params: P }) {
@@ -51,6 +52,7 @@ export default async function ProductPage({ params }: { params: P }) {
     "@type": "Product",
     name,
     description: t(product.description, locale),
+    ...(product.image ? { image: [product.image, ...((product.gallery ?? []) as string[])] } : {}),
     brand: { "@type": "Brand", name: settings.businessName },
     offers: {
       "@type": "AggregateOffer",
@@ -79,7 +81,7 @@ export default async function ProductPage({ params }: { params: P }) {
       </nav>
       <div className="mt-4 grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-4">
-          <ProductArt name={name} accent={product.accent} size="lg" />
+          <ProductGallery name={name} accent={product.accent} images={[product.image, ...((product.gallery ?? []) as string[])].filter((x): x is string => !!x)} />
           <div className="card space-y-3 p-5 text-sm">
             <p className="flex items-center gap-2 font-semibold">
               <BoltIcon width={18} height={18} className="text-success" />
@@ -100,6 +102,7 @@ export default async function ProductPage({ params }: { params: P }) {
               slug: product.slug,
               name: product.name as Record<string, string>,
               accent: product.accent,
+              image: product.image,
               fields: product.fields as FieldDef[],
               variants: product.variants.map((v) => ({
                 id: v.id,

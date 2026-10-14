@@ -4,23 +4,9 @@ import { minPrice, type ProductWithVariants } from "@/lib/catalog";
 import { t } from "@/lib/text";
 import { Price } from "./Money";
 import { BoltIcon } from "./Icons";
+import { ProductArt } from "./ProductArt";
 
-/** Original artwork: an accent-colored tile with the product's initials, so no third-party imagery is needed. */
-export function ProductArt({ name, accent, size = "md" }: { name: string; accent?: string | null; size?: "md" | "lg" }) {
-  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-  const color = accent ?? "#1467F5";
-  return (
-    <div
-      className={`relative grid place-items-center overflow-hidden ${size === "lg" ? "aspect-[4/3] rounded-3xl" : "aspect-[4/3] rounded-xl"}`}
-      style={{ background: `linear-gradient(135deg, ${color} 0%, #0D1B35 100%)` }}
-      aria-hidden
-    >
-      <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
-      <div className="absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/5" />
-      <span className={`font-black tracking-tight text-white drop-shadow ${size === "lg" ? "text-6xl" : "text-3xl"}`}>{initials}</span>
-    </div>
-  );
-}
+export { ProductArt };
 
 export async function ProductCard({ product }: { product: ProductWithVariants }) {
   const locale = await getLocale();
@@ -31,7 +17,7 @@ export async function ProductCard({ product }: { product: ProductWithVariants })
   return (
     <Link href={`/products/${product.slug}`} className="card lift group flex flex-col p-3">
       <div className="relative">
-        <ProductArt name={name} accent={product.accent} />
+        <ProductArt name={name} accent={product.accent} image={product.image} />
         {onSale && <span className="badge absolute left-2 top-2 bg-danger text-white">−%</span>}
       </div>
       <div className="flex flex-1 flex-col px-1 pb-1 pt-3">

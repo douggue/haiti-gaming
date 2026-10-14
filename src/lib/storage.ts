@@ -46,6 +46,53 @@ export async function savePrivateImage(file: File, folder: string): Promise<stri
   return name;
 }
 
+// ───────────── Public images (products, categories, logo, hero) ─────────────
+
+const PUBLIC_ROOT = path.join(ROOT, "public");
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+/**
+ * Store a public image and return its URL.
+ * Vercel Blob (public access) when configured; otherwise `uploads/public`, served at /media/... (development).
+ */
+export async function savePublicImage(file: File, folder: "products" | "categories" | "brand"): Promise<string> {
+  const ext = ALLOWED[file.type];
+  if (!ext) throw new UploadError("type");
+  if (file.size > MAX_IMAGE_BYTES) throw new UploadError("size");
+  const buf = Buffer.from(await file.arrayBuffer());
+  const isJpeg = buf[0] === 0xff && buf[1] === 0xd8;
+  const isPng = buf.subarray(0, 4).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  const isWebp = buf.subarray(8, 12).toString() === "WEBP";
+  if (!isJpeg && !isPng && !isWebp) throw new UploadError("type");
+  const name = `${folder}/${Date.now()}-${randomToken(8)}.${ext}`;
+
+  if (blobEnabled()) {
+    const blob = await put(`public/${name}`, buf, { access: "public", contentType: file.type, addRandomSuffix: false, cacheControlMaxAge: 60 * 60 * 24 * 365 });
+    return blob.url;
+  }
+  if (!uploadsEnabled()) throw new UploadError("storage");
+  await mkdir(path.join(PUBLIC_ROOT, folder), { recursive: true });
+  await writeFile(path.join(PUBLIC_ROOT, name), buf);
+  return `/media/${name}`;
+}
+
+export async function readLocalPublicFile(relPath: string): Promise<Buffer> {
+  const full = path.resolve(PUBLIC_ROOT, relPath);
+  if (!full.startsWith(path.resolve(PUBLIC_ROOT) + path.sep)) throw new Error("Invalid path");
+  return readFile(full);
+}
+
+/** Only accept image URLs we produced: Vercel Blob public URLs or local /media paths. */
+export function isOwnImageUrl(url: string): boolean {
+  if (/^\/media\/(products|categories|brand)\/[\w.-]+$/.test(url)) return true;
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && u.hostname.endsWith(".public.blob.vercel-storage.com");
+  } catch {
+    return false;
+  }
+}
+
 export async function readPrivateFile(relPath: string): Promise<Buffer> {
   if (blobEnabled()) {
     const res = await get(relPath, { access: "private", useCache: false });

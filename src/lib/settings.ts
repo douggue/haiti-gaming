@@ -31,6 +31,11 @@ export type Settings = {
   socialInstagram: string;
   socialTiktok: string;
   announcement: { enabled: boolean; text: Record<string, string>; link: string };
+  /** Brand images (URLs). Empty = built-in logo / default artwork. */
+  logoUrl: string;
+  logoDarkUrl: string;
+  heroImageUrl: string;
+  ogImageUrl: string;
 };
 
 // Amounts in minor units (centimes).
@@ -59,6 +64,10 @@ export const DEFAULT_SETTINGS: Settings = {
   socialInstagram: "",
   socialTiktok: "",
   announcement: { enabled: false, text: {}, link: "" },
+  logoUrl: "",
+  logoDarkUrl: "",
+  heroImageUrl: "",
+  ogImageUrl: "",
 };
 
 export async function getSettings(): Promise<Settings> {

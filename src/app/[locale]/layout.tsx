@@ -22,13 +22,13 @@ export const viewport: Viewport = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "meta" });
+  const [t, settings] = await Promise.all([getTranslations({ locale, namespace: "meta" }), getSettings()]);
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
     title: { default: t("title"), template: "%s · Haiti Gaming" },
     description: t("description"),
     alternates: alternates(locale, ""),
-    openGraph: { siteName: "Haiti Gaming", locale, type: "website" },
+    openGraph: { siteName: settings.businessName, locale, type: "website", ...(settings.ogImageUrl ? { images: [{ url: settings.ogImageUrl, width: 1200, height: 630 }] } : {}) },
     manifest: "/manifest.webmanifest",
     icons: { icon: "/icon.svg" },
   };

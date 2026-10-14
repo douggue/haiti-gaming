@@ -56,7 +56,7 @@ export function ActionForm({ action, children, className, resetOnSuccess }: { ac
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   return (
     <form
-      className={className}
+      className="min-w-0"
       onSubmit={(e) => {
         e.preventDefault();
         const form = e.currentTarget;
@@ -71,7 +71,7 @@ export function ActionForm({ action, children, className, resetOnSuccess }: { ac
         });
       }}
     >
-      <fieldset disabled={pending} className="contents">{children}</fieldset>
+      <fieldset disabled={pending} className={`min-w-0 ${className ?? ""}`}>{children}</fieldset>
       {msg && <p className={`mt-3 rounded-xl px-4 py-2.5 text-sm ${msg.ok ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`} role="status">{msg.text}</p>}
     </form>
   );

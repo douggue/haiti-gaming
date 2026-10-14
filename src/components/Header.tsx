@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { getUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { isStaff } from "@/lib/permissions";
+import { getSettings } from "@/lib/settings";
 import { Logo } from "./Logo";
 import { BellIcon, SearchIcon, UserIcon } from "./Icons";
 import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } from "./HeaderClient";
@@ -10,7 +11,7 @@ import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } fro
 export async function Header() {
   const t = await getTranslations("common");
   const locale = await getLocale();
-  const user = await getUser();
+  const [user, settings] = await Promise.all([getUser(), getSettings()]);
   const unread = user ? await prisma.notification.count({ where: { userId: user.id, readAt: null } }) : 0;
   const nav = [
     { href: "/store", label: t("store") },
@@ -23,7 +24,7 @@ export async function Header() {
     <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
       <div className="container-page flex h-16 items-center gap-3">
         <Link href="/" className="shrink-0" aria-label={t("home")}>
-          <Logo />
+          <Logo src={settings.logoUrl} darkSrc={settings.logoDarkUrl} alt={settings.businessName} />
         </Link>
         <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main">
           {nav.map((n) => (

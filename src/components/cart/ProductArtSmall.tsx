@@ -1,4 +1,12 @@
-export function ProductArtSmall({ name, accent }: { name: string; accent?: string | null }) {
+import Image from "next/image";
+
+export function ProductArtSmall({ name, accent, image }: { name: string; accent?: string | null; image?: string | null }) {
+  if (image)
+    return (
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface-2 sm:h-20 sm:w-20">
+        <Image src={image} alt="" fill sizes="80px" className="object-cover" />
+      </div>
+    );
   const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
   return (
     <div

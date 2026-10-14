@@ -38,6 +38,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
           name: product.name as Record<string, string>, description: product.description as Record<string, string>,
           delivery: (product.deliveryEstimate ?? {}) as Record<string, string>, seoTitle: (product.seoTitle ?? {}) as Record<string, string>,
           seoDescription: (product.seoDescription ?? {}) as Record<string, string>, fields: JSON.stringify(product.fields, null, 2),
+          image: product.image, gallery: (product.gallery ?? []) as string[],
         }}
       />
       <h2 className="mb-3 mt-10 text-lg font-semibold">Variants (prices in HTG)</h2>

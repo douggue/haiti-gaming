@@ -4,6 +4,7 @@ import { moncashMode } from "@/lib/payments/moncash";
 import { saveSettings } from "@/actions/admin";
 import { ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle } from "@/components/admin/ui";
+import { ImageField } from "@/components/admin/ImageField";
 
 export const metadata = { title: "Settings" };
 
@@ -32,6 +33,15 @@ export default async function SettingsPage() {
     <>
       <PageTitle title="Settings" />
       <ActionForm action={saveSettings} className="space-y-6">
+        <section className="card space-y-4 p-5">
+          <h2 className="font-semibold">Brand images</h2>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <ImageField name="logoUrl" label="Logo (light background)" value={s.logoUrl} folder="brand" aspect="aspect-[3/1]" hint="Wide PNG or WebP with transparent background, about 600×200 px. Empty = built-in logo." />
+            <ImageField name="logoDarkUrl" label="Logo for dark mode (optional)" value={s.logoDarkUrl} folder="brand" aspect="aspect-[3/1]" hint="A light version of the logo. Empty = same as above." />
+            <ImageField name="heroImageUrl" label="Homepage hero image" value={s.heroImageUrl} folder="brand" hint="Shown beside the headline, about 1200×900 px. Empty = wallet illustration." />
+            <ImageField name="ogImageUrl" label="Social share image" value={s.ogImageUrl} folder="brand" aspect="aspect-[1200/630]" hint="1200×630 px. Shown when the site is shared on WhatsApp or Facebook." />
+          </div>
+        </section>
         <section className="card space-y-4 p-5">
           <h2 className="font-semibold">Exchange rate & wallet</h2>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

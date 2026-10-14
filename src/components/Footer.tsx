@@ -17,7 +17,7 @@ export async function Footer({ settings }: { settings: Settings }) {
     <footer className="mt-20 border-t border-border bg-surface">
       <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-3">
-          <Logo />
+          <Logo src={settings.logoUrl} darkSrc={settings.logoDarkUrl} alt={settings.businessName} />
           <p className="text-sm text-muted">{t("footerTagline")}</p>
           <p className="flex items-start gap-2 text-sm text-muted">
             <PinIcon width={16} height={16} className="mt-0.5 shrink-0" />

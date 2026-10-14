@@ -1,5 +1,17 @@
-/** Original Haiti Gaming mark: a compact controller inside a rounded tile. */
-export function Logo({ className = "" }: { className?: string }) {
+/** Uploaded logo (Settings → Brand images) or the built-in mark: a compact controller inside a rounded tile. */
+export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { className?: string; src?: string; darkSrc?: string; alt?: string }) {
+  if (src) {
+    return (
+      <span className={`inline-flex items-center ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className={`h-8 w-auto max-w-[160px] object-contain ${darkSrc ? "dark:hidden" : ""}`} />
+        {darkSrc && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={darkSrc} alt={alt} className="hidden h-8 w-auto max-w-[160px] object-contain dark:block" />
+        )}
+      </span>
+    );
+  }
   return (
     <span className={`inline-flex items-center gap-2 font-extrabold tracking-tight ${className}`}>
       <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden>

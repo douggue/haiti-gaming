@@ -9,7 +9,7 @@ import { Price } from "./Money";
 
 type Variant = { id: string; name: Record<string, string>; priceHtg: number; salePriceHtg: number | null; inStock: boolean };
 type Props = {
-  product: { id: string; slug: string; name: Record<string, string>; accent: string | null; fields: FieldDef[]; variants: Variant[] };
+  product: { id: string; slug: string; name: Record<string, string>; accent: string | null; image: string | null; fields: FieldDef[]; variants: Variant[] };
   saved: { id: string; label: string | null; values: Record<string, string> }[];
 };
 
@@ -42,6 +42,7 @@ export function ProductPurchase({ product, saved }: Props) {
       productName: product.name,
       variantName: variant.name,
       accent: product.accent,
+      image: product.image,
       priceHtg: variant.salePriceHtg ?? variant.priceHtg,
       quantity: qty,
       fields: Object.fromEntries(product.fields.map((f) => [f.key, (fields[f.key] ?? "").trim()]).filter(([, v]) => v)),

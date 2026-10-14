@@ -29,7 +29,7 @@ export function CartView() {
         <ul className="mt-6 space-y-3">
           {lines.map((l) => (
             <li key={l.key} className="card flex gap-4 p-3 sm:p-4">
-              <ProductArtSmall name={t(l.productName, locale)} accent={l.accent} />
+              <ProductArtSmall name={t(l.productName, locale)} accent={l.accent} image={l.image} />
               <div className="min-w-0 flex-1">
                 <Link href={`/products/${l.productSlug}`} className="font-semibold hover:text-primary">{t(l.productName, locale)}</Link>
                 <p className="text-sm text-muted">{t(l.variantName, locale)}</p>

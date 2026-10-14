@@ -6,7 +6,7 @@ import { authClient } from "@/lib/auth-client";
 import { Logo } from "../Logo";
 import { MenuIcon, CloseIcon } from "../Icons";
 
-export function AdminNav({ items, user }: { items: { href: string; label: string; badge?: number }[]; user: { name: string; role: string } }) {
+export function AdminNav({ items, user, logo }: { items: { href: string; label: string; badge?: number }[]; user: { name: string; role: string }; logo?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -34,12 +34,12 @@ export function AdminNav({ items, user }: { items: { href: string; label: string
   return (
     <>
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-6 bg-midnight p-4 lg:flex">
-        <Link href="/admin" className="text-white"><Logo /></Link>
+        <Link href="/admin" className="text-white"><Logo src={logo} /></Link>
         {nav}
         {footer}
       </aside>
       <div className="sticky top-0 z-30 flex items-center justify-between bg-midnight px-4 py-3 text-white lg:hidden">
-        <Link href="/admin"><Logo /></Link>
+        <Link href="/admin"><Logo src={logo} /></Link>
         <button type="button" onClick={() => setOpen(true)} aria-label="Menu" className="p-2"><MenuIcon /></button>
       </div>
       {open && (

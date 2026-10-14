@@ -7,6 +7,7 @@ import { saveCategory } from "@/actions/admin";
 import { ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle, Table } from "@/components/admin/ui";
 import { LocalizedInputs } from "@/components/admin/LocalizedInputs";
+import { ImageField } from "@/components/admin/ImageField";
 
 export const metadata = { title: "Products" };
 
@@ -22,7 +23,7 @@ export default async function AdminProducts() {
       <Table head={["Product", "Category", "Fulfillment", "Variants", "From", "Status"]} empty={products.length === 0}>
         {products.map((p) => (
           <tr key={p.id} className="hover:bg-surface-2">
-            <td className="px-4 py-3"><Link href={`/admin/products/${p.id}`} className="font-semibold text-primary">{t(p.name, "en")}</Link><br /><span className="text-xs text-muted">/{p.slug}</span></td>
+            <td className="px-4 py-3"><div className="flex items-center gap-3">{p.image ? <img src={p.image} alt="" className="h-10 w-10 rounded-lg object-cover" /> : <span className="h-10 w-10 rounded-lg" style={{ background: p.accent ?? "#1467F5" }} />}<div><Link href={`/admin/products/${p.id}`} className="font-semibold text-primary">{t(p.name, "en")}</Link><br /><span className="text-xs text-muted">/{p.slug}</span></div></div></td>
             <td className="px-4 py-3">{t(p.category.name, "en")}</td>
             <td className="px-4 py-3 text-xs">{p.fulfillmentType}</td>
             <td className="px-4 py-3">{p.variants.length}</td>
@@ -37,12 +38,13 @@ export default async function AdminProducts() {
         {categories.map((c) => (
           <ActionForm key={c.id} action={saveCategory} className="card space-y-3 p-4">
             <input type="hidden" name="id" value={c.id} />
-            <div className="grid grid-cols-[1fr_80px_80px] gap-2">
+            <div className="grid grid-cols-[minmax(0,1fr)_64px_64px] gap-2">
               <input name="slug" defaultValue={c.slug} className="input" aria-label="Slug" />
               <input name="icon" defaultValue={c.icon ?? ""} className="input" aria-label="Icon" />
               <input name="sortOrder" type="number" defaultValue={c.sortOrder} className="input" aria-label="Order" />
             </div>
             <LocalizedInputs prefix="name" label="Name" value={c.name as Record<string, string>} />
+            <ImageField name="image" label="Image (optional, replaces the icon)" value={c.image} folder="categories" aspect="aspect-square" />
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isVisible" defaultChecked={c.isVisible} /> Visible · {c._count.products} products</label>
               <button className="btn-secondary min-h-9 px-3 text-xs">Save</button>
@@ -51,12 +53,13 @@ export default async function AdminProducts() {
         ))}
         <ActionForm action={saveCategory} className="card space-y-3 border-dashed p-4" resetOnSuccess>
           <p className="font-semibold">New category</p>
-          <div className="grid grid-cols-[1fr_80px_80px] gap-2">
+          <div className="grid grid-cols-[minmax(0,1fr)_64px_64px] gap-2">
             <input name="slug" placeholder="slug" className="input" required />
             <input name="icon" placeholder="🎮" className="input" />
             <input name="sortOrder" type="number" defaultValue={10} className="input" />
           </div>
           <LocalizedInputs prefix="name" label="Name" />
+          <ImageField name="image" label="Image (optional)" folder="categories" aspect="aspect-square" />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isVisible" defaultChecked /> Visible</label>
           <button className="btn-primary min-h-9 px-3 text-xs">Create</button>
         </ActionForm>

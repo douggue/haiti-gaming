@@ -12,6 +12,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Images (5 MB) and payment screenshots (3 MB) are sent through server actions; the default limit is 1 MB.
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  images: {
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

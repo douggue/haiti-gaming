@@ -13,6 +13,7 @@ import { parseAmount } from "@/lib/money";
 import { DEFAULT_SETTINGS, setSetting, type Settings } from "@/lib/settings";
 import { notify } from "@/lib/notify";
 import { InsufficientFundsError } from "@/lib/ledger";
+import { isOwnImageUrl, savePublicImage, UploadError } from "@/lib/storage";
 
 type R = { ok: true; message?: string } | { ok: false; error: string };
 const fail = (e: unknown): R => ({ ok: false, error: e instanceof Error ? e.message : "Unexpected error" });
@@ -154,8 +155,14 @@ export async function saveProduct(form: FormData): Promise<R & { id?: string }> 
     } catch {
       return { ok: false, error: "Custom fields JSON is invalid" };
     }
+    const image = String(form.get("image") ?? "").trim();
+    if (image && !isOwnImageUrl(image)) return { ok: false, error: "Invalid main image" };
+    const gallery = form.getAll("gallery").map(String).filter(Boolean).slice(0, 8);
+    if (gallery.some((u) => !isOwnImageUrl(u))) return { ok: false, error: "Invalid gallery image" };
     const data = {
       slug,
+      image: image || null,
+      gallery,
       categoryId: String(form.get("categoryId")),
       name,
       description: localized(form, "description"),
@@ -213,7 +220,9 @@ export async function saveCategory(form: FormData): Promise<R> {
     const id = String(form.get("id") ?? "") || null;
     const slug = String(form.get("slug") ?? "").trim().toLowerCase();
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return { ok: false, error: "Invalid slug" };
-    const data = { slug, name: localized(form, "name"), icon: String(form.get("icon") ?? "").slice(0, 4) || null, sortOrder: Number(form.get("sortOrder") ?? 0) || 0, isVisible: form.get("isVisible") === "on" };
+    const image = String(form.get("image") ?? "").trim();
+    if (image && !isOwnImageUrl(image)) return { ok: false, error: "Invalid image" };
+    const data = { slug, image: image || null, name: localized(form, "name"), icon: String(form.get("icon") ?? "").slice(0, 4) || null, sortOrder: Number(form.get("sortOrder") ?? 0) || 0, isVisible: form.get("isVisible") === "on" };
     const c = id ? await prisma.category.update({ where: { id }, data }) : await prisma.category.create({ data });
     await audit(staff.id, id ? "category.update" : "category.create", "Category", c.id, { slug });
     revalidatePath("/admin/products");
@@ -348,6 +357,14 @@ export async function saveSettings(form: FormData): Promise<R> {
         link: str("announcementLink"),
       },
     };
+    const img = (k: string) => {
+      const v = str(k);
+      return v && isOwnImageUrl(v) ? v : "";
+    };
+    next.logoUrl = img("logoUrl");
+    next.logoDarkUrl = img("logoDarkUrl");
+    next.heroImageUrl = img("heroImageUrl");
+    next.ogImageUrl = img("ogImageUrl");
     for (const url of [next.socialFacebook, next.socialInstagram, next.socialTiktok, next.announcement?.link]) {
       if (url && !/^https:\/\//.test(url) && !url.startsWith("/")) return { ok: false, error: "Links must start with https:// or /" };
     }
@@ -362,4 +379,29 @@ export async function saveSettings(form: FormData): Promise<R> {
 
 export async function newIdempotencyKey() {
   return randomToken(16);
+}
+
+// ───────────── Images ─────────────
+
+export async function uploadImage(form: FormData): Promise<{ ok: true; url: string } | { ok: false; error: string }> {
+  const folder = String(form.get("folder"));
+  if (folder !== "products" && folder !== "categories" && folder !== "brand") return { ok: false, error: "Invalid folder" };
+  try {
+    const staff = await assertStaff(folder === "brand" ? "settings.manage" : "catalog.manage");
+    const file = form.get("file");
+    if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Choose an image" };
+    const url = await savePublicImage(file, folder);
+    await audit(staff.id, "image.upload", "Media", null, { folder, url });
+    return { ok: true, url };
+  } catch (e) {
+    if (e instanceof UploadError) {
+      const msg: Record<string, string> = {
+        type: "Use a JPG, PNG or WebP image",
+        size: "Image must be 5 MB or smaller",
+        storage: "Image storage is not configured (connect a Vercel Blob store)",
+      };
+      return { ok: false, error: msg[e.message] ?? "Upload failed" };
+    }
+    return { ok: false, error: e instanceof Error ? e.message : "Upload failed" };
+  }
 }

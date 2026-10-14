@@ -7,6 +7,7 @@ import { t } from "@/lib/text";
 import { alternates } from "@/lib/seo";
 import { ProductCard } from "@/components/ProductCard";
 import { Link } from "@/i18n/navigation";
+import { CategoryIcon } from "@/components/CategoryIcon";
 
 type P = Promise<{ locale: string; slug: string }>;
 
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const { locale, slug } = await params;
   const c = await prisma.category.findUnique({ where: { slug } });
   if (!c) return {};
-  return { title: t(c.name, locale), alternates: alternates(locale, `/categories/${slug}`) };
+  return { title: t(c.name, locale), alternates: alternates(locale, `/categories/${slug}`), ...(c.image ? { openGraph: { images: [c.image] } } : {}) };
 }
 
 export default async function CategoryPage({ params }: { params: P }) {
@@ -28,7 +29,7 @@ export default async function CategoryPage({ params }: { params: P }) {
       <nav className="text-sm text-muted" aria-label="Breadcrumb">
         <Link href="/categories" className="hover:text-text">{tc("categories")}</Link> / <span>{t(category.name, locale)}</span>
       </nav>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight">{category.icon} {t(category.name, locale)}</h1>
+      <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight"><CategoryIcon image={category.image} icon={category.icon} size={48} /> {t(category.name, locale)}</h1>
       <p className="mt-2 text-sm text-muted">{ts("results", { count: products.length })}</p>
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
         {products.map((p) => <ProductCard key={p.id} product={p} />)}

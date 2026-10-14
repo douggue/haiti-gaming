@@ -3,7 +3,9 @@ import { Link } from "@/i18n/navigation";
 import { getCategories, searchProducts } from "@/lib/catalog";
 import { getSettings } from "@/lib/settings";
 import { t } from "@/lib/text";
+import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon } from "@/components/Icons";
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -75,6 +77,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <Link href="/guides" className="underline-offset-4 hover:text-white hover:underline">{th("payGuideLink")}</Link>
             </div>
           </div>
+          {settings.heroImageUrl ? (
+            <div className="animate-rise relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/10 shadow-2xl [animation-delay:120ms]">
+              <Image src={settings.heroImageUrl} alt="" fill priority sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
+            </div>
+          ) : (
           <div className="relative hidden lg:block" aria-hidden>
             <div className="animate-rise rounded-3xl border border-white/10 bg-gradient-to-br from-navy to-midnight p-6 shadow-2xl [animation-delay:120ms]">
               <div className="flex items-center justify-between text-sm text-[#a9c4ff]">
@@ -94,6 +101,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <p className="mt-1 text-xs text-muted">✓ {th("trustDelivery")}</p>
             </div>
           </div>
+          )}
         </div>
       </section>
 
@@ -106,7 +114,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {categories.map((c) => (
             <Link key={c.id} href={`/categories/${c.slug}`} className="card lift flex items-center gap-3 p-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-xl" aria-hidden>{c.icon}</span>
+              <CategoryIcon image={c.image} icon={c.icon} />
               <span className="min-w-0">
                 <span className="block truncate font-semibold">{t(c.name, locale)}</span>
                 <span className="text-xs text-muted">{c._count.products}</span>

@@ -2,12 +2,14 @@ import { prisma } from "@/lib/db";
 import { requireStaff } from "@/lib/session";
 import { can, type Permission } from "@/lib/permissions";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { getSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const user = await requireStaff();
-  const [reviews, risks, processing] = await Promise.all([
+  const [settings, reviews, risks, processing] = await Promise.all([
+    getSettings(),
     prisma.paymentIntent.count({ where: { status: "REVIEW" } }),
     prisma.riskFlag.count({ where: { status: "OPEN" } }),
     prisma.order.count({ where: { status: "PROCESSING" } }),
@@ -27,7 +29,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   ];
   return (
     <div className="lg:flex">
-      <AdminNav items={all.filter((i) => can(user.role, i.perm))} user={{ name: user.name, role: user.role }} />
+      <AdminNav items={all.filter((i) => can(user.role, i.perm))} user={{ name: user.name, role: user.role }} logo={settings.logoDarkUrl || settings.logoUrl} />
       <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
     </div>
   );

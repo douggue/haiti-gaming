@@ -30,6 +30,7 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 | Wallet | Double-entry, append-only ledger in integer minor units; HTG and USD balances; held funds; HTG↔USD exchange with expiring quotes; **no withdrawals** (store credit) |
 | Fulfillment | Encrypted code inventory (AES-256-GCM, dedupe by HMAC, `SKIP LOCKED` assignment), manual delivery with notes, automatic refund to wallet on cancel |
 | Fraud controls | One-time NatCash references (DB-unique), new-account daily limits, holds on large deposits, high-value order review queue, amount-mismatch flags, rate-limited auth |
+| Images | Upload in the admin (JPG/PNG/WebP, up to 5 MB, content-checked): product main image + gallery of up to 8, category images, logo (light and dark), homepage hero image, social-share image. Stored on Vercel Blob (public), served through Next.js image optimization (AVIF/WebP, responsive sizes). Anything without an image falls back to a generated tile, the category emoji or the built-in logo |
 | Admin | Dashboard, orders, payment review, risk queue, products/variants/categories in 4 languages, code import, customers (status, wallet adjustments), ledger, staff roles, settings (rate, limits, NatCash recipient, WhatsApp, announcement), audit log |
 | Security | Argon2id, HttpOnly sessions, mandatory staff TOTP, server-side permission checks on every admin page and action, audit trail for approvals, adjustments, code reveals and role changes, security headers |
 
@@ -43,7 +44,7 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 
 ```bash
 TEST_DATABASE_URL=postgresql://…/haiti_gaming_test npm test       # ledger, concurrency, idempotency, exchange, crypto (14 tests)
-npx playwright test                                              # 5 end-to-end journeys against a running server
+npx playwright test                                              # end-to-end journeys + image uploads against a running dev server
 ```
 
 The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delivered; NatCash deposit and duplicate-reference rejection; admin 2FA setup and approval; wallet purchase of a manual top-up delivered by staff; HTG→USD exchange.
@@ -51,7 +52,7 @@ The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delive
 ## Deploying to Vercel
 
 1. **Database (Neon):** create a Neon project. Set `DATABASE_URL` to the **pooled** connection string (host contains `-pooler`; add `&pgbouncer=true` to the end) and `DIRECT_URL` to the **direct** one. Both are on Neon's "Connect" panel. You can also add Neon from Vercel → Storage, then copy its pooled/unpooled URLs into these two names.
-2. **Storage (Vercel Blob):** in Vercel → Storage, create a Blob store with **private** access and connect it to the project. That sets `BLOB_READ_WRITE_TOKEN`, which is used for NatCash payment screenshots. Without it, customers can still pay with a reference number, but screenshots are skipped.
+2. **Storage (Vercel Blob):** in Vercel → Storage, create a Blob store and connect it to the project. That sets `BLOB_READ_WRITE_TOKEN`. The same store holds **public** images (products, categories, logo, hero) and **private** NatCash payment screenshots that only staff can open. Without it, image uploads are disabled in production and screenshots are skipped.
 3. **Environment variables:** in Vercel → Settings → Environment Variables, add everything from `.env.example`. Set `BETTER_AUTH_URL` and `NEXT_PUBLIC_SITE_URL` to your real domain (e.g. `https://haitigaming.com`). Generate new `BETTER_AUTH_SECRET`, `ENCRYPTION_KEY` and `CRON_SECRET`. **Keep `ENCRYPTION_KEY` safe and never change it**: stored gift-card codes cannot be read without it.
 4. **Deploy:** import the repository in Vercel. The `vercel-build` script runs `prisma migrate deploy` automatically before each build.
 5. **First admin:** from your computer, with `DATABASE_URL`/`DIRECT_URL` pointing at production, run `npm run setup:admin -- --email you@example.com`, then sign in at `/admin/login` and set up 2FA. Optionally run `npm run db:seed` for demo products (delete the demo codes before launch).

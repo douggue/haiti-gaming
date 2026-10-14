@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getCategories } from "@/lib/catalog";
 import { t } from "@/lib/text";
 import { alternates } from "@/lib/seo";
+import { CategoryIcon } from "@/components/CategoryIcon";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -21,7 +22,7 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         {categories.map((c) => (
           <Link key={c.id} href={`/categories/${c.slug}`} className="card lift flex items-center gap-4 p-5">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-2xl" aria-hidden>{c.icon}</span>
+            <CategoryIcon image={c.image} icon={c.icon} size={56} />
             <span>
               <span className="block text-lg font-semibold">{t(c.name, locale)}</span>
               <span className="text-sm text-muted">{c._count.products}</span>
