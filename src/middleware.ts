@@ -12,6 +12,10 @@ export default function middleware(req: NextRequest) {
   if (ref && /^[A-Z0-9]{6,12}$/i.test(ref)) {
     res.cookies.set("hg_ref", ref.toUpperCase(), { path: "/", maxAge: 60 * 60 * 24 * 30, sameSite: "lax", httpOnly: true });
   }
+  // Anonymous browser id, used only to spot several accounts created from one device.
+  if (!req.cookies.get("hg_dev")) {
+    res.cookies.set("hg_dev", crypto.randomUUID().replace(/-/g, ""), { path: "/", maxAge: 60 * 60 * 24 * 400, sameSite: "lax", httpOnly: true, secure: req.nextUrl.protocol === "https:" });
+  }
   return res;
 }
 

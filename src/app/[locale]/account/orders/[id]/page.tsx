@@ -7,6 +7,7 @@ import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
 import { itemTitle, revealCode } from "@/lib/orders";
 import { audit } from "@/lib/audit";
+import { t } from "@/lib/text";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
 import { NatcashOrderForm, MoncashRetryButton } from "@/components/OrderPayment";
@@ -27,6 +28,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   if (!order) notFound();
   const [to, tc, fmt, settings, ts] = await Promise.all([getTranslations("order"), getTranslations("common"), getFormatter(), getSettings(), getTranslations("support")]);
 
+  const manual = order.manualMethodId ? await prisma.manualMethod.findUnique({ where: { id: order.manualMethodId } }) : null;
   const codes = order.items.flatMap((i) => i.codes);
   if (codes.length > 0) await audit(user.id, "code.view.customer", "Order", order.id, { codes: codes.length });
 
@@ -45,6 +47,17 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         <StatusBadge status={order.status} label={to(`status.${order.status}`)} />
       </div>
 
+      {order.status === "AWAITING_PAYMENT" && order.paymentMethod === "MANUAL" && manual && (
+        <section className="card border-warning p-5">
+          <h2 className="font-semibold">{t(manual.name, locale)}</h2>
+          {t(manual.instructions, locale) && <p className="mt-1 whitespace-pre-line text-sm">{t(manual.instructions, locale)}</p>}
+          <p className="mt-1 text-sm text-muted">
+            {to("payNatcashBody", { amount: formatMoney(order.total, "HTG", locale), name: manual.recipientName, phone: manual.recipientNumber }).replace("NatCash", t(manual.name, locale))}
+          </p>
+          {lastPayment?.status === "REJECTED" && lastPayment.reviewNote && <p className="mt-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{lastPayment.reviewNote}</p>}
+          <NatcashOrderForm orderId={order.id} phone={manual.recipientNumber} methodName={t(manual.name, locale)} />
+        </section>
+      )}
       {order.status === "AWAITING_PAYMENT" && order.paymentMethod === "NATCASH" && (
         <section className="card border-warning p-5">
           <h2 className="font-semibold">{to("payNatcashTitle")}</h2>

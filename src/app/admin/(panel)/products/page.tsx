@@ -44,6 +44,12 @@ export default async function AdminProducts() {
               <input name="sortOrder" type="number" defaultValue={c.sortOrder} className="input" aria-label="Order" />
             </div>
             <LocalizedInputs prefix="name" label="Name" value={c.name as Record<string, string>} />
+            <label className="block"><span className="label">Parent (makes this a subcategory)</span>
+              <select name="parentId" defaultValue={c.parentId ?? ""} className="input">
+                <option value="">None (top level)</option>
+                {categories.filter((x) => !x.parentId && x.id !== c.id).map((x) => <option key={x.id} value={x.id}>{t(x.name, "en")}</option>)}
+              </select>
+            </label>
             <ImageField name="image" label="Image (optional, replaces the icon)" value={c.image} folder="categories" aspect="aspect-square" />
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isVisible" defaultChecked={c.isVisible} /> Visible · {c._count.products} products</label>
@@ -59,6 +65,12 @@ export default async function AdminProducts() {
             <input name="sortOrder" type="number" defaultValue={10} className="input" />
           </div>
           <LocalizedInputs prefix="name" label="Name" />
+          <label className="block"><span className="label">Parent (optional)</span>
+            <select name="parentId" defaultValue="" className="input">
+              <option value="">None (top level)</option>
+              {categories.filter((x) => !x.parentId).map((x) => <option key={x.id} value={x.id}>{t(x.name, "en")}</option>)}
+            </select>
+          </label>
           <ImageField name="image" label="Image (optional)" folder="categories" aspect="aspect-square" />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isVisible" defaultChecked /> Visible</label>
           <button className="btn-primary min-h-9 px-3 text-xs">Create</button>

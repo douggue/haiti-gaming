@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ContentPage } from "@/components/ContentPage";
 import { pageSeo } from "@/lib/seo";
-import { getSettings } from "@/lib/settings";
+import { getDisplaySettings } from "@/lib/settings";
 import { WhatsAppIcon } from "@/components/Icons";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
   setRequestLocale((await params).locale);
-  const [t, tc, s] = await Promise.all([getTranslations("pages"), getTranslations("common"), getSettings()]);
+  const [t, tc, s] = await Promise.all([getTranslations("pages"), getTranslations("common"), getDisplaySettings()]);
   return (
     <ContentPage title={t("contactTitle")}>
       <p className="text-muted">{t("contactBody")}</p>

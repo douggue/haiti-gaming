@@ -36,7 +36,9 @@ async function adminLogin(page: Page) {
 test("customer registers in Kreyòl and buys a gift card with MonCash", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/ht$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Rechaje jwèt ou");
+  // The headline is editable in Admin → Homepage (another spec changes it), so only check the page is in Kreyòl.
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", "ht");
 
   await page.goto("/ht/auth/register");
   await page.getByLabel("Non konplè").fill(customer.name);

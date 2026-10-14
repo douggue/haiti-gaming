@@ -1,7 +1,7 @@
 import "server-only";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { get, put } from "@vercel/blob";
+import { del, get, put } from "@vercel/blob";
 import { randomToken } from "./crypto";
 
 /**
@@ -80,6 +80,18 @@ export async function readLocalPublicFile(relPath: string): Promise<Buffer> {
   const full = path.resolve(PUBLIC_ROOT, relPath);
   if (!full.startsWith(path.resolve(PUBLIC_ROOT) + path.sep)) throw new Error("Invalid path");
   return readFile(full);
+}
+
+/** Remove a public image we stored (Blob URL or local /media path). Unknown URLs are ignored. */
+export async function deletePublicImage(url: string): Promise<void> {
+  if (!isOwnImageUrl(url)) return;
+  if (url.startsWith("/media/")) {
+    const full = path.resolve(PUBLIC_ROOT, url.slice("/media/".length));
+    if (!full.startsWith(path.resolve(PUBLIC_ROOT) + path.sep)) return;
+    await unlink(full).catch(() => {});
+    return;
+  }
+  if (blobEnabled()) await del(url);
 }
 
 /** Only accept image URLs we produced: Vercel Blob public URLs or local /media paths. */

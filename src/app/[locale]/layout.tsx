@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
-import { getSettings } from "@/lib/settings";
+import { getDisplaySettings } from "@/lib/settings";
 import { getDisplayCurrency } from "@/lib/prefs";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { Header } from "@/components/Header";
@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
-  const [t, settings] = await Promise.all([getTranslations({ locale, namespace: "meta" }), getSettings()]);
+  const [t, settings] = await Promise.all([getTranslations({ locale, namespace: "meta" }), getDisplaySettings()]);
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
     title: { default: t("title"), template: "%s · Haiti Gaming" },
@@ -45,7 +45,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-  const [settings, currency, t, user, hdrs, jar] = await Promise.all([getSettings(), getDisplayCurrency(), getTranslations("common"), getUser(), headers(), cookies()]);
+  const [settings, currency, t, user, hdrs, jar] = await Promise.all([getDisplaySettings(), getDisplayCurrency(), getTranslations("common"), getUser(), headers(), cookies()]);
   // Data saver: the visitor's toggle, or the browser's Save-Data signal.
   const dataSaver = jar.get("hg_ds")?.value === "1" || (jar.get("hg_ds")?.value !== "0" && hdrs.get("save-data") === "on");
 

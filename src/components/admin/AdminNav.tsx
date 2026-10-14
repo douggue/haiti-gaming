@@ -6,18 +6,21 @@ import { authClient } from "@/lib/auth-client";
 import { Logo } from "../Logo";
 import { MenuIcon, CloseIcon } from "../Icons";
 
-export function AdminNav({ items, user, logo }: { items: { href: string; label: string; badge?: number }[]; user: { name: string; role: string }; logo?: string }) {
+export function AdminNav({ items, user, logo }: { items: { href: string; label: string; group?: string; badge?: number }[]; user: { name: string; role: string }; logo?: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const active = (h: string) => (h === "/admin" ? pathname === "/admin" : pathname.startsWith(h));
   const nav = (
     <nav className="flex flex-col gap-0.5" aria-label="Admin">
-      {items.map((i) => (
-        <Link key={i.href} href={i.href} onClick={() => setOpen(false)} className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium ${active(i.href) ? "bg-primary text-white" : "text-[#c4d2ee] hover:bg-white/5"}`}>
+      {items.map((i, n) => (
+        <div key={i.href}>
+        {i.group && i.group !== items[n - 1]?.group && <p className="mb-1 mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-[#7b92b8]">{i.group}</p>}
+        <Link href={i.href} onClick={() => setOpen(false)} className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium ${active(i.href) ? "bg-primary text-white" : "text-[#c4d2ee] hover:bg-white/5"}`}>
           {i.label}
           {!!i.badge && <span className="rounded-full bg-warning px-2 text-xs font-bold text-midnight">{i.badge}</span>}
         </Link>
+        </div>
       ))}
     </nav>
   );

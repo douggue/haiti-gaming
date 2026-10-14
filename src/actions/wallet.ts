@@ -22,6 +22,11 @@ const phoneSchema = z.string().trim().max(20).optional();
 /** Start a wallet deposit. MonCash returns a redirect URL; NatCash records the customer's reference for review. */
 export async function createDeposit(form: FormData): Promise<ActionResult<{ redirect?: string }>> {
   const user = await assertUser();
+  const { verifyTurnstile } = await import("@/lib/turnstile");
+  const { headers } = await import("next/headers");
+  if (!(await verifyTurnstile(String(form.get("cf-turnstile-response") ?? ""), (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim()))) {
+    return { ok: false, error: "captcha" };
+  }
   const settings = await getSettings();
   const method = form.get("method");
   const amount = parseAmount(String(form.get("amount") ?? ""));
@@ -41,8 +46,14 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
     return { ok: true, redirect: await createMoncashPayment(intent.id, amount) };
   }
 
-  if (method === "NATCASH") {
-    if (!settings.natcashEnabled) return { ok: false, error: "method_unavailable" };
+  if (method === "NATCASH" || method === "MANUAL") {
+    let manualMethodId: string | null = null;
+    if (method === "NATCASH" && !settings.natcashEnabled) return { ok: false, error: "method_unavailable" };
+    if (method === "MANUAL") {
+      const m = await prisma.manualMethod.findUnique({ where: { id: String(form.get("manualMethodId") ?? "") } });
+      if (!m || !m.isEnabled || !m.allowDeposits) return { ok: false, error: "method_unavailable" };
+      manualMethodId = m.id;
+    }
     const ref = refSchema.safeParse(form.get("reference"));
     if (!ref.success) return { ok: false, error: "reference" };
     const phone = phoneSchema.safeParse(form.get("payerPhone") ?? undefined);
@@ -59,7 +70,7 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
     try {
       await prisma.paymentIntent.create({
         data: {
-          userId: user.id, provider: "NATCASH", amount, currency: "HTG", status: "REVIEW",
+          userId: user.id, provider: method, manualMethodId, amount, currency: "HTG", status: "REVIEW",
           providerRef: ref.data.toUpperCase(), payerPhone: phone.success ? phone.data : null, evidencePath,
         },
       });
@@ -79,7 +90,7 @@ export async function submitOrderNatcash(form: FormData): Promise<ActionResult> 
   const orderId = String(form.get("orderId"));
   const ref = refSchema.safeParse(form.get("reference"));
   if (!ref.success) return { ok: false, error: "reference" };
-  const order = await prisma.order.findFirst({ where: { id: orderId, userId: user.id, paymentMethod: "NATCASH", status: "AWAITING_PAYMENT" } });
+  const order = await prisma.order.findFirst({ where: { id: orderId, userId: user.id, paymentMethod: { in: ["NATCASH", "MANUAL"] }, status: "AWAITING_PAYMENT" } });
   if (!order) return { ok: false, error: "not_found" };
   let evidencePath: string | null = null;
   const file = form.get("evidence");
@@ -95,12 +106,12 @@ export async function submitOrderNatcash(form: FormData): Promise<ActionResult> 
     await prisma.$transaction(async (tx) => {
       await tx.paymentIntent.create({
         data: {
-          userId: user.id, orderId: order.id, provider: "NATCASH", amount: order.total, currency: "HTG", status: "REVIEW",
+          userId: user.id, orderId: order.id, provider: order.paymentMethod === "MANUAL" ? "MANUAL" : "NATCASH", manualMethodId: order.manualMethodId, amount: order.total, currency: "HTG", status: "REVIEW",
           providerRef: ref.data.toUpperCase(), payerPhone: phone.success ? phone.data : null, evidencePath,
         },
       });
       await tx.order.update({ where: { id: order.id }, data: { status: "PAYMENT_REVIEW" } });
-      await addEvent(tx, order.id, "PAYMENT_REVIEW", `NatCash reference ${ref.data.toUpperCase()}`);
+      await addEvent(tx, order.id, "PAYMENT_REVIEW", `${order.paymentMethod === "MANUAL" ? "Manual payment" : "NatCash"} reference ${ref.data.toUpperCase()}`);
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return { ok: false, error: "duplicate_ref" };

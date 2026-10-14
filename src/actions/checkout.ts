@@ -10,7 +10,8 @@ import { z } from "zod";
 const input = z.object({
   items: cartSchema,
   currency: z.enum(["HTG", "USD"]),
-  method: z.enum(["WALLET", "MONCASH", "NATCASH"]),
+  method: z.enum(["WALLET", "MONCASH", "NATCASH", "MANUAL"]),
+  manualMethodId: z.string().max(64).optional(),
   note: z.string().max(300).optional(),
 });
 
@@ -25,10 +26,10 @@ export async function placeOrder(raw: unknown): Promise<PlaceOrderResult> {
   }
   const parsed = input.safeParse(raw);
   if (!parsed.success) return { ok: false, error: "invalid_field" };
-  const { items, currency, method, note } = parsed.data;
+  const { items, currency, method, note, manualMethodId } = parsed.data;
 
   try {
-    const order = await createOrder({ userId: user.id, items, currency, method, recipientNote: note });
+    const order = await createOrder({ userId: user.id, items, currency, method, manualMethodId, recipientNote: note });
     await rememberPlayerIds(user.id, items);
 
     if (method === "MONCASH") {

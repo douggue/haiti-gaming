@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
@@ -8,6 +8,8 @@ import { prisma } from "./db";
 import { emailEnabled, sendPasswordResetEmail, sendVerificationEmail } from "./email";
 import { isPasswordBreached } from "./password-check";
 import { recordReferral } from "./referrals";
+import { recordDevice } from "./devices";
+import { verifyTurnstile } from "./turnstile";
 
 // Argon2id parameters (OWASP recommended minimums)
 const argonOpts = { memoryCost: 19456, timeCost: 2, parallelism: 1, algorithm: 2 as const };
@@ -70,6 +72,17 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 14,
     updateAge: 60 * 60 * 24,
   },
+  hooks: {
+    // Bot check on the forms bots attack (no-op until Turnstile keys are set).
+    before: createAuthMiddleware(async (ctx) => {
+      if (!["/sign-up/email", "/sign-in/email", "/request-password-reset"].includes(ctx.path)) return;
+      const h = ctx.headers;
+      const ip = h?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+      if (!(await verifyTurnstile(h?.get("x-turnstile-token"), ip))) {
+        throw APIError.from("BAD_REQUEST", { code: "CAPTCHA_FAILED", message: "Bot check failed. Please try again." });
+      }
+    }),
+  },
   databaseHooks: {
     user: {
       create: {
@@ -94,6 +107,16 @@ export const auth = betterAuth({
           const u = await prisma.user.findUnique({ where: { id: session.userId }, select: { status: true } });
           if (u && (u.status === "SUSPENDED" || u.status === "CLOSED")) {
             throw APIError.from("FORBIDDEN", { code: "ACCOUNT_BLOCKED", message: "This account is not active." });
+          }
+        },
+        // Remember the browser for multi-account detection. Never blocks sign-in.
+        after: async (session, ctx) => {
+          try {
+            const h = (ctx as { headers?: Headers; request?: Request } | null)?.headers ?? (ctx as { request?: Request } | null)?.request?.headers;
+            const device = /(?:^|;\s*)hg_dev=([A-Za-z0-9_-]{16,64})/.exec(h?.get("cookie") ?? "")?.[1] ?? null;
+            await recordDevice(session.userId, device, session.ipAddress ?? null, session.userAgent ?? null);
+          } catch (e) {
+            console.error("device record failed", e);
           }
         },
       },

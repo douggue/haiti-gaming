@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { prisma } from "./db";
 
 export type Settings = {
@@ -30,7 +32,12 @@ export type Settings = {
   socialFacebook: string;
   socialInstagram: string;
   socialTiktok: string;
-  announcement: { enabled: boolean; text: Record<string, string>; link: string };
+  announcement: { enabled: boolean; text: Record<string, string>; link: string; startsAt?: string; endsAt?: string };
+  /** Header and footer links (Admin → Navigation). Empty = built-in links. */
+  navigation: { header: NavLink[]; footer: NavLink[] };
+  newsletterEnabled: boolean;
+  /** New accounts on a browser already used by this many other accounts are flagged for review */
+  maxAccountsPerDevice: number;
   /** Brand images (URLs). Empty = built-in logo / default artwork. */
   logoUrl: string;
   logoDarkUrl: string;
@@ -49,6 +56,8 @@ export type Settings = {
   theme: ThemeConfig;
   themeHistory: { at: string; by: string; theme: ThemeConfig }[];
 };
+
+export type NavLink = { label: Record<string, string>; href: string };
 
 export type ThemeConfig = {
   primary: string;
@@ -101,6 +110,9 @@ export const DEFAULT_SETTINGS: Settings = {
   homepageHistory: [],
   theme: DEFAULT_THEME,
   themeHistory: [],
+  navigation: { header: [], footer: [] },
+  newsletterEnabled: false,
+  maxAccountsPerDevice: 3,
 };
 
 export async function getSettings(): Promise<Settings> {
@@ -116,4 +128,17 @@ export async function setSetting<K extends keyof Settings>(key: K, value: Settin
     create: { key, value: value as object },
     update: { value: value as object },
   });
+  try {
+    revalidateTag("settings");
+  } catch {
+    // outside a Next.js request (seed/scripts): the 60-second expiry covers it
+  }
 }
+
+/**
+ * Cached copy for rendering public pages (logo, menus, announcement, contact numbers).
+ * Refreshed as soon as staff save settings, and at most 60 seconds old otherwise.
+ * Money paths (deposits, exchange, limits, checkout) keep using getSettings(), which always reads the database.
+ */
+const cachedSettings = unstable_cache(getSettings, ["site-settings"], { tags: ["settings"], revalidate: 60 });
+export const getDisplaySettings = cache(() => cachedSettings());

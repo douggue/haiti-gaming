@@ -159,8 +159,10 @@ export async function saveProduct(form: FormData): Promise<R & { id?: string }> 
     if (image && !isOwnImageUrl(image)) return { ok: false, error: "Invalid main image" };
     const gallery = form.getAll("gallery").map(String).filter(Boolean).slice(0, 8);
     if (gallery.some((u) => !isOwnImageUrl(u))) return { ok: false, error: "Invalid gallery image" };
+    const tags = [...new Set(String(form.get("tags") ?? "").split(",").map((x) => x.trim().slice(0, 30)).filter(Boolean))].slice(0, 12);
     const data = {
       slug,
+      tags,
       image: image || null,
       gallery,
       categoryId: String(form.get("categoryId")),
@@ -222,7 +224,13 @@ export async function saveCategory(form: FormData): Promise<R> {
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return { ok: false, error: "Invalid slug" };
     const image = String(form.get("image") ?? "").trim();
     if (image && !isOwnImageUrl(image)) return { ok: false, error: "Invalid image" };
-    const data = { slug, image: image || null, name: localized(form, "name"), icon: String(form.get("icon") ?? "").slice(0, 4) || null, sortOrder: Number(form.get("sortOrder") ?? 0) || 0, isVisible: form.get("isVisible") === "on" };
+    const parentRaw = String(form.get("parentId") ?? "") || null;
+    if (parentRaw) {
+      const parent = await prisma.category.findUnique({ where: { id: parentRaw } });
+      if (!parent || parent.parentId || parent.id === id) return { ok: false, error: "A subcategory's parent must be a top-level category" };
+      if (id && (await prisma.category.count({ where: { parentId: id } })) > 0) return { ok: false, error: "This category has subcategories, so it can't become one" };
+    }
+    const data = { slug, parentId: parentRaw, image: image || null, name: localized(form, "name"), icon: String(form.get("icon") ?? "").slice(0, 4) || null, sortOrder: Number(form.get("sortOrder") ?? 0) || 0, isVisible: form.get("isVisible") === "on" };
     const c = id ? await prisma.category.update({ where: { id }, data }) : await prisma.category.create({ data });
     await audit(staff.id, id ? "category.update" : "category.create", "Category", c.id, { slug });
     revalidatePath("/admin/products");
@@ -367,6 +375,8 @@ export async function saveSettings(form: FormData): Promise<R> {
       approvalThresholdHtg: money("approvalThresholdHtg"),
       autoRefundHours: Math.max(0, Math.min(720, Math.round(num("autoRefundHours")))),
       referralEnabled: form.get("referralEnabled") === "on",
+      newsletterEnabled: form.get("newsletterEnabled") === "on",
+      maxAccountsPerDevice: Math.max(1, Math.min(50, Math.round(num("maxAccountsPerDevice")) || 3)),
       referralRewardHtg: money("referralRewardHtg"),
       referralMinOrderHtg: money("referralMinOrderHtg"),
       natcashRecipientName: str("natcashRecipientName"),
@@ -381,6 +391,8 @@ export async function saveSettings(form: FormData): Promise<R> {
       socialInstagram: str("socialInstagram"),
       socialTiktok: str("socialTiktok"),
       announcement: {
+        startsAt: String(form.get("announcementStartsAt") ?? "") || undefined,
+        endsAt: String(form.get("announcementEndsAt") ?? "") || undefined,
         enabled: form.get("announcementEnabled") === "on",
         text: { ht: str("announcement_ht"), fr: str("announcement_fr"), en: str("announcement_en"), es: str("announcement_es") },
         link: str("announcementLink"),
@@ -420,7 +432,8 @@ export async function uploadImage(form: FormData): Promise<{ ok: true; url: stri
     const file = form.get("file");
     if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Choose an image" };
     const url = await savePublicImage(file, folder);
-    await audit(staff.id, "image.upload", "Media", null, { folder, url });
+    const asset = await prisma.mediaAsset.create({ data: { url, folder, uploadedBy: staff.id } });
+    await audit(staff.id, "image.upload", "MediaAsset", asset.id, { folder, url });
     return { ok: true, url };
   } catch (e) {
     if (e instanceof UploadError) {
@@ -619,5 +632,52 @@ export async function decideReferral(id: string, decision: "PAY" | "REJECT"): Pr
     return { ok: true };
   } catch (e) {
     return fail(e);
+  }
+}
+
+// ───────────── Reconciliation ─────────────
+
+export type ReconcileResult = {
+  matched: { reference: string; amount: number }[];
+  toApprove: { id: string; reference: string; amount: number; customer: string }[];
+  mismatched: { id: string; reference: string; statement: number; system: number; status: string }[];
+  unknown: { reference: string; amount: number; date?: string }[];
+  missing: { id: string; reference: string; amount: number; customer: string; at: string }[];
+};
+
+/** Compare a provider statement with our payments. Read-only: approvals still go through the normal review. */
+export async function reconcileStatement(text: string, provider: string, days: number): Promise<{ ok: true; result: ReconcileResult; rows: number } | { ok: false; error: string }> {
+  try {
+    const staff = await assertStaff("payments.review");
+    const { parseStatement } = await import("@/lib/reconcile");
+    const { rows, error } = parseStatement(text.slice(0, 2_000_000));
+    if (error) return { ok: false, error };
+    const isManual = provider.startsWith("MANUAL:");
+    const since = new Date(Date.now() - Math.max(1, Math.min(366, days)) * 86_400_000);
+    const intents = await prisma.paymentIntent.findMany({
+      where: { provider: isManual ? "MANUAL" : (provider as "MONCASH" | "NATCASH"), ...(isManual ? { manualMethodId: provider.slice(7) } : {}), createdAt: { gte: since } },
+      include: { user: { select: { name: true } } },
+    });
+    const byRef = new Map(intents.filter((i) => i.providerRef).map((i) => [i.providerRef!.toUpperCase(), i]));
+    const seen = new Set<string>();
+    const result: ReconcileResult = { matched: [], toApprove: [], mismatched: [], unknown: [], missing: [] };
+    for (const r of rows) {
+      const i = byRef.get(r.reference);
+      if (!i) { result.unknown.push(r); continue; }
+      seen.add(r.reference);
+      if (i.amount !== r.amount) result.mismatched.push({ id: i.id, reference: r.reference, statement: r.amount, system: i.amount, status: i.status });
+      else if (i.status === "SUCCEEDED") result.matched.push({ reference: r.reference, amount: r.amount });
+      else if (i.status === "REVIEW" || i.status === "PENDING") result.toApprove.push({ id: i.id, reference: r.reference, amount: r.amount, customer: i.user.name });
+      else result.mismatched.push({ id: i.id, reference: r.reference, statement: r.amount, system: i.amount, status: i.status });
+    }
+    for (const i of intents) {
+      if (i.status === "SUCCEEDED" && i.providerRef && !seen.has(i.providerRef.toUpperCase())) {
+        result.missing.push({ id: i.id, reference: i.providerRef, amount: i.amount, customer: i.user.name, at: i.updatedAt.toISOString() });
+      }
+    }
+    await audit(staff.id, "reconcile.run", "PaymentIntent", null, { provider, rows: rows.length, missing: result.missing.length, unknown: result.unknown.length });
+    return { ok: true, result, rows: rows.length };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Error" };
   }
 }

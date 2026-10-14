@@ -52,7 +52,11 @@
     "rights": "Tous droits réservés.",
     "followUs": "Suivez-nous",
     "error": "Une erreur est survenue. Veuillez réessayer.",
-    "news": "Actualités"
+    "news": "Actualités",
+    "captcha": "La vérification anti-robot a échoué. Réessayez.",
+    "notFoundTitle": "Cette page n'existe pas",
+    "notFoundBody": "Le lien est peut-être erroné, ou le produit n'est plus disponible.",
+    "notFoundCta": "Retour à la boutique"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",
@@ -104,7 +108,15 @@
     "sortPriceLow": "Prix croissant",
     "sortPriceHigh": "Prix décroissant",
     "sortNewest": "Nouveautés",
-    "results": "{count, plural, =0 {Aucun produit} one {# produit} other {# produits}}"
+    "results": "{count, plural, =0 {Aucun produit} one {# produit} other {# produits}}",
+    "filters": "Filtres",
+    "tag": "Plateforme / région",
+    "anyTag": "Toutes",
+    "priceMin": "Prix minimum",
+    "priceMax": "Prix maximum",
+    "apply": "Appliquer",
+    "clear": "Effacer les filtres",
+    "subcategories": "Sous-catégories"
   },
   "product": {
     "chooseOption": "Choisissez une option",
@@ -303,7 +315,8 @@
     "resetInvalid": "Ce lien n'est plus valide ou a expiré. Demandez-en un nouveau.",
     "compromised": "Ce mot de passe est apparu dans une fuite de données. Choisissez-en un autre.",
     "signupFailed": "Impossible de créer un compte avec ces informations. Si vous avez déjà un compte, connectez-vous ou réinitialisez votre mot de passe.",
-    "backToLogin": "Retour à la connexion"
+    "backToLogin": "Retour à la connexion",
+    "captcha": "La vérification anti-robot a échoué. Réessayez."
   },
   "profile": {
     "title": "Profil",
@@ -378,7 +391,8 @@
       "Nous collectons votre nom, votre e-mail, votre téléphone facultatif, les détails de commande et les références de paiement pour fournir le service.",
       "Les codes de cartes cadeaux et les informations de paiement sont chiffrés.",
       "Nous ne vendons pas vos données. Nous partageons uniquement ce dont les prestataires de paiement et de livraison ont besoin.",
-      "Vous pouvez demander l'export ou la suppression de vos données en contactant le support."
+      "Vous pouvez demander l'export ou la suppression de vos données en contactant le support.",
+      "Nous utilisons uniquement des cookies nécessaires : votre session, votre langue, un code de parrainage éventuel et un identifiant anonyme du navigateur qui nous aide à bloquer la fraude par comptes multiples. Aucun cookie publicitaire."
     ],
     "refundsTitle": "Politique de remboursement",
     "refundsBody": [
@@ -483,5 +497,13 @@
   "dataSaver": {
     "label": "Économie de données",
     "hint": "Moins d'images, pas d'animations."
+  },
+  "newsletter": {
+    "title": "Recevez nos promotions",
+    "placeholder": "Votre e-mail",
+    "button": "S'inscrire",
+    "done": "Merci ! Vous êtes inscrit.",
+    "consent": "Nous ne vendrons jamais votre e-mail. Désinscription à tout moment.",
+    "unsubscribed": "Vous êtes désinscrit."
   }
 }

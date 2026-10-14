@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ContentPage } from "@/components/ContentPage";
 import { pageSeo } from "@/lib/seo";
-import { getSettings } from "@/lib/settings";
+import { getDisplaySettings } from "@/lib/settings";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default async function GuidesPage({ params }: { params: Promise<{ locale: string }> }) {
   setRequestLocale((await params).locale);
-  const [t, s] = await Promise.all([getTranslations("pages"), getSettings()]);
+  const [t, s] = await Promise.all([getTranslations("pages"), getDisplaySettings()]);
   const guides = [
     { id: "moncash", title: t("guideMoncashTitle"), steps: t.raw("guideMoncash") as string[], badge: <span className="rounded-md bg-[#e30613] px-2 py-1 text-xs font-extrabold text-white">MonCash</span> },
     { id: "natcash", title: t("guideNatcashTitle"), steps: t.raw("guideNatcash") as string[], badge: <span className="rounded-md bg-[#f7a400] px-2 py-1 text-xs font-extrabold text-midnight">NatCash</span>, extra: `${s.natcashRecipientName} · ${s.natcashRecipientPhone}` },

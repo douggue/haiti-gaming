@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getCategories, searchProducts } from "@/lib/catalog";
+import { getCategories, getTags, searchProducts } from "@/lib/catalog";
+import { getDisplayCurrency } from "@/lib/prefs";
+import { getDisplaySettings } from "@/lib/settings";
 import { t } from "@/lib/text";
 import { pageSeo } from "@/lib/seo";
 import { ProductCard } from "@/components/ProductCard";
 import { SearchIcon } from "@/components/Icons";
 
-type SP = Promise<{ q?: string; category?: string; sort?: string }>;
+type SP = Promise<{ q?: string; category?: string; sort?: string; tag?: string; min?: string; max?: string }>;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -19,16 +21,25 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   const { locale } = await params;
   setRequestLocale(locale);
   const sp = await searchParams;
-  const [ts, tc, categories, products] = await Promise.all([
+  const [currency, settings] = await Promise.all([getDisplayCurrency(), getDisplaySettings()]);
+  // Price filters are typed in the visitor's display currency; prices are stored in HTG.
+  const toHtg = (v?: string) => {
+    const n = Number(v);
+    if (!v || !Number.isFinite(n) || n < 0) return undefined;
+    return Math.round(n * 100 * (currency === "USD" ? settings.htgPerUsd : 1));
+  };
+  const [ts, tc, categories, tags, products] = await Promise.all([
     getTranslations("store"),
     getTranslations("common"),
     getCategories(),
-    searchProducts({ q: sp.q, category: sp.category, sort: sp.sort }),
+    getTags(),
+    searchProducts({ q: sp.q, category: sp.category, sort: sp.sort, tag: sp.tag, minHtg: toHtg(sp.min), maxHtg: toHtg(sp.max) }),
   ]);
+  const filtered = !!(sp.tag || sp.min || sp.max || sp.category || sp.q);
 
   const qs = (patch: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const merged = { q: sp.q, category: sp.category, sort: sp.sort, ...patch };
+    const merged = { q: sp.q, category: sp.category, sort: sp.sort, tag: sp.tag, min: sp.min, max: sp.max, ...patch };
     for (const [k, v] of Object.entries(merged)) if (v) p.set(k, v);
     const s = p.toString();
     return s ? `/store?${s}` : "/store";
@@ -46,6 +57,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
           <input name="q" type="search" defaultValue={sp.q} placeholder={tc("searchPlaceholder")} className="input pl-9" />
         </label>
         {sp.category && <input type="hidden" name="category" value={sp.category} />}
+        {sp.tag && <input type="hidden" name="tag" value={sp.tag} />}
         <label className="sm:w-56">
           <span className="sr-only">{ts("sort")}</span>
           <select name="sort" defaultValue={sp.sort ?? ""} className="input">
@@ -73,7 +85,29 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         ))}
       </nav>
 
-      <p className="mt-4 text-sm text-muted">{ts("results", { count: products.length })}</p>
+      <details className="mt-2" open={!!(sp.tag || sp.min || sp.max)}>
+        <summary className="cursor-pointer text-sm font-semibold">{ts("filters")}</summary>
+        <div className="mt-3 space-y-3">
+          {tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2" aria-label={ts("tag")}>
+              <span className="text-sm text-muted">{ts("tag")}:</span>
+              <Link href={qs({ tag: undefined })} className={`badge px-3 py-1.5 ${!sp.tag ? "bg-navy text-white" : "border border-border bg-surface"}`}>{ts("anyTag")}</Link>
+              {tags.map((tg) => (
+                <Link key={tg} href={qs({ tag: tg })} className={`badge px-3 py-1.5 ${sp.tag === tg ? "bg-navy text-white" : "border border-border bg-surface"}`}>{tg}</Link>
+              ))}
+            </div>
+          )}
+          <form className="flex flex-wrap items-end gap-2">
+            {(["q", "category", "sort", "tag"] as const).map((k) => sp[k] ? <input key={k} type="hidden" name={k} value={sp[k]} /> : null)}
+            <label><span className="mb-1 block text-xs text-muted">{ts("priceMin")} ({currency})</span><input name="min" inputMode="decimal" defaultValue={sp.min} className="input w-32" /></label>
+            <label><span className="mb-1 block text-xs text-muted">{ts("priceMax")} ({currency})</span><input name="max" inputMode="decimal" defaultValue={sp.max} className="input w-32" /></label>
+            <button className="btn-secondary">{ts("apply")}</button>
+            {filtered && <Link href="/store" className="btn-ghost text-sm">{ts("clear")}</Link>}
+          </form>
+        </div>
+      </details>
+
+      <h2 className="mt-4 text-sm font-normal text-muted">{ts("results", { count: products.length })}</h2>
       {products.length === 0 ? (
         <div className="card mt-6 p-10 text-center text-muted">{ts("noResults")}</div>
       ) : (

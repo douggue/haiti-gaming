@@ -25,7 +25,7 @@ export default async function CategoriesPage({ params }: { params: Promise<{ loc
             <CategoryIcon image={c.image} icon={c.icon} size={56} />
             <span>
               <span className="block text-lg font-semibold">{t(c.name, locale)}</span>
-              <span className="text-sm text-muted">{c._count.products}</span>
+              <span className="text-sm text-muted">{c._count.products}{c.children.length > 0 && ` · ${c.children.map((ch) => t(ch.name, locale)).join(", ")}`}</span>
             </span>
           </Link>
         ))}

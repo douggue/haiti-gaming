@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { minPrice, productCardInclude, searchProducts } from "@/lib/catalog";
-import { getSettings } from "@/lib/settings";
+import { getDisplaySettings } from "@/lib/settings";
 import { getUser } from "@/lib/session";
 import { t } from "@/lib/text";
 import { alternates } from "@/lib/seo";
@@ -34,7 +34,7 @@ export default async function ProductPage({ params }: { params: P }) {
   setRequestLocale(locale);
   const product = await load(slug);
   if (!product) notFound();
-  const [tp, tc, settings, user] = await Promise.all([getTranslations("product"), getTranslations("common"), getSettings(), getUser()]);
+  const [tp, tc, settings, user] = await Promise.all([getTranslations("product"), getTranslations("common"), getDisplaySettings(), getUser()]);
   const saved = user
     ? await prisma.savedPlayerId.findMany({ where: { userId: user.id, productId: product.id }, orderBy: { createdAt: "desc" }, take: 5 })
     : [];

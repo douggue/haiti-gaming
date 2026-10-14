@@ -11,6 +11,7 @@ import { ResetLinkButton } from "@/components/admin/ResetLinkButton";
 import { ActionButton, ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle, Stat } from "@/components/admin/ui";
 import { StatusBadge } from "@/components/StatusBadge";
+import { linkedAccounts } from "@/lib/devices";
 
 export const metadata = { title: "Customer" };
 
@@ -19,12 +20,14 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) notFound();
-  const [balances, orders, payments, entries, flags] = await Promise.all([
+  const [balances, orders, payments, entries, flags, linked, devices] = await Promise.all([
     getBalances(prisma, id),
     prisma.order.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" }, take: 20 }),
     prisma.paymentIntent.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" }, take: 20 }),
     can(staff, "wallet.view") ? prisma.ledgerEntry.findMany({ where: { account: { userId: id } }, orderBy: { createdAt: "desc" }, take: 30, include: { transaction: true } }) : Promise.resolve([]),
     prisma.riskFlag.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" }, take: 10 }),
+    linkedAccounts(id),
+    prisma.deviceSeen.findMany({ where: { userId: id }, orderBy: { lastSeen: "desc" }, take: 10 }),
   ]);
   return (
     <>
@@ -79,6 +82,32 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
             </ul>
           </section>
         )}
+        <section className="card p-5">
+          <h2 className="mb-1 font-semibold">Accounts sharing a browser or IP</h2>
+          <p className="mb-3 text-xs text-muted">Same browser is a strong sign of one person with several accounts. Same IP alone is weak (families, cybercafés, mobile networks).</p>
+          {linked.length === 0 ? (
+            <p className="text-sm text-muted">None seen.</p>
+          ) : (
+            <ul className="divide-y divide-border text-sm">
+              {linked.map((u) => (
+                <li key={u.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                  <Link href={`/admin/customers/${u.id}`} className="min-w-0 truncate text-primary">{u.name} · {u.email}</Link>
+                  <span className="flex gap-1">
+                    {u.sameDevice && <span className="badge bg-danger-soft text-danger">same browser</span>}
+                    {u.sameIp && <span className="badge bg-warning-soft text-warning">same IP</span>}
+                    {u.status !== "ACTIVE" && <span className="badge bg-surface-2">{u.status}</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {devices.length > 0 && (
+            <details className="mt-3 text-xs text-muted">
+              <summary className="cursor-pointer">Sign-in devices ({devices.length})</summary>
+              <ul className="mt-2 space-y-1">{devices.map((d) => <li key={d.id} className="break-all">{d.lastSeen.toLocaleString("en-US")} · {d.ip ?? "?"} · {d.userAgent ?? "unknown browser"}</li>)}</ul>
+            </details>
+          )}
+        </section>
         {flags.length > 0 && (
           <section className="card p-5">
             <h2 className="mb-3 font-semibold">Risk flags</h2>

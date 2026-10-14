@@ -5,7 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { retryMoncash, submitOrderNatcash } from "@/actions/wallet";
 import { CopyButton } from "./CopyButton";
 
-export function NatcashOrderForm({ orderId, phone }: { orderId: string; phone: string }) {
+export function NatcashOrderForm({ orderId, phone, methodName }: { orderId: string; phone: string; methodName?: string }) {
   const to = useTranslations("order");
   const tc = useTranslations("common");
   const router = useRouter();
@@ -29,7 +29,7 @@ export function NatcashOrderForm({ orderId, phone }: { orderId: string; phone: s
         <CopyButton value={phone.replace(/\s/g, "")} label={to("copy")} done={to("copied")} />
       </div>
       <div>
-        <label className="label" htmlFor="reference">{to("reference")}</label>
+        <label className="label" htmlFor="reference">{methodName ? to("reference").replace("NatCash", methodName) : to("reference")}</label>
         <input id="reference" name="reference" required minLength={4} maxLength={40} pattern="[A-Za-z0-9\-]+" placeholder={to("referencePlaceholder")} className="input" />
       </div>
       <div>

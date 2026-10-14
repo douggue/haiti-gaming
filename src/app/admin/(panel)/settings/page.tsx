@@ -60,6 +60,7 @@ export default async function SettingsPage() {
             <Field name="holdHours" label="Hold period (hours)" value={s.holdHours} type="number" />
             <Field name="newAccountDays" label="New account period (days)" value={s.newAccountDays} type="number" />
             <Field name="newAccountDailyLimitHtg" label="New account daily limit (HTG)" value={m(s.newAccountDailyLimitHtg)} />
+            <Field name="maxAccountsPerDevice" label="Flag new accounts on a browser already used by" value={s.maxAccountsPerDevice} type="number" hint="Number of other accounts. Flags go to the risk queue." />
             <Field name="reviewOrderThresholdHtg" label="Review orders from (HTG)" value={m(s.reviewOrderThresholdHtg)} hint="Codes are released only after a staff review." />
             <Field name="approvalThresholdHtg" label="Second approval for wallet adjustments from (HTG)" value={m(s.approvalThresholdHtg)} hint="Another staff member must approve." />
             <Field name="autoRefundHours" label="Auto-refund undelivered orders after (hours)" value={s.autoRefundHours} type="number" hint="0 = off. Runs with the scheduled job." />
@@ -68,6 +69,7 @@ export default async function SettingsPage() {
         <section className="card space-y-4 p-5">
           <h2 className="font-semibold">Referral program</h2>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="referralEnabled" defaultChecked={s.referralEnabled} /> Referral program on</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="newsletterEnabled" defaultChecked={s.newsletterEnabled} /> Newsletter sign-up form in the footer (subscribers are listed in Admin → Newsletter)</label>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field name="referralRewardHtg" label="Reward to the referrer (HTG, store credit)" value={m(s.referralRewardHtg)} />
             <Field name="referralMinOrderHtg" label="Friend's first order must be at least (HTG)" value={m(s.referralMinOrderHtg)} />
@@ -103,6 +105,8 @@ export default async function SettingsPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             {(["ht", "fr", "en", "es"] as const).map((l) => <Field key={l} name={`announcement_${l}`} label={`Text (${l.toUpperCase()})`} value={s.announcement.text[l] ?? ""} />)}
             <Field name="announcementLink" label="Link (optional)" value={s.announcement.link} />
+            <Field name="announcementStartsAt" label="Show from (optional)" value={s.announcement.startsAt ?? ""} type="datetime-local" />
+            <Field name="announcementEndsAt" label="Hide after (optional)" value={s.announcement.endsAt ?? ""} type="datetime-local" />
           </div>
         </section>
         <button className="btn-primary">Save settings</button>

@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 import { WhatsAppIcon } from "./Icons";
+import { Turnstile, turnstileOn } from "./Turnstile";
 
 /** With email configured: sends a reset link. Without: hands the customer to WhatsApp support (staff send a one-time link). */
 export function ForgotForm({ emailEnabled, whatsappNumber }: { emailEnabled: boolean; whatsappNumber: string }) {
@@ -16,6 +17,8 @@ export function ForgotForm({ emailEnabled, whatsappNumber }: { emailEnabled: boo
   const [error, setError] = useState("");
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
+  const [captcha, setCaptcha] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   const waText = encodeURIComponent(t("forgotWhatsappMessage", { email: email.trim() || "—" }));
 
@@ -33,8 +36,11 @@ export function ForgotForm({ emailEnabled, whatsappNumber }: { emailEnabled: boo
               e.preventDefault();
               setBusy(true);
               setError("");
-              const res = await authClient.requestPasswordReset({ email: email.trim().toLowerCase(), redirectTo: `/${locale}/auth/reset` });
+              const res = await authClient.requestPasswordReset({ email: email.trim().toLowerCase(), redirectTo: `/${locale}/auth/reset`, fetchOptions: { headers: { "x-turnstile-token": captcha } } });
               setBusy(false);
+              setCaptcha("");
+              setCaptchaKey((k) => k + 1);
+              if ((res.error as { code?: string } | null)?.code === "CAPTCHA_FAILED") return setError(t("captcha"));
               if (res.error?.status === 429) return setError(t("tooMany"));
               setSent(true); // same answer whether or not the account exists
             }}
@@ -44,8 +50,9 @@ export function ForgotForm({ emailEnabled, whatsappNumber }: { emailEnabled: boo
               <label htmlFor="email" className="label">{t("email")}</label>
               <input id="email" type="email" required autoComplete="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
+            <Turnstile key={captchaKey} onToken={setCaptcha} locale={locale} />
             {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
-            <button className="btn-primary w-full" disabled={busy || !hydrated}>{busy ? tc("loading") : t("forgotSend")}</button>
+            <button className="btn-primary w-full" disabled={busy || !hydrated || (turnstileOn && !captcha)}>{busy ? tc("loading") : t("forgotSend")}</button>
           </form>
         )
       ) : (

@@ -34,8 +34,9 @@ test("admin uploads images and the store shows them", async ({ page, browser }) 
   await page.locator('input[type=file]').first().setInputFiles({ name: "main.png", mimeType: "image/png", buffer: main });
   await expect(page.getByText("Uploading…")).toHaveCount(0, { timeout: 15000 });
   await expect(page.locator("input[name=image]")).toHaveValue(/\/media\/products\//);
+  const galleryBefore = await page.locator("input[name=gallery]").count(); // earlier runs may have left photos
   await page.locator('input[type=file]').nth(1).setInputFiles({ name: "extra.png", mimeType: "image/png", buffer: extra });
-  await expect(page.locator('input[name=gallery]')).toHaveCount(1);
+  await expect(page.locator('input[name=gallery]')).toHaveCount(galleryBefore + 1);
   await page.getByRole("button", { name: "Save product" }).click();
   await expect(page.getByText("Saved", { exact: true })).toBeVisible();
 

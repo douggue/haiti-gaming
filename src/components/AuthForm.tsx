@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
+import { Turnstile, turnstileOn } from "./Turnstile";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const t = useTranslations("auth");
@@ -20,6 +21,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [useBackup, setUseBackup] = useState(false);
   const t2 = useTranslations("auth2");
   useEffect(() => setHydrated(true), []);
+  const [captcha, setCaptcha] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,20 +31,26 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     const f = new FormData(e.currentTarget);
     const email = String(f.get("email")).trim().toLowerCase();
     const password = String(f.get("password"));
+    const fetchOptions = { headers: { "x-turnstile-token": captcha } };
     const res =
       mode === "login"
-        ? await authClient.signIn.email({ email, password })
+        ? await authClient.signIn.email({ email, password, fetchOptions })
         : await authClient.signUp.email({
             email,
             password,
             name: String(f.get("name")).trim(),
             phone: String(f.get("phone") ?? "").trim() || undefined,
             locale,
+            fetchOptions,
           } as Parameters<typeof authClient.signUp.email>[0]);
     setLoading(false);
     if (res.error) {
       const { status, code } = res.error as { status: number; code?: string };
-      if (status === 429) setError(t("tooMany"));
+      // Turnstile tokens work once: get a fresh one for the next try.
+      setCaptcha("");
+      setCaptchaKey((k) => k + 1);
+      if (code === "CAPTCHA_FAILED") setError(t("captcha"));
+      else if (status === 429) setError(t("tooMany"));
       else if (code === "ACCOUNT_BLOCKED" || status === 403) setError(t("blocked"));
       else if (code === "PASSWORD_COMPROMISED") setError(t("compromised"));
       // Same message whether or not the email is registered, so the form can't be used to look up accounts.
@@ -122,8 +131,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           <Link href="/auth/forgot" className="mt-2 inline-block text-sm font-semibold text-primary">{t("forgot")}</Link>
         )}
       </div>
+      <Turnstile key={captchaKey} onToken={setCaptcha} locale={locale} />
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
-      <button className="btn-primary w-full" disabled={loading || !hydrated}>
+      <button className="btn-primary w-full" disabled={loading || !hydrated || (turnstileOn && !captcha)}>
         {loading ? tc("loading") : mode === "login" ? tc("signIn") : tc("signUp")}
       </button>
       <p className="text-center text-sm text-muted">

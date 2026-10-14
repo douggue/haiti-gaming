@@ -52,7 +52,11 @@
     "rights": "Todos los derechos reservados.",
     "followUs": "Síguenos",
     "error": "Algo salió mal. Inténtalo de nuevo.",
-    "news": "Noticias"
+    "news": "Noticias",
+    "captcha": "La verificación anti-bot falló. Inténtalo de nuevo.",
+    "notFoundTitle": "Esta página no existe",
+    "notFoundBody": "El enlace puede estar mal escrito o el producto ya no está disponible.",
+    "notFoundCta": "Volver a la tienda"
   },
   "home": {
     "eyebrow": "Hecho en Haití, para gamers",
@@ -104,7 +108,15 @@
     "sortPriceLow": "Precio: menor a mayor",
     "sortPriceHigh": "Precio: mayor a menor",
     "sortNewest": "Más nuevos",
-    "results": "{count, plural, =0 {Sin productos} one {# producto} other {# productos}}"
+    "results": "{count, plural, =0 {Sin productos} one {# producto} other {# productos}}",
+    "filters": "Filtros",
+    "tag": "Plataforma / región",
+    "anyTag": "Todas",
+    "priceMin": "Precio mínimo",
+    "priceMax": "Precio máximo",
+    "apply": "Aplicar",
+    "clear": "Borrar filtros",
+    "subcategories": "Subcategorías"
   },
   "product": {
     "chooseOption": "Elige una opción",
@@ -303,7 +315,8 @@
     "resetInvalid": "Este enlace ya no es válido o expiró. Solicita uno nuevo.",
     "compromised": "Esta contraseña apareció en una filtración de datos. Elige otra.",
     "signupFailed": "No pudimos crear una cuenta con estos datos. Si ya tienes una cuenta, inicia sesión o restablece tu contraseña.",
-    "backToLogin": "Volver a iniciar sesión"
+    "backToLogin": "Volver a iniciar sesión",
+    "captcha": "La verificación anti-bot falló. Inténtalo de nuevo."
   },
   "profile": {
     "title": "Perfil",
@@ -378,7 +391,8 @@
       "Recopilamos tu nombre, correo, teléfono opcional, detalles de pedidos y referencias de pago para brindar el servicio.",
       "Los códigos de tarjetas de regalo y los datos de pago se guardan cifrados.",
       "No vendemos tus datos. Solo compartimos lo que los proveedores de pago y entrega necesitan.",
-      "Puedes pedir que exportemos o eliminemos tus datos contactando a soporte."
+      "Puedes pedir que exportemos o eliminemos tus datos contactando a soporte.",
+      "Solo usamos cookies necesarias: tu sesión, tu idioma, un código de referido si lo hay y un identificador anónimo del navegador que nos ayuda a frenar el fraude con varias cuentas. Sin cookies publicitarias."
     ],
     "refundsTitle": "Política de reembolso",
     "refundsBody": [
@@ -483,5 +497,13 @@
   "dataSaver": {
     "label": "Ahorro de datos",
     "hint": "Menos imágenes, sin animaciones."
+  },
+  "newsletter": {
+    "title": "Recibe nuestras ofertas",
+    "placeholder": "Tu correo",
+    "button": "Suscribirse",
+    "done": "¡Gracias! Te suscribiste.",
+    "consent": "Nunca venderemos tu correo. Cancela cuando quieras.",
+    "unsubscribed": "Te diste de baja."
   }
 }

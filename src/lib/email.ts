@@ -1,3 +1,5 @@
+import { prisma } from "./db";
+
 /**
  * Transactional email through Resend (https://resend.com), sent with fetch so no SDK is needed.
  * Turns on only when RESEND_API_KEY and EMAIL_FROM are set. Until a domain is verified in Resend,
@@ -7,18 +9,37 @@ export function emailEnabled(): boolean {
   return !!process.env.RESEND_API_KEY && !!process.env.EMAIL_FROM;
 }
 
+async function log(to: string, subject: string, status: "sent" | "failed" | "skipped", error?: string) {
+  try {
+    await prisma.emailLog.create({ data: { to, subject: subject.slice(0, 200), status, error: error?.slice(0, 500) } });
+  } catch (e) {
+    console.error("email log failed", e);
+  }
+}
+
+/** Every attempt is written to EmailLog (Admin → Email), including messages skipped while email is off. */
 export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }): Promise<boolean> {
-  if (!emailEnabled()) return false;
+  if (!emailEnabled()) {
+    await log(msg.to, msg.subject, "skipped", "RESEND_API_KEY / EMAIL_FROM not set");
+    return false;
+  }
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: process.env.EMAIL_FROM, to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
     });
-    if (!res.ok) console.error("Resend error", res.status, await res.text().catch(() => ""));
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error("Resend error", res.status, body);
+      await log(msg.to, msg.subject, "failed", `HTTP ${res.status} ${body}`);
+    } else {
+      await log(msg.to, msg.subject, "sent");
+    }
     return res.ok;
   } catch (e) {
     console.error("Resend request failed", e);
+    await log(msg.to, msg.subject, "failed", e instanceof Error ? e.message : "request failed");
     return false;
   }
 }
@@ -41,7 +62,7 @@ const COPY = {
   },
 } as const;
 
-function layout(name: string, body: string, cta: string, url: string, ignore: string) {
+export function emailLayout(name: string, body: string, cta: string, url: string, ignore: string) {
   const safeName = name.replace(/[<>&"]/g, "");
   const html = `<!doctype html><html><body style="margin:0;background:#F5F7FC;font-family:Arial,sans-serif;color:#0b1426">
 <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px">
@@ -58,10 +79,16 @@ function layout(name: string, body: string, cta: string, url: string, ignore: st
 
 export async function sendPasswordResetEmail(user: { email: string; name: string; locale?: string | null }, url: string) {
   const c = COPY.reset[lang(user.locale)];
-  return sendEmail({ to: user.email, subject: c.subject, ...layout(user.name, c.body, c.cta, url, c.ignore) });
+  return sendEmail({ to: user.email, subject: c.subject, ...emailLayout(user.name, c.body, c.cta, url, c.ignore) });
 }
 
 export async function sendVerificationEmail(user: { email: string; name: string; locale?: string | null }, url: string) {
   const c = COPY.verify[lang(user.locale)];
-  return sendEmail({ to: user.email, subject: c.subject, ...layout(user.name, c.body, c.cta, url, c.ignore) });
+  return sendEmail({ to: user.email, subject: c.subject, ...emailLayout(user.name, c.body, c.cta, url, c.ignore) });
+}
+
+/** For the admin preview screen. */
+export function previewEmail(kind: "reset" | "verify", locale: string) {
+  const c = COPY[kind][lang(locale)];
+  return { subject: c.subject, ...emailLayout("Jean", c.body, c.cta, "https://example.com/link", c.ignore) };
 }

@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const days = Math.min(366, Math.max(1, Number(req.nextUrl.searchParams.get("days") ?? 30)));
   let staff;
   try {
-    staff = await assertStaff(type === "customers" ? "customers.view" : type === "ledger" ? "wallet.view" : "analytics.view");
+    staff = await assertStaff(type === "customers" ? "customers.view" : type === "ledger" ? "wallet.view" : type === "newsletter" ? "content.manage" : "analytics.view");
   } catch {
     return new NextResponse("Forbidden", { status: 403 });
   }
@@ -43,6 +43,10 @@ export async function GET(req: NextRequest) {
     const users = await prisma.user.findMany({ where: { createdAt: { gte: since }, role: "CUSTOMER" }, orderBy: { createdAt: "asc" }, include: { _count: { select: { orders: true } } } });
     rows = [["joined_at", "name", "email", "phone", "language", "status", "orders"]];
     for (const u of users) rows.push([u.createdAt.toISOString(), u.name, u.email, u.phone, u.locale, u.status, u._count.orders]);
+  } else if (type === "newsletter") {
+    const subs = await prisma.newsletterSubscriber.findMany({ where: { unsubscribedAt: null }, orderBy: { consentAt: "asc" } });
+    rows = [["email", "language", "consent_at", "unsubscribe_token"]];
+    for (const x of subs) rows.push([x.email, x.locale, x.consentAt.toISOString(), x.token]);
   } else {
     return new NextResponse("Unknown export", { status: 400 });
   }

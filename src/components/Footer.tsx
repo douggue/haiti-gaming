@@ -1,13 +1,27 @@
+import { unstable_cache } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Settings } from "@/lib/settings";
 import { Logo } from "./Logo";
 import { PinIcon } from "./Icons";
 import { DataSaverToggle } from "./DataSaverToggle";
+import { NewsletterForm } from "./NewsletterForm";
+import { prisma } from "@/lib/db";
+import { t as txt } from "@/lib/text";
+import { getLocale } from "next-intl/server";
+
+const footerPages = unstable_cache(
+  () => prisma.page.findMany({ where: { isPublished: true, showInFooter: true }, select: { slug: true, title: true }, orderBy: { createdAt: "asc" } }),
+  ["footer-pages"],
+  { tags: ["pages"], revalidate: 300 },
+);
 
 export async function Footer({ settings }: { settings: Settings }) {
   const t = await getTranslations("common");
   const tp = await getTranslations("pages");
+  const locale = await getLocale();
+  const pages = await footerPages();
+  const extra = settings.navigation?.footer ?? [];
   const socials = [
     ["Facebook", settings.socialFacebook],
     ["Instagram", settings.socialInstagram],
@@ -57,6 +71,8 @@ export async function Footer({ settings }: { settings: Settings }) {
             <li><Link href="/terms" className="hover:text-text">{t("terms")}</Link></li>
             <li><Link href="/privacy" className="hover:text-text">{t("privacy")}</Link></li>
             <li><Link href="/refunds" className="hover:text-text">{t("refunds")}</Link></li>
+            {pages.map((p) => <li key={p.slug}><Link href={`/p/${p.slug}`} className="hover:text-text">{txt(p.title, locale)}</Link></li>)}
+            {extra.map((l) => <li key={l.href}>{l.href.startsWith("https://") ? <a href={l.href} rel="noopener" target="_blank" className="hover:text-text">{txt(l.label, locale)}</a> : <Link href={l.href} className="hover:text-text">{txt(l.label, locale)}</Link>}</li>)}
           </ul>
           {socials.length > 0 && (
             <>
@@ -70,6 +86,7 @@ export async function Footer({ settings }: { settings: Settings }) {
           )}
         </div>
       </div>
+      {settings.newsletterEnabled && <div className="container-page pb-6"><NewsletterForm /></div>}
       <div className="container-page pb-6"><DataSaverToggle /></div>
       <div className="border-t border-border py-5 text-center text-xs text-muted">
         © {new Date().getFullYear()} {settings.businessName}. {t("rights")}

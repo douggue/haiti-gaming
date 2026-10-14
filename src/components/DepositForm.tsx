@@ -5,20 +5,25 @@ import { useRouter } from "@/i18n/navigation";
 import { createDeposit } from "@/actions/wallet";
 import { formatMoney, parseAmount } from "@/lib/money";
 import { CopyButton } from "./CopyButton";
+import { Turnstile } from "./Turnstile";
 
 const PRESETS = [500, 1000, 2500, 5000];
 
-export function DepositForm(p: { moncash: boolean; natcash: boolean; recipientName: string; recipientPhone: string; hint: string }) {
+export function DepositForm(p: { moncash: boolean; natcash: boolean; recipientName: string; recipientPhone: string; hint: string; manual?: { id: string; name: string; instructions: string; recipientName: string; recipientNumber: string }[] }) {
   const tw = useTranslations("wallet");
   const to = useTranslations("order");
   const tc = useTranslations("common");
   const tco = useTranslations("checkout");
   const locale = useLocale();
   const router = useRouter();
-  const [method, setMethod] = useState<"MONCASH" | "NATCASH">(p.moncash ? "MONCASH" : "NATCASH");
+  const [method, setMethod] = useState<string>(p.moncash ? "MONCASH" : p.natcash ? "NATCASH" : p.manual?.[0] ? `MANUAL:${p.manual[0].id}` : "NATCASH");
+  const manual = method.startsWith("MANUAL:") ? p.manual?.find((m) => m.id === method.slice(7)) : undefined;
+  const isManualLike = method === "NATCASH" || !!manual;
+  const recipient = manual ? { name: manual.recipientName, phone: manual.recipientNumber } : { name: p.recipientName, phone: p.recipientPhone };
   const [amount, setAmount] = useState("1000");
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [pending, start] = useTransition();
   const minor = parseAmount(amount);
 
@@ -29,6 +34,7 @@ export function DepositForm(p: { moncash: boolean; natcash: boolean; recipientNa
     new_account_limit: tco("errors.new_account_limit"),
     method_unavailable: tco("errors.method_unavailable"),
     upload: to("evidence"),
+    captcha: tc("captcha"),
   };
 
   if (done)
@@ -46,9 +52,13 @@ export function DepositForm(p: { moncash: boolean; natcash: boolean; recipientNa
       action={(fd) =>
         start(async () => {
           setError("");
-          fd.set("method", method);
+          fd.set("method", manual ? "MANUAL" : method);
+          if (manual) fd.set("manualMethodId", manual.id);
           const r = await createDeposit(fd);
-          if (!r.ok) return setError(errors[r.error] ?? tc("error"));
+          if (!r.ok) {
+            setCaptchaKey((k) => k + 1); // bot-check tokens are single-use
+            return setError(errors[r.error] ?? tc("error"));
+          }
           if (r.redirect) window.location.href = r.redirect;
           else setDone(true);
         })
@@ -69,6 +79,12 @@ export function DepositForm(p: { moncash: boolean; natcash: boolean; recipientNa
               <span className="mt-2 block text-xs text-muted">{tco("natcashHint")}</span>
             </button>
           )}
+          {p.manual?.map((m) => (
+            <button key={m.id} type="button" onClick={() => setMethod(`MANUAL:${m.id}`)} className={`rounded-xl border-2 p-3 text-left ${method === `MANUAL:${m.id}` ? "border-primary bg-primary-soft" : "border-border"}`}>
+              <span className="rounded-md bg-steel px-2 py-1 text-[11px] font-extrabold text-white">{m.name}</span>
+              <span className="mt-2 block text-xs text-muted">{tco("natcashHint")}</span>
+            </button>
+          ))}
         </div>
       </fieldset>
 
@@ -83,18 +99,19 @@ export function DepositForm(p: { moncash: boolean; natcash: boolean; recipientNa
         <p className="mt-1 text-xs text-muted">{p.hint}</p>
       </div>
 
-      {method === "NATCASH" && (
+      {isManualLike && (
         <div className="space-y-3 rounded-xl bg-surface-2 p-4">
-          <p className="text-sm font-semibold">{tw("natcashTitle")}</p>
+          <p className="text-sm font-semibold">{manual ? manual.name : tw("natcashTitle")}</p>
+          {manual?.instructions && <p className="whitespace-pre-line text-sm">{manual.instructions}</p>}
           <p className="text-sm text-muted">
-            {tw("natcashSend", { amount: minor ? formatMoney(minor, "HTG", locale) : "—", name: p.recipientName, phone: p.recipientPhone })}
+            {tw("natcashSend", { amount: minor ? formatMoney(minor, "HTG", locale) : "—", name: recipient.name, phone: recipient.phone }).replace("NatCash", manual ? manual.name : "NatCash")}
           </p>
           <div className="flex items-center gap-2 rounded-lg bg-surface px-3 py-2">
-            <span className="flex-1 font-mono font-semibold">{p.recipientPhone}</span>
-            <CopyButton value={p.recipientPhone.replace(/\s/g, "")} label={to("copy")} done={to("copied")} />
+            <span className="flex-1 font-mono font-semibold">{recipient.phone}</span>
+            <CopyButton value={recipient.phone.replace(/\s/g, "")} label={to("copy")} done={to("copied")} />
           </div>
           <div>
-            <label className="label" htmlFor="reference">{to("reference")}</label>
+            <label className="label" htmlFor="reference">{manual ? to("reference").replace("NatCash", manual.name) : to("reference")}</label>
             <input id="reference" name="reference" required minLength={4} maxLength={40} pattern="[A-Za-z0-9\-]+" placeholder={to("referencePlaceholder")} className="input" />
           </div>
           <div>
@@ -109,6 +126,7 @@ export function DepositForm(p: { moncash: boolean; natcash: boolean; recipientNa
       )}
 
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
+      <Turnstile key={captchaKey} locale={locale} />
       <button className="btn-primary min-h-12 w-full" disabled={pending || !minor}>
         {pending ? tc("loading") : method === "MONCASH" ? to("payMoncash") : tw("submitDeposit")}
       </button>

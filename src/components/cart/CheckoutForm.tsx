@@ -7,9 +7,10 @@ import { formatMoney, priceIn } from "@/lib/money";
 import { t } from "@/lib/text";
 import { useStore } from "./CartProvider";
 
-type Method = "WALLET" | "MONCASH" | "NATCASH";
+type Method = string; // "WALLET" | "MONCASH" | "NATCASH" | "MANUAL:<id>"
+type Manual = { id: string; name: string; instructions: string; logo: string | null };
 
-export function CheckoutForm({ balances, moncashEnabled, natcashEnabled }: { balances: { HTG: number; USD: number }; moncashEnabled: boolean; natcashEnabled: boolean }) {
+export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualMethods = [] }: { balances: { HTG: number; USD: number }; moncashEnabled: boolean; natcashEnabled: boolean; manualMethods?: Manual[] }) {
   const tc = useTranslations("checkout");
   const tcart = useTranslations("cart");
   const locale = useLocale();
@@ -40,7 +41,8 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled }: { bal
       const res = await placeOrder({
         items: store.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, fields: l.fields })),
         currency,
-        method,
+        method: method.startsWith("MANUAL:") ? "MANUAL" : method,
+        manualMethodId: method.startsWith("MANUAL:") ? method.slice(7) : undefined,
         note: note || undefined,
       });
       if (!res.ok) {
@@ -64,6 +66,14 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled }: { bal
       enabled: true,
       badge: <span className="rounded-md bg-navy px-2 py-1 text-[11px] font-extrabold text-white">HG</span>,
     },
+    ...manualMethods.map((m) => ({
+      id: `MANUAL:${m.id}`,
+      title: m.name,
+      hint: m.instructions || tc("natcashHint"),
+      enabled: true,
+      // eslint-disable-next-line @next/next/no-img-element
+      badge: m.logo ? <img src={m.logo} alt="" className="h-6 w-auto rounded" /> : <span className="rounded-md bg-steel px-2 py-1 text-[11px] font-extrabold text-white">{m.name.slice(0, 10)}</span>,
+    })),
   ];
 
   return (

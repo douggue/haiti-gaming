@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const [news, products, categories] = await Promise.all([
+  const [pages, news, products, categories] = await Promise.all([
+    prisma.page.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
     prisma.newsArticle.findMany({ where: { isPublished: true, publishedAt: { lte: new Date() } }, select: { slug: true, updatedAt: true } }),
     prisma.product.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
     prisma.category.findMany({ where: { isVisible: true }, select: { slug: true, updatedAt: true } }),
@@ -17,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categories.map((c) => ({ path: `/categories/${c.slug}`, lastModified: c.updatedAt })),
     ...products.map((p) => ({ path: `/products/${p.slug}`, lastModified: p.updatedAt })),
     ...news.map((n) => ({ path: `/news/${n.slug}`, lastModified: n.updatedAt })),
+    ...pages.map((p) => ({ path: `/p/${p.slug}`, lastModified: p.updatedAt })),
   ];
   return paths.flatMap(({ path, lastModified }) =>
     locales.map((l) => ({

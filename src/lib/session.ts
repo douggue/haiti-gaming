@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
@@ -6,9 +7,8 @@ import { auth } from "./auth";
 import { can, isStaff, type Permission } from "./permissions";
 import { prisma } from "./db";
 
-export async function getSession() {
-  return auth.api.getSession({ headers: await headers() });
-}
+/** One session lookup per request, however many components ask. */
+export const getSession = cache(async () => auth.api.getSession({ headers: await headers() }));
 
 export type SessionUser = {
   id: string;

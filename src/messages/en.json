@@ -52,7 +52,11 @@
     "rights": "All rights reserved.",
     "followUs": "Follow us",
     "error": "Something went wrong. Please try again.",
-    "news": "News"
+    "news": "News",
+    "captcha": "The bot check failed. Please try again.",
+    "notFoundTitle": "This page doesn't exist",
+    "notFoundBody": "The link may be wrong, or the product is no longer available.",
+    "notFoundCta": "Back to the store"
   },
   "home": {
     "eyebrow": "Made in Haiti, for gamers",
@@ -104,7 +108,15 @@
     "sortPriceLow": "Price: low to high",
     "sortPriceHigh": "Price: high to low",
     "sortNewest": "Newest",
-    "results": "{count, plural, =0 {No products} one {# product} other {# products}}"
+    "results": "{count, plural, =0 {No products} one {# product} other {# products}}",
+    "filters": "Filters",
+    "tag": "Platform / region",
+    "anyTag": "Any",
+    "priceMin": "Min price",
+    "priceMax": "Max price",
+    "apply": "Apply",
+    "clear": "Clear filters",
+    "subcategories": "Subcategories"
   },
   "product": {
     "chooseOption": "Choose an option",
@@ -303,7 +315,8 @@
     "resetInvalid": "This link is no longer valid or has expired. Request a new one.",
     "compromised": "This password appeared in a data breach. Choose a different one.",
     "signupFailed": "We couldn't create an account with these details. If you already have an account, sign in or reset your password.",
-    "backToLogin": "Back to sign in"
+    "backToLogin": "Back to sign in",
+    "captcha": "The bot check failed. Please try again."
   },
   "profile": {
     "title": "Profile",
@@ -378,7 +391,8 @@
       "We collect your name, email, optional phone number, order details and payment references to provide the service.",
       "Gift-card codes and payment information are stored encrypted.",
       "We do not sell your data. We share only what payment and fulfillment providers need to complete your order.",
-      "You can ask us to export or delete your data by contacting support."
+      "You can ask us to export or delete your data by contacting support.",
+      "We only use necessary cookies: your sign-in, your language, a referral code if you followed an invite, and an anonymous browser ID that helps us stop fraud with multiple accounts. No advertising cookies."
     ],
     "refundsTitle": "Refund policy",
     "refundsBody": [
@@ -483,5 +497,13 @@
   "dataSaver": {
     "label": "Data saver",
     "hint": "Fewer images, no animations."
+  },
+  "newsletter": {
+    "title": "Get our deals",
+    "placeholder": "Your email",
+    "button": "Subscribe",
+    "done": "Thanks! You're subscribed.",
+    "consent": "We never sell your email. Unsubscribe anytime.",
+    "unsubscribed": "You're unsubscribed. You won't get promotional emails anymore."
   }
 }

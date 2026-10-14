@@ -234,6 +234,13 @@ async function main() {
       }
     }
   }
+  // Filter tags for the demo products (safe to re-run)
+  const TAGS: Record<string, string[]> = {
+    "free-fire-diamonds": ["Android", "iOS"], "pubg-mobile-uc": ["Android", "iOS"], "google-play-gift-card": ["Android", "US region"],
+    "playstation-store-card": ["PlayStation", "US region"], "steam-wallet-card": ["PC"], "roblox-robux": ["Android", "iOS", "PC"],
+    "netflix-subscription": ["Streaming"], "spotify-premium": ["Streaming"], "starter-gamer-bundle": ["Android", "iOS"],
+  };
+  for (const [slug, tags] of Object.entries(TAGS)) await prisma.product.updateMany({ where: { slug, tags: { isEmpty: true } }, data: { tags } });
   console.log(`Seeded ${categories.length} categories and ${products.length} products.`);
 }
 

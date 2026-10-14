@@ -194,6 +194,8 @@ model Product {
   seoTitle         Json?
   seoDescription   Json?
   sortOrder        Int              @default(0)
+  /// Filter tags such as platform:android, region:us (shown as store filters)
+  tags             String[]         @default([])
   variants         ProductVariant[]
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
@@ -272,6 +274,7 @@ enum PaymentMethodKind {
   WALLET
   MONCASH
   NATCASH
+  MANUAL
 }
 
 model Order {
@@ -287,6 +290,7 @@ model Order {
   /// HTG per 1 USD at the time of the order, when charged in USD
   rateUsed      Decimal?          @db.Decimal(18, 8)
   paymentMethod PaymentMethodKind
+  manualMethodId String?
   recipientNote String?
   accessToken   String            @unique
   items         OrderItem[]
@@ -342,6 +346,8 @@ model OrderEvent {
 enum PaymentProvider {
   MONCASH
   NATCASH
+  /// Other manual methods configured in Admin → Payment methods (bank transfer, other wallets…)
+  MANUAL
 }
 
 enum PaymentStatus {
@@ -362,6 +368,8 @@ model PaymentIntent {
   orderId      String?
   order        Order?          @relation(fields: [orderId], references: [id])
   provider     PaymentProvider
+  manualMethodId String?
+  manualMethod ManualMethod? @relation(fields: [manualMethodId], references: [id])
   amount       Int
   currency     Currency        @default(HTG)
   status       PaymentStatus   @default(PENDING)
@@ -665,4 +673,83 @@ model TranslationOverride {
   updatedAt DateTime @updatedAt
 
   @@id([locale, key])
+}
+
+// ─────────────────────────────── Final additions ───────────────────────────────
+
+/// Manual payment methods beyond NatCash, set up by staff (e.g. bank transfer, another mobile wallet).
+model ManualMethod {
+  id              String          @id @default(cuid())
+  code            String          @unique
+  name            Json
+  instructions    Json            @default("{}")
+  recipientName   String
+  recipientNumber String
+  logo            String?
+  isEnabled       Boolean         @default(true)
+  allowDeposits   Boolean         @default(true)
+  allowOrders     Boolean         @default(true)
+  sortOrder       Int             @default(0)
+  payments        PaymentIntent[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+/// Browser seen at sign-in (long-lived anonymous cookie) for multi-account detection.
+model DeviceSeen {
+  id        String   @id @default(cuid())
+  userId    String
+  deviceId  String
+  ip        String?
+  userAgent String?
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+
+  @@unique([userId, deviceId])
+  @@index([deviceId])
+  @@index([ip])
+}
+
+model MediaAsset {
+  id         String   @id @default(cuid())
+  url        String   @unique
+  folder     String
+  uploadedBy String?
+  alt        String?
+  createdAt  DateTime @default(now())
+
+  @@index([folder, createdAt])
+}
+
+/// Custom content pages built from blocks (text, image, button, FAQ)
+model Page {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        Json
+  description  Json     @default("{}")
+  blocks       Json     @default("[]")
+  isPublished  Boolean  @default(false)
+  showInFooter Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  status    String
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  locale         String    @default("ht")
+  token          String    @unique
+  consentAt      DateTime  @default(now())
+  unsubscribedAt DateTime?
 }

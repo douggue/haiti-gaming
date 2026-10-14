@@ -52,7 +52,11 @@
     "rights": "Tout dwa rezève.",
     "followUs": "Swiv nou",
     "error": "Gen yon pwoblèm. Tanpri eseye ankò.",
-    "news": "Nouvèl"
+    "news": "Nouvèl",
+    "captcha": "Verifikasyon anti-robo a pa pase. Tanpri eseye ankò.",
+    "notFoundTitle": "Paj sa a pa egziste",
+    "notFoundBody": "Lyen an ka mal ekri, oswa pwodwi a pa disponib ankò.",
+    "notFoundCta": "Retounen nan boutik la"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -104,7 +108,15 @@
     "sortPriceLow": "Pri: pi ba a pi wo",
     "sortPriceHigh": "Pri: pi wo a pi ba",
     "sortNewest": "Pi nouvo",
-    "results": "{count, plural, =0 {Pa gen pwodwi} one {# pwodwi} other {# pwodwi}}"
+    "results": "{count, plural, =0 {Pa gen pwodwi} one {# pwodwi} other {# pwodwi}}",
+    "filters": "Filtre",
+    "tag": "Platfòm / rejyon",
+    "anyTag": "Tout",
+    "priceMin": "Pri minimòm",
+    "priceMax": "Pri maksimòm",
+    "apply": "Aplike",
+    "clear": "Efase filtre yo",
+    "subcategories": "Sou-kategori"
   },
   "product": {
     "chooseOption": "Chwazi yon opsyon",
@@ -303,7 +315,8 @@
     "resetInvalid": "Lyen sa a pa bon ankò oswa li ekspire. Mande yon lòt.",
     "compromised": "Modpas sa a te parèt nan yon fuit done sou entènèt. Chwazi yon lòt.",
     "signupFailed": "Nou pa t ka kreye kont lan ak enfòmasyon sa yo. Si ou gen yon kont deja, konekte oswa chanje modpas ou.",
-    "backToLogin": "Retounen pou konekte"
+    "backToLogin": "Retounen pou konekte",
+    "captcha": "Verifikasyon anti-robo a pa pase. Tanpri eseye ankò."
   },
   "profile": {
     "title": "Pwofil",
@@ -378,7 +391,8 @@
       "Nou kolekte non ou, imèl ou, telefòn ou si w bay li, detay kòmand ak referans peman pou n ka ba w sèvis la.",
       "Kòd kat kado ak enfòmasyon peman yo sere ak chifreman.",
       "Nou pa vann done ou. Nou pataje sèlman sa founisè peman ak livrezon bezwen pou fini kòmand ou.",
-      "Ou ka mande nou ekspòte oswa efase done ou lè w kontakte sipò."
+      "Ou ka mande nou ekspòte oswa efase done ou lè w kontakte sipò.",
+      "Nou itilize kèk ti fichye (cookies) ki nesesè sèlman: koneksyon ou, lang ou, kòd parennaj si genyen, ak yon idantifyan anonim pou navigatè a ki ede nou bloke moun ki kreye plizyè kont pou fè fwod. Nou pa itilize cookies piblisite."
     ],
     "refundsTitle": "Politik ranbousman",
     "refundsBody": [
@@ -483,5 +497,13 @@
   "dataSaver": {
     "label": "Ekonomize done",
     "hint": "Mwens imaj, pa gen animasyon."
+  },
+  "newsletter": {
+    "title": "Resevwa pwomosyon yo",
+    "placeholder": "Imèl ou",
+    "button": "Enskri",
+    "done": "Mèsi! Ou enskri.",
+    "consent": "Nou p ap janm vann imèl ou. Ou ka dezabòne nenpòt kilè.",
+    "unsubscribed": "Ou dezabòne. Ou p ap resevwa imèl pwomosyon ankò."
   }
 }

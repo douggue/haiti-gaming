@@ -35,7 +35,11 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 | Staff controls | Re-confirmation with the authenticator code (10 minutes) before wallet adjustments, role changes, 2FA resets and settings; two-person approval for wallet adjustments above a threshold; custom roles with per-permission checkboxes |
 | Content | Homepage editor (reorder/hide sections, hero text per language, draft → preview → publish, version history); news articles with scheduling; SEO manager (page titles/descriptions per language, redirects for old links); translation editor for every interface text; theme editor (colors, rounding, animations) with contrast checks, live preview and rollback |
 | Customer extras | Support tickets with screenshots and staff replies; referral program (link, store-credit reward after the friend's first delivered order, same-network self-referrals rejected); notification preferences; cart saved to the account across devices; data export (JSON) and self-service account deletion; optional two-step verification for customers; offline page (service worker) and data-saver mode |
-| Admin | Dashboard, orders, payment review, risk queue, products/variants/categories in 4 languages, code import, customers (status, wallet adjustments), ledger, staff roles, settings (rate, limits, NatCash recipient, WhatsApp, announcement), audit log |
+| Store extras | Store filters (category incl. subcategories, platform/region tag, price range); subcategories; scheduled, dismissible announcement bar; custom pages built from blocks (text, image, button, FAQ); editable header/footer menus; newsletter sign-up with one-click unsubscribe |
+| Payment methods | Add any number of extra manual methods (bank transfer, Sogebank, Western Union…) with logo, recipient and instructions per language, for orders and/or deposits, reviewed like NatCash; changing them needs a fresh 2FA code. Statement reconciliation: paste a NatCash/MonCash/bank statement (CSV or copied text) to match it against payments (matched, to approve, amount mismatch, unknown, missing) |
+| Admin | Dashboard, orders, payment review, risk queue, products/variants/categories in 4 languages, code import, customers (status, wallet adjustments, accounts sharing a browser/IP), ledger, staff roles, settings (rate, limits, NatCash recipient, WhatsApp, announcement), audit log; media library (alt text, copy URL, delete unused, pick from any image field); security screen (staff sessions with sign-out, service status, shared browsers, sensitive actions); email screen (status, test send, log, template previews) |
+| Monitoring | `/api/health` for uptime monitors; Sentry error reporting without the SDK (`SENTRY_DSN`); error pages that report and show a reference; operator guide in [`docs/OPERATIONS.md`](docs/OPERATIONS.md) (daily routine, backups, restore, incidents, key rotation) |
+| Abuse protection | Cloudflare Turnstile on sign-up, sign-in, forgot password, deposit and newsletter (off until keys are set); anonymous browser ID flags several accounts on one device (threshold in Settings) |
 | Accounts | Email sign-up/sign-in/sign-out; passwords checked against known breaches (Have I Been Pwned, k-anonymity, fails open); sign-up errors don't reveal registered emails; suspended accounts refused at sign-in; forgot/reset password (email via Resend when configured, otherwise WhatsApp support + one-time admin reset link, 1 hour, single use, signs out all devices); email verification once email is configured; staff backup codes and Super Admin 2FA reset |
 | Security | Argon2id, HttpOnly sessions, mandatory staff TOTP, server-side permission checks on every admin page and action, audit trail for approvals, adjustments, code reveals and role changes, security headers |
 
@@ -48,11 +52,13 @@ Without MonCash credentials the site runs MonCash in **mock mode** (a test appro
 ## Tests
 
 ```bash
-TEST_DATABASE_URL=postgresql://…/haiti_gaming_test npm test       # ledger, concurrency, idempotency, exchange, auto-refund, crypto (16 tests)
-# End-to-end (14 tests in 5 files) against a running server started with test-only switches:
-AUTH_RATE_LIMIT=off ALLOW_MOCK_PAYMENTS=1 npm start
+TEST_DATABASE_URL=postgresql://…/haiti_gaming_test npm test       # ledger, concurrency, idempotency, exchange, auto-refund, crypto, statements, Turnstile, Sentry (22 tests)
+# End-to-end (21 tests in 7 files) against a running server started with test-only switches:
+UPLOAD_DIR=$PWD/uploads AUTH_RATE_LIMIT=off ALLOW_MOCK_PAYMENTS=1 npm start
 npx playwright test e2e/journeys.spec.ts    # run each file on its own; each sets up the admin's 2FA from scratch
 ```
+
+`e2e/visual.spec.ts` compares screenshots of key screens with the reference images in `e2e/visual.spec.ts-snapshots/`; after an intended design change, refresh them with `--update-snapshots`. Speed and load results: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delivered; NatCash deposit and duplicate-reference rejection; admin 2FA setup and approval; wallet purchase of a manual top-up delivered by staff; HTG→USD exchange.
 
@@ -72,10 +78,14 @@ The end-to-end suite covers: Kreyòl signup → MonCash purchase → code delive
 | --- | --- |
 | Live MonCash | Merchant approval; set `MONCASH_CLIENT_ID`, `MONCASH_CLIENT_SECRET`, `MONCASH_MODE=live` |
 | Emails (password reset, verification, order and deposit notifications) | A domain verified in Resend; set `RESEND_API_KEY` and `EMAIL_FROM` |
+| Bot check | Cloudflare Turnstile keys: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` |
+| Error monitoring | A Sentry project: `SENTRY_DSN` |
 | WhatsApp notifications and phone sign-in | A WhatsApp Business account (Meta or Twilio); the hook is `src/lib/notify.ts` |
 | Automatic supplier delivery | A signed supplier and its API; products can already be marked `SUPPLIER_API` (delivered manually until then) |
 | USD card payments, Google sign-in | Stripe / Google Cloud accounts, later |
 
 Before launch: native-speaker review of the Kreyòl, French and Spanish text; legal review of the stored-value wallet and HTG/USD exchange; replace the demo products, demo codes and placeholder business details (Admin → Settings).
+
+Day-to-day running (backups, restore, incidents, changing keys): see [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 **Never set `AUTH_RATE_LIMIT=off` or `ALLOW_MOCK_PAYMENTS=1` in production.** They exist only for automated tests.

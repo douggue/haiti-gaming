@@ -31,7 +31,7 @@ export async function completePayment(
 
     // Large manual top-ups are held before they can be spent (blueprint §8). Order payments are not held;
     // high-value orders are reviewed through the order risk flag instead.
-    const hold = !intent.orderId && intent.provider === "NATCASH" && intent.amount >= settings.holdThresholdHtg;
+    const hold = !intent.orderId && intent.provider !== "MONCASH" && intent.amount >= settings.holdThresholdHtg;
     const updated = await tx.paymentIntent.update({
       where: { id: intent.id },
       data: {

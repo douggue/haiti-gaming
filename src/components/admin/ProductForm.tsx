@@ -8,7 +8,7 @@ import { GalleryField, ImageField } from "./ImageField";
 type P = {
   id: string; slug: string; categoryId: string; accent: string; fulfillmentType: string; isPublished: boolean; isFeatured: boolean; sortOrder: number;
   name: Record<string, string>; description: Record<string, string>; delivery: Record<string, string>;
-  seoTitle: Record<string, string>; seoDescription: Record<string, string>; fields: string;
+  seoTitle: Record<string, string>; seoDescription: Record<string, string>; fields: string; tags: string[];
   image: string | null; gallery: string[];
 };
 
@@ -55,6 +55,11 @@ export function ProductForm({ product, categories }: { product?: P; categories: 
         <GalleryField name="gallery" label="Gallery (up to 8 extra photos)" value={product?.gallery} folder="products" />
       </div>
       <LocalizedInputs prefix="name" label="Name" value={product?.name} required />
+      <label className="block">
+        <span className="label">Filter tags (comma-separated)</span>
+        <input name="tags" defaultValue={product?.tags.join(", ")} placeholder="Android, iOS, PC, US region" className="input" />
+        <span className="mt-1 block text-xs text-muted">Shown as store filters, e.g. platform or region. Use the same spelling across products.</span>
+      </label>
       <LocalizedInputs prefix="description" label="Description" value={product?.description} textarea />
       <LocalizedInputs prefix="delivery" label="Delivery estimate" value={product?.delivery} />
       <details className="rounded-xl bg-surface-2 p-4">

@@ -16,7 +16,7 @@ export default async function AdminPayments() {
     prisma.paymentIntent.findMany({
       where: { status: "REVIEW" },
       orderBy: { createdAt: "asc" },
-      include: { user: { select: { id: true, name: true, email: true, createdAt: true } }, order: { select: { number: true } } },
+      include: { user: { select: { id: true, name: true, email: true, createdAt: true } }, order: { select: { number: true } }, manualMethod: { select: { code: true, recipientNumber: true } } },
     }),
     prisma.paymentIntent.findMany({ where: { status: { not: "REVIEW" } }, orderBy: { updatedAt: "desc" }, take: 50, include: { user: { select: { name: true } }, reviewedBy: { select: { name: true } } } }),
     getSettings(),
@@ -32,7 +32,7 @@ export default async function AdminPayments() {
           return (
             <div key={p.id} className="card flex flex-wrap items-start justify-between gap-4 p-4">
               <div className="space-y-1 text-sm">
-                <p className="text-lg font-bold">{formatMoney(p.amount, p.currency, "en")} <span className="text-sm font-medium text-muted">via {p.provider}</span></p>
+                <p className="text-lg font-bold">{formatMoney(p.amount, p.currency, "en")} <span className="text-sm font-medium text-muted">via {p.manualMethod ? `${p.manualMethod.code} (${p.manualMethod.recipientNumber})` : p.provider}</span></p>
                 <p>Reference: <span className="font-mono font-bold">{p.providerRef}</span> {p.payerPhone && <>· from {p.payerPhone}</>}</p>
                 <p className="text-muted">
                   <Link href={`/admin/customers/${p.user.id}`} className="text-primary">{p.user.name}</Link> ({p.user.email}) · account {ageDays} day(s) old

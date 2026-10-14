@@ -9,7 +9,7 @@ import { pageSeo } from "@/lib/seo";
 import { NewsCard } from "@/components/NewsCard";
 import { Link } from "@/i18n/navigation";
 import { getCategories, searchProducts } from "@/lib/catalog";
-import { getSettings } from "@/lib/settings";
+import { getDisplaySettings } from "@/lib/settings";
 import { t } from "@/lib/text";
 import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
@@ -33,7 +33,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     getTranslations("faq"),
     searchProducts({ featured: true, take: 8 }),
     getCategories(),
-    getSettings(),
+    getDisplaySettings(),
     prisma.newsArticle.findMany({ where: { isPublished: true, publishedAt: { lte: new Date() } }, orderBy: { publishedAt: "desc" }, take: 3 }),
   ]);
   const home = normalizeHomepage(preview ? settings.homepageDraft : settings.homepage);

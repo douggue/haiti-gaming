@@ -58,12 +58,17 @@ export async function createOrder(input: {
   items: CartItemInput[];
   currency: Currency;
   method: PaymentMethodKind;
+  manualMethodId?: string;
   recipientNote?: string;
 }) {
   const settings = await getSettings();
   const currency: Currency = input.method === "WALLET" ? input.currency : "HTG";
   if (input.method === "MONCASH" && !moncashAvailable(settings.moncashEnabled)) throw new OrderError("method_unavailable");
   if (input.method === "NATCASH" && !settings.natcashEnabled) throw new OrderError("method_unavailable");
+  if (input.method === "MANUAL") {
+    const m = input.manualMethodId ? await prisma.manualMethod.findUnique({ where: { id: input.manualMethodId } }) : null;
+    if (!m || !m.isEnabled || !m.allowOrders) throw new OrderError("method_unavailable");
+  }
 
   const variants = await prisma.productVariant.findMany({
     where: { id: { in: input.items.map((i) => i.variantId) }, isActive: true, product: { isPublished: true } },
@@ -101,6 +106,7 @@ export async function createOrder(input: {
         total: subtotal,
         rateUsed: currency === "USD" ? new Prisma.Decimal(settings.htgPerUsd) : null,
         paymentMethod: input.method,
+        manualMethodId: input.method === "MANUAL" ? input.manualMethodId : null,
         recipientNote: input.recipientNote?.slice(0, 300) || null,
         accessToken: randomToken(),
         items: {
