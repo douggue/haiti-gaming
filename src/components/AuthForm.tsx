@@ -20,6 +20,12 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [totp, setTotp] = useState(false);
   const [useBackup, setUseBackup] = useState(false);
   const t2 = useTranslations("auth2");
+  const tu = useTranslations("authUi");
+  const [showPw, setShowPw] = useState(false);
+  const [pw, setPw] = useState("");
+  // Rough guide only; the server also rejects passwords found in data breaches.
+  const score = !pw ? 0 : Math.min(4, (pw.length >= 8 ? 1 : 0) + (pw.length >= 12 ? 1 : 0) + (/[A-Z]/.test(pw) && /[a-z]/.test(pw) ? 1 : 0) + (/[\d\W]/.test(pw) ? 1 : 0));
+  const scoreLabel = [tu("weak"), tu("weak"), tu("fair"), tu("good"), tu("strong")][score];
   useEffect(() => setHydrated(true), []);
   const [captcha, setCaptcha] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
@@ -96,8 +102,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   return (
-    <form method="post" onSubmit={onSubmit} className="card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
-      <h1 className="text-2xl font-bold tracking-tight">{mode === "login" ? t("loginTitle") : t("registerTitle")}</h1>
+    <form method="post" onSubmit={onSubmit} className="card glow-card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
+      <nav className="grid grid-cols-2 rounded-2xl bg-surface-2 p-1" aria-label={t("loginTitle")}>
+        <Link href={`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "login" ? "page" : undefined} className={`grid min-h-11 place-items-center rounded-xl text-sm font-bold ${mode === "login" ? "bg-surface text-text shadow-sm" : "text-muted"}`}>{tc("signIn")}</Link>
+        <Link href={`/auth/register${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "register" ? "page" : undefined} className={`grid min-h-11 place-items-center rounded-xl text-sm font-bold ${mode === "register" ? "bg-surface text-text shadow-sm" : "text-muted"}`}>{tc("signUp")}</Link>
+      </nav>
+      <div>
+        <h1 className="display text-3xl font-bold">{mode === "login" ? tu("welcomeBack") : t("registerTitle")}</h1>
+        <p className="mt-1 text-muted">{mode === "login" ? tu("loginSub") : tu("registerSub")}</p>
+      </div>
       {mode === "register" && (
         <div>
           <label htmlFor="name" className="label">{t("name")}</label>
@@ -116,24 +129,37 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       )}
       <div>
         <label htmlFor="password" className="label">{t("password")}</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          minLength={8}
-          maxLength={128}
-          autoComplete={mode === "login" ? "current-password" : "new-password"}
-          className="input"
-        />
-        {mode === "register" && <p className="mt-1 text-xs text-muted">{t("passwordHint")}</p>}
+        <div className="relative">
+          <input
+            id="password"
+            name="password"
+            type={showPw ? "text" : "password"}
+            required
+            minLength={8}
+            maxLength={128}
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            className="input pr-20"
+            onChange={(e) => setPw(e.target.value)}
+          />
+          <button type="button" onClick={() => setShowPw(!showPw)} aria-pressed={showPw} className="absolute right-1 top-1/2 min-h-10 -translate-y-1/2 rounded-lg px-3 text-xs font-bold text-muted hover:text-text">
+            {showPw ? tu("hide") : tu("show")}
+          </button>
+        </div>
+        {mode === "register" && (
+          <>
+            <div className="mt-2 grid grid-cols-4 gap-1.5" aria-hidden>
+              {[1, 2, 3, 4].map((i) => <span key={i} className={`h-1.5 rounded-full ${score >= i ? (score <= 1 ? "bg-danger" : score === 2 ? "bg-warning" : "bg-success") : "bg-border"}`} />)}
+            </div>
+            <p className="mt-1 text-xs text-muted" aria-live="polite">{pw && <b className={score <= 1 ? "text-danger" : score === 2 ? "text-warning" : "text-success"}>{scoreLabel}. </b>}{t("passwordHint")}</p>
+          </>
+        )}
         {mode === "login" && (
           <Link href="/auth/forgot" className="mt-2 inline-block text-sm font-semibold text-primary">{t("forgot")}</Link>
         )}
       </div>
       <Turnstile key={captchaKey} onToken={setCaptcha} locale={locale} />
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
-      <button className="btn-primary w-full" disabled={loading || !hydrated || (turnstileOn && !captcha)}>
+      <button className="btn-primary glow-btn min-h-12 w-full text-base" disabled={loading || !hydrated || (turnstileOn && !captcha)}>
         {loading ? tc("loading") : mode === "login" ? tc("signIn") : tc("signUp")}
       </button>
       <p className="text-center text-sm text-muted">

@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/AuthShell";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { emailEnabled } from "@/lib/email";
@@ -14,8 +15,8 @@ export default async function ForgotPage({ params }: { params: Promise<{ locale:
   setRequestLocale((await params).locale);
   const settings = await getDisplaySettings();
   return (
-    <div className="container-page py-10 sm:py-16">
+    <AuthShell>
       <ForgotForm emailEnabled={emailEnabled()} whatsappNumber={settings.whatsappNumber} />
-    </div>
+    </AuthShell>
   );
 }

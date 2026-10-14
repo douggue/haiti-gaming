@@ -21,12 +21,11 @@ export function ProductArt({ name, accent, image, size = "md", priority = false 
   return (
     <div
       className={`relative grid place-items-center overflow-hidden ${size === "lg" ? "aspect-[4/3] rounded-3xl" : "aspect-[4/3] rounded-xl"}`}
-      style={{ background: `linear-gradient(135deg, ${color} 0%, #0D1B35 100%)` }}
+      style={{ background: `radial-gradient(circle at 50% 42%, ${color} 0%, color-mix(in srgb, ${color} 45%, #060b1a) 55%, #060b1a 100%)` }}
       aria-hidden
     >
-      <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
-      <div className="absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-white/5" />
-      <span className={`font-black tracking-tight text-white drop-shadow ${size === "lg" ? "text-6xl" : "text-3xl"}`}>{initials}</span>
+      <div className="absolute inset-x-6 bottom-0 h-1/3 rounded-full bg-black/25 blur-2xl" />
+      <span className={`display relative font-bold tracking-tight text-white [text-shadow:0_6px_24px_rgba(0,0,0,.35)] ${size === "lg" ? "text-7xl" : "text-4xl"}`}>{initials}</span>
     </div>
   );
 }

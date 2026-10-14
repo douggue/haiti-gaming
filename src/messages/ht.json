@@ -56,7 +56,10 @@
     "captcha": "Verifikasyon anti-robo a pa pase. Tanpri eseye ankò.",
     "notFoundTitle": "Paj sa a pa egziste",
     "notFoundBody": "Lyen an ka mal ekri, oswa pwodwi a pa disponib ankò.",
-    "notFoundCta": "Retounen nan boutik la"
+    "notFoundCta": "Retounen nan boutik la",
+    "products": "pwodwi",
+    "codeReady": "Kòd ou pare",
+    "choose": "Chwazi"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -116,7 +119,8 @@
     "priceMax": "Pri maksimòm",
     "apply": "Aplike",
     "clear": "Efase filtre yo",
-    "subcategories": "Sou-kategori"
+    "subcategories": "Sou-kategori",
+    "price": "Pri"
   },
   "product": {
     "chooseOption": "Chwazi yon opsyon",
@@ -505,5 +509,26 @@
     "done": "Mèsi! Ou enskri.",
     "consent": "Nou p ap janm vann imèl ou. Ou ka dezabòne nenpòt kilè.",
     "unsubscribed": "Ou dezabòne. Ou p ap resevwa imèl pwomosyon ankò."
+  },
+  "authUi": {
+    "heroTitle": "Kont ou, kòd ou, bous ou.",
+    "heroAccent": "Yon sèl kote.",
+    "heroBody": "Kreye kont ou nan mwens pase yon minit pou achte, swiv kòmand ou yo epi kenbe lajan nan bous ou.",
+    "b1t": "Kòd ou touswit",
+    "b1b": "Li parèt nan kont ou, menm si ou fèmen paj la.",
+    "b2t": "Bous an HTG ak USD",
+    "b2b": "Mete lajan yon fwa, achte plizyè fwa.",
+    "b3t": "Ranbousman nan bous ou",
+    "b3b": "Si yon kòmand pa livre, lajan ou retounen.",
+    "show": "Montre",
+    "hide": "Kache",
+    "weak": "Twò fèb",
+    "fair": "Pa mal",
+    "good": "Bon",
+    "strong": "Fò",
+    "secure": "Koneksyon sekirize",
+    "loginSub": "Konekte pou wè kòmand ou ak bous ou.",
+    "registerSub": "Gratis. Ou ka achte touswit apre.",
+    "welcomeBack": "Bon retou!"
   }
 }

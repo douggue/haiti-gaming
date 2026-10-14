@@ -56,7 +56,10 @@
     "captcha": "La verificación anti-bot falló. Inténtalo de nuevo.",
     "notFoundTitle": "Esta página no existe",
     "notFoundBody": "El enlace puede estar mal escrito o el producto ya no está disponible.",
-    "notFoundCta": "Volver a la tienda"
+    "notFoundCta": "Volver a la tienda",
+    "products": "productos",
+    "codeReady": "Tu código está listo",
+    "choose": "Elegir"
   },
   "home": {
     "eyebrow": "Hecho en Haití, para gamers",
@@ -116,7 +119,8 @@
     "priceMax": "Precio máximo",
     "apply": "Aplicar",
     "clear": "Borrar filtros",
-    "subcategories": "Subcategorías"
+    "subcategories": "Subcategorías",
+    "price": "Precio"
   },
   "product": {
     "chooseOption": "Elige una opción",
@@ -505,5 +509,26 @@
     "done": "¡Gracias! Te suscribiste.",
     "consent": "Nunca venderemos tu correo. Cancela cuando quieras.",
     "unsubscribed": "Te diste de baja."
+  },
+  "authUi": {
+    "heroTitle": "Tu cuenta, tus códigos, tu billetera.",
+    "heroAccent": "Todo en un lugar.",
+    "heroBody": "Crea tu cuenta en menos de un minuto para comprar, seguir tus pedidos y guardar dinero en tu billetera.",
+    "b1t": "Tu código al instante",
+    "b1b": "Aparece en tu cuenta, aunque cierres la página.",
+    "b2t": "Billetera en HTG y USD",
+    "b2b": "Recarga una vez, compra muchas veces.",
+    "b3t": "Reembolsos a tu billetera",
+    "b3b": "Si un pedido no se entrega, tu dinero vuelve.",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "weak": "Muy débil",
+    "fair": "Regular",
+    "good": "Buena",
+    "strong": "Fuerte",
+    "secure": "Conexión segura",
+    "loginSub": "Inicia sesión para ver tus pedidos y tu billetera.",
+    "registerSub": "Gratis. Puedes comprar enseguida.",
+    "welcomeBack": "¡Bienvenido de nuevo!"
   }
 }

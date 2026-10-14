@@ -90,7 +90,7 @@ export function CartButton() {
     <Link href="/cart" className="btn-ghost relative min-h-10 px-2.5" aria-label={`${t("cart")} (${count})`}>
       <CartIcon />
       {ready && count > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">
+        <span key={count} className="pop absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white shadow-[0_0_10px_var(--glow)]">
           {count}
         </span>
       )}
@@ -211,7 +211,7 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
               <span className={`relative grid h-7 w-12 place-items-center rounded-full transition-colors ${active ? "bg-primary-soft" : ""}`}>
                 <Icon width={20} height={20} />
                 {!!badge && (
-                  <span className="absolute -right-0.5 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{badge}</span>
+                  <span key={badge} className="pop absolute -right-0.5 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{badge}</span>
                 )}
               </span>
               <span className="max-w-full truncate px-1">{label}</span>

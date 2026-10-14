@@ -56,7 +56,10 @@
     "captcha": "La vérification anti-robot a échoué. Réessayez.",
     "notFoundTitle": "Cette page n'existe pas",
     "notFoundBody": "Le lien est peut-être erroné, ou le produit n'est plus disponible.",
-    "notFoundCta": "Retour à la boutique"
+    "notFoundCta": "Retour à la boutique",
+    "products": "produits",
+    "codeReady": "Votre code est prêt",
+    "choose": "Choisir"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",
@@ -116,7 +119,8 @@
     "priceMax": "Prix maximum",
     "apply": "Appliquer",
     "clear": "Effacer les filtres",
-    "subcategories": "Sous-catégories"
+    "subcategories": "Sous-catégories",
+    "price": "Prix"
   },
   "product": {
     "chooseOption": "Choisissez une option",
@@ -505,5 +509,26 @@
     "done": "Merci ! Vous êtes inscrit.",
     "consent": "Nous ne vendrons jamais votre e-mail. Désinscription à tout moment.",
     "unsubscribed": "Vous êtes désinscrit."
+  },
+  "authUi": {
+    "heroTitle": "Votre compte, vos codes, votre portefeuille.",
+    "heroAccent": "Au même endroit.",
+    "heroBody": "Créez votre compte en moins d'une minute pour acheter, suivre vos commandes et garder de l'argent dans votre portefeuille.",
+    "b1t": "Votre code tout de suite",
+    "b1b": "Il apparaît dans votre compte, même si vous fermez la page.",
+    "b2t": "Portefeuille HTG et USD",
+    "b2b": "Rechargez une fois, achetez plusieurs fois.",
+    "b3t": "Remboursement dans votre portefeuille",
+    "b3b": "Si une commande n'est pas livrée, votre argent revient.",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "weak": "Trop faible",
+    "fair": "Moyen",
+    "good": "Bon",
+    "strong": "Fort",
+    "secure": "Connexion sécurisée",
+    "loginSub": "Connectez-vous pour voir vos commandes et votre portefeuille.",
+    "registerSub": "Gratuit. Vous pouvez acheter tout de suite après.",
+    "welcomeBack": "Bon retour !"
   }
 }

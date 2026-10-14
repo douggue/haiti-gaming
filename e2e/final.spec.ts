@@ -13,9 +13,8 @@ const announcement = `Pwomo espesyal ${stamp}`;
 
 /** Sign out but keep the anonymous browser id, like a person switching accounts on one phone. */
 async function signOutKeepDevice(ctx: BrowserContext) {
-  const dev = (await ctx.cookies()).filter((c) => c.name === "hg_dev");
-  await ctx.clearCookies();
-  await ctx.addCookies(dev);
+  // Only the sign-in cookies go; the browser id cookie is never removed, so no request can mint a new one.
+  await ctx.clearCookies({ name: /better-auth/ });
 }
 
 test("store filters by tag and price", async ({ page }) => {

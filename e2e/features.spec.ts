@@ -50,6 +50,7 @@ test("content tools: homepage editor, news, redirect, translation, theme", async
   await a.goto("/admin/appearance");
   await a.waitForLoadState("networkidle");
   await a.locator('input[type="color"]').first().fill("#7c3aed");
+  await a.getByLabel(/^Neon/).check();
   await a.getByRole("button", { name: "Publish theme" }).click();
   await expect(a.getByText("Theme published")).toBeVisible();
 
@@ -61,6 +62,7 @@ test("content tools: homepage editor, news, redirect, translation, theme", async
   await expect(c.getByRole("heading", { name: "Kesyon yo poze souvan" })).toHaveCount(0);
   await expect(c.getByRole("link", { name: /Achte la a/ }).first()).toBeVisible();
   expect(await c.locator("style").allTextContents()).toEqual(expect.arrayContaining([expect.stringContaining("--primary:#7C3AED")]));
+  await expect(c.locator("html")).toHaveAttribute("data-motion", "neon");
   await expect(c.getByText("Gwo pwomosyon Free Fire").first()).toBeVisible();
   await c.goto(`/ht/news/promo-${stamp}`);
   await expect(c.getByText("Dezyèm paragraf.")).toBeVisible();
@@ -70,7 +72,7 @@ test("content tools: homepage editor, news, redirect, translation, theme", async
   // Restore defaults so other tests see the standard site
   await a.goto("/admin/appearance");
   await a.waitForLoadState("networkidle");
-  await a.getByRole("button", { name: "Back to original colors" }).click();
+  await a.getByRole("button", { name: "Back to the original design" }).click();
   await a.getByRole("button", { name: "Publish theme" }).click();
   await expect(a.getByText("Theme published")).toBeVisible();
   await a.goto("/admin/translations");

@@ -56,7 +56,10 @@
     "captcha": "The bot check failed. Please try again.",
     "notFoundTitle": "This page doesn't exist",
     "notFoundBody": "The link may be wrong, or the product is no longer available.",
-    "notFoundCta": "Back to the store"
+    "notFoundCta": "Back to the store",
+    "products": "products",
+    "codeReady": "Your code is ready",
+    "choose": "Choose"
   },
   "home": {
     "eyebrow": "Made in Haiti, for gamers",
@@ -116,7 +119,8 @@
     "priceMax": "Max price",
     "apply": "Apply",
     "clear": "Clear filters",
-    "subcategories": "Subcategories"
+    "subcategories": "Subcategories",
+    "price": "Price"
   },
   "product": {
     "chooseOption": "Choose an option",
@@ -505,5 +509,26 @@
     "done": "Thanks! You're subscribed.",
     "consent": "We never sell your email. Unsubscribe anytime.",
     "unsubscribed": "You're unsubscribed. You won't get promotional emails anymore."
+  },
+  "authUi": {
+    "heroTitle": "Your account, your codes, your wallet.",
+    "heroAccent": "All in one place.",
+    "heroBody": "Create your account in under a minute to buy, track your orders and keep money in your wallet.",
+    "b1t": "Your code right away",
+    "b1b": "It shows in your account, even if you close the page.",
+    "b2t": "HTG and USD wallet",
+    "b2b": "Top up once, buy many times.",
+    "b3t": "Refunds to your wallet",
+    "b3b": "If an order isn't delivered, your money comes back.",
+    "show": "Show",
+    "hide": "Hide",
+    "weak": "Too weak",
+    "fair": "Fair",
+    "good": "Good",
+    "strong": "Strong",
+    "secure": "Secure connection",
+    "loginSub": "Sign in to see your orders and wallet.",
+    "registerSub": "Free. You can buy right after.",
+    "welcomeBack": "Welcome back!"
   }
 }

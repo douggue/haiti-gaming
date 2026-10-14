@@ -3,7 +3,7 @@ export function PageTitle({ title, sub, actions }: { title: string; sub?: string
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <h1 className="display text-2xl font-bold sm:text-3xl">{title}</h1>
         {sub && <p className="mt-1 text-sm text-muted">{sub}</p>}
       </div>
       {actions}
@@ -41,11 +41,14 @@ export function Table({ head, children, empty }: { head: string[]; children: Rea
   );
 }
 
-export function Stat({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "warn" | "danger" }) {
+export function Stat({ label, value, tone, delta }: { label: string; value: React.ReactNode; tone?: "warn" | "danger"; delta?: { text: string; good: boolean } }) {
   return (
-    <div className="card p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
-      <p className={`mt-1 text-2xl font-bold ${tone === "warn" ? "text-warning" : tone === "danger" ? "text-danger" : ""}`}>{value}</p>
+    <div className="card flex flex-col gap-3 p-4">
+      <p className="text-sm font-semibold text-muted">{label}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface-2 px-3.5 py-3">
+        <p className={`min-w-0 break-words text-2xl font-bold tracking-tight tabular-nums ${tone === "warn" ? "text-warning" : tone === "danger" ? "text-danger" : ""}`}>{value}</p>
+        {delta && <span className={`badge shrink-0 ${delta.good ? "bg-success-soft text-success" : "bg-danger-soft text-danger"}`}>{delta.text}</span>}
+      </div>
     </div>
   );
 }

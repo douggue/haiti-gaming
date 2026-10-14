@@ -24,32 +24,32 @@ export async function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
+    <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md">
       <div className="container-page flex h-16 items-center gap-3">
         <Link href="/" className="shrink-0">
           <Logo src={settings.logoUrl} darkSrc={settings.logoDarkUrl} alt={settings.businessName} />
         </Link>
-        <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Main">
+        <nav className="ml-4 hidden min-w-0 shrink items-center gap-1 overflow-hidden md:flex" aria-label="Main">
           {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="rounded-lg px-3 py-2 text-sm font-medium text-muted hover:bg-surface-2 hover:text-text">
+            <Link key={n.href} href={n.href} className="shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold text-muted hover:bg-surface-2 hover:text-text">
               {n.label}
             </Link>
           ))}
         </nav>
-        <form action={`/${locale}/store`} className="ml-auto hidden flex-1 xl:block xl:max-w-xs" role="search">
+        <form action={`/${locale}/store`} className="ml-auto hidden min-w-40 flex-1 2xl:block 2xl:max-w-xs" role="search">
           <label className="relative block">
             <span className="sr-only">{t("search")}</span>
             <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" width={18} height={18} />
             <input name="q" type="search" placeholder={t("searchPlaceholder")} className="input min-h-10 pl-9" />
           </label>
         </form>
-        <div className="ml-auto flex items-center gap-1 xl:ml-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1 2xl:ml-2">
           <div className="hidden items-center gap-1.5 md:flex">
             <LocaleSwitch />
             <CurrencySwitch />
             <ThemeToggle />
           </div>
-          <Link href="/store" className="btn-ghost min-h-10 px-2.5 xl:hidden" aria-label={t("search")}>
+          <Link href="/store" className="btn-ghost min-h-10 px-2.5 2xl:hidden" aria-label={t("search")}>
             <SearchIcon />
           </Link>
           {user && (
@@ -66,7 +66,7 @@ export async function Header() {
               </span>
             </Link>
           ) : (
-            <Link href="/auth/login" className="btn-primary hidden min-h-10 md:inline-flex">
+            <Link href="/auth/login" className="btn-primary glow-btn hidden min-h-10 md:inline-flex">
               <UserIcon width={18} height={18} />
               {t("signIn")}
             </Link>

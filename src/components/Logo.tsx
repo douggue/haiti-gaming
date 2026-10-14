@@ -15,13 +15,13 @@ export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { c
   return (
     <span className={`inline-flex items-center gap-2 font-extrabold tracking-tight ${className}`}>
       <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden>
-        <rect width="32" height="32" rx="9" fill="#1467F5" />
+        <rect width="32" height="32" rx="9" style={{ fill: "var(--primary)" }} />
         <path d="M9.5 12h13a4.5 4.5 0 0 1 4.3 5.7l-.9 3.3a2.6 2.6 0 0 1-4.5 1l-1.9-2.2h-7l-1.9 2.2a2.6 2.6 0 0 1-4.5-1l-.9-3.3A4.5 4.5 0 0 1 9.5 12Z" fill="#fff" />
-        <path d="M11 15.2v3M9.5 16.7h3" stroke="#1467F5" strokeWidth="1.6" strokeLinecap="round" />
-        <circle cx="20.5" cy="15.6" r="1.1" fill="#1467F5" />
-        <circle cx="22.6" cy="17.7" r="1.1" fill="#1467F5" />
+        <path d="M11 15.2v3M9.5 16.7h3" style={{ stroke: "var(--primary)" }} strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="20.5" cy="15.6" r="1.1" style={{ fill: "var(--primary)" }} />
+        <circle cx="22.6" cy="17.7" r="1.1" style={{ fill: "var(--primary)" }} />
       </svg>
-      <span className="text-[1.05rem] leading-none">
+      <span className="display text-[1.1rem] leading-none">
         Haiti<span className="text-primary">Gaming</span>
       </span>
     </span>

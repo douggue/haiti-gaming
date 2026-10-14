@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { assertStaff } from "@/lib/session";
 import { audit } from "@/lib/audit";
-import { getSettings, setSetting, DEFAULT_THEME, type ThemeConfig } from "@/lib/settings";
+import { getSettings, setSetting, fullTheme, type ThemeConfig } from "@/lib/settings";
 import { normalizeHomepage, type HomepageConfig } from "@/lib/homepage";
 import { isOwnImageUrl } from "@/lib/storage";
 import { contrastRatio } from "@/lib/color";
@@ -164,17 +164,35 @@ export async function saveTranslation(locale: string, key: string, value: string
 
 const hex = /^#[0-9a-fA-F]{6}$/;
 
-export async function saveTheme(theme: ThemeConfig): Promise<R> {
+export async function saveTheme(input: ThemeConfig): Promise<R> {
   try {
     const staff = await assertStaff("content.manage");
-    for (const k of ["primary", "primaryDark", "navy", "midnight"] as const) if (!hex.test(theme[k])) return { ok: false, error: `${k} must be a #RRGGBB color` };
-    // White button text must stay readable on the main color (WCAG AA 4.5:1); dark-mode accent must stand out on the dark background.
+    const theme = fullTheme(input);
+    for (const k of ["primary", "primaryDark", "navy", "midnight", "lightBg"] as const) if (!hex.test(theme[k])) return { ok: false, error: `${k} must be a #RRGGBB color` };
+    // Text must stay readable everywhere (WCAG AA).
     if (contrastRatio(theme.primary, "#FFFFFF") < 4.5) return { ok: false, error: "Main color is too light for white button text (needs 4.5:1 contrast). Pick a darker color." };
     if (contrastRatio(theme.primaryDark, theme.midnight) < 3) return { ok: false, error: "Dark-mode accent is too dark to see on the dark background. Pick a lighter color." };
-    if (contrastRatio(theme.navy, "#FFFFFF") < 7) return { ok: false, error: "Navy must stay dark enough for white text (7:1)." };
-    const clean: ThemeConfig = { ...theme, radius: Math.max(0, Math.min(28, Math.round(theme.radius))), animations: !!theme.animations };
+    if (contrastRatio(theme.navy, "#FFFFFF") < 7) return { ok: false, error: "Dark cards must stay dark enough for white text (7:1)." };
+    if (contrastRatio(theme.lightBg, "#0B1426") < 10) return { ok: false, error: "Light background is too dark for dark text. Pick a lighter color." };
+    const marquee: Record<string, string> = {};
+    for (const l of ["ht", "fr", "en", "es"]) marquee[l] = String(theme.marquee[l] ?? "").replace(/[<>]/g, "").slice(0, 300);
+    const clean: ThemeConfig = {
+      primary: theme.primary.toUpperCase(),
+      primaryDark: theme.primaryDark.toUpperCase(),
+      navy: theme.navy.toUpperCase(),
+      midnight: theme.midnight.toUpperCase(),
+      lightBg: theme.lightBg.toUpperCase(),
+      radius: Math.max(0, Math.min(28, Math.round(Number(theme.radius) || 0))),
+      animations: !!theme.animations,
+      defaultMode: theme.defaultMode === "light" ? "light" : "dark",
+      motion: (["calm", "lively", "neon"] as const).includes(theme.motion) ? theme.motion : "lively",
+      glow: Math.max(0, Math.min(100, Math.round(Number(theme.glow) || 0))),
+      displayFont: theme.displayFont === "plain" ? "plain" : "gaming",
+      heroGrid: !!theme.heroGrid,
+      marquee,
+    };
     const s = await getSettings();
-    const history = [{ at: new Date().toISOString(), by: staff.name, theme: s.theme ?? DEFAULT_THEME }, ...(s.themeHistory ?? [])].slice(0, 10);
+    const history = [{ at: new Date().toISOString(), by: staff.name, theme: fullTheme(s.theme) }, ...(s.themeHistory ?? [])].slice(0, 10);
     await setSetting("theme", clean);
     await setSetting("themeHistory", history);
     await audit(staff.id, "theme.save", "SiteSetting", "theme", clean);

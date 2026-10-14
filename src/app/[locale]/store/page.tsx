@@ -8,6 +8,7 @@ import { t } from "@/lib/text";
 import { pageSeo } from "@/lib/seo";
 import { ProductCard } from "@/components/ProductCard";
 import { SearchIcon } from "@/components/Icons";
+import { FiltersPanel } from "@/components/FiltersPanel";
 
 type SP = Promise<{ q?: string; category?: string; sort?: string; tag?: string; min?: string; max?: string }>;
 
@@ -47,8 +48,13 @@ export default async function StorePage({ params, searchParams }: { params: Prom
 
   return (
     <div className="container-page py-8 sm:py-12">
-      <h1 className="text-3xl font-bold tracking-tight">{ts("title")}</h1>
-      <p className="mt-1 text-muted">{ts("subtitle")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="display text-3xl font-bold sm:text-4xl">{ts("title")}</h1>
+          <p className="mt-1 text-muted">{ts("subtitle")}</p>
+        </div>
+        <h2 className="text-sm font-normal text-muted">{ts("results", { count: products.length })}</h2>
+      </div>
 
       <form className="mt-6 flex flex-col gap-3 sm:flex-row" role="search">
         <label className="relative flex-1">
@@ -70,51 +76,60 @@ export default async function StorePage({ params, searchParams }: { params: Prom
         <button className="btn-primary">{tc("search")}</button>
       </form>
 
-      <nav className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-2" aria-label={tc("categories")}>
-        <Link href={qs({ category: undefined })} className={`badge shrink-0 px-4 py-2 text-sm ${!sp.category ? "bg-primary text-white" : "border border-border bg-surface"}`}>
+      <nav className="-mx-4 mt-5 flex gap-1 overflow-x-auto px-4 pb-1 sm:mx-0 sm:rounded-2xl sm:border sm:border-border sm:bg-surface sm:p-1.5" aria-label={tc("categories")}>
+        <Link href={qs({ category: undefined })} className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold ${!sp.category ? "glow-btn bg-primary text-white" : "text-muted hover:text-text"}`}>
           {ts("all")}
         </Link>
         {categories.map((c) => (
           <Link
             key={c.id}
             href={qs({ category: c.slug })}
-            className={`badge shrink-0 px-4 py-2 text-sm ${sp.category === c.slug ? "bg-primary text-white" : "border border-border bg-surface"}`}
+            className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold ${sp.category === c.slug ? "glow-btn bg-primary text-white" : "text-muted hover:text-text"}`}
           >
             {c.icon} {t(c.name, locale)}
           </Link>
         ))}
       </nav>
 
-      <details className="mt-2" open={!!(sp.tag || sp.min || sp.max)}>
-        <summary className="cursor-pointer text-sm font-semibold">{ts("filters")}</summary>
-        <div className="mt-3 space-y-3">
-          {tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2" aria-label={ts("tag")}>
-              <span className="text-sm text-muted">{ts("tag")}:</span>
-              <Link href={qs({ tag: undefined })} className={`badge px-3 py-1.5 ${!sp.tag ? "bg-navy text-white" : "border border-border bg-surface"}`}>{ts("anyTag")}</Link>
-              {tags.map((tg) => (
-                <Link key={tg} href={qs({ tag: tg })} className={`badge px-3 py-1.5 ${sp.tag === tg ? "bg-navy text-white" : "border border-border bg-surface"}`}>{tg}</Link>
-              ))}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside>
+          <FiltersPanel title={ts("filters")} defaultOpen={!!(sp.tag || sp.min || sp.max)}>
+            {tags.length > 0 && (
+              <div className="space-y-2" aria-label={ts("tag")}>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted">{ts("tag")}</p>
+                <div className="flex flex-wrap gap-2 lg:flex-col lg:gap-1">
+                  <Link href={qs({ tag: undefined })} className={`rounded-xl px-3 py-2 text-sm font-semibold ${!sp.tag ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text"}`}>{ts("anyTag")}</Link>
+                  {tags.map((tg) => (
+                    <Link key={tg} href={qs({ tag: tg })} className={`rounded-xl px-3 py-2 text-sm font-semibold ${sp.tag === tg ? "bg-primary-soft text-primary" : "text-muted hover:bg-surface-2 hover:text-text"}`}>{tg}</Link>
+                  ))}
+                </div>
+              </div>
+            )}
+            <form className="space-y-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted">{ts("price")} ({currency})</p>
+              {(["q", "category", "sort", "tag"] as const).map((k) => sp[k] ? <input key={k} type="hidden" name={k} value={sp[k]} /> : null)}
+              <div className="grid grid-cols-2 gap-2">
+                <label><span className="mb-1 block text-xs text-muted">{ts("priceMin")}</span><input name="min" inputMode="decimal" defaultValue={sp.min} className="input" /></label>
+                <label><span className="mb-1 block text-xs text-muted">{ts("priceMax")}</span><input name="max" inputMode="decimal" defaultValue={sp.max} className="input" /></label>
+              </div>
+              <div className="flex gap-2">
+                <button className="btn-secondary flex-1">{ts("apply")}</button>
+                {filtered && <Link href="/store" className="btn-ghost text-sm">{ts("clear")}</Link>}
+              </div>
+            </form>
+          </FiltersPanel>
+        </aside>
+
+        <div className="min-w-0">
+          {products.length === 0 ? (
+            <div className="card p-10 text-center text-muted">{ts("noResults")}</div>
+          ) : (
+            <div className="stagger grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+              {products.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           )}
-          <form className="flex flex-wrap items-end gap-2">
-            {(["q", "category", "sort", "tag"] as const).map((k) => sp[k] ? <input key={k} type="hidden" name={k} value={sp[k]} /> : null)}
-            <label><span className="mb-1 block text-xs text-muted">{ts("priceMin")} ({currency})</span><input name="min" inputMode="decimal" defaultValue={sp.min} className="input w-32" /></label>
-            <label><span className="mb-1 block text-xs text-muted">{ts("priceMax")} ({currency})</span><input name="max" inputMode="decimal" defaultValue={sp.max} className="input w-32" /></label>
-            <button className="btn-secondary">{ts("apply")}</button>
-            {filtered && <Link href="/store" className="btn-ghost text-sm">{ts("clear")}</Link>}
-          </form>
         </div>
-      </details>
-
-      <h2 className="mt-4 text-sm font-normal text-muted">{ts("results", { count: products.length })}</h2>
-      {products.length === 0 ? (
-        <div className="card mt-6 p-10 text-center text-muted">{ts("noResults")}</div>
-      ) : (
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-      )}
+      </div>
     </div>
   );
 }

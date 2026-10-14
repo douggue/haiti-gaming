@@ -13,7 +13,9 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { BottomNav } from "@/components/HeaderClient";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { alternates } from "@/lib/seo";
-import { themeCss } from "@/lib/theme-css";
+import { themeAttrs, themeCss, themeScript } from "@/lib/theme-css";
+import { fullTheme } from "@/lib/settings";
+import { Chakra_Petch, Figtree } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import { getUser } from "@/lib/session";
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -21,8 +23,8 @@ import "../globals.css";
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F5F7FC" },
-    { media: "(prefers-color-scheme: dark)", color: "#050B18" },
+    { media: "(prefers-color-scheme: light)", color: "#060B1A" },
+    { media: "(prefers-color-scheme: dark)", color: "#060B1A" },
   ],
 };
 
@@ -40,8 +42,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   };
 }
 
-// Applies the saved theme before paint to avoid a flash.
-const themeScript = `try{var t=localStorage.getItem('hg_theme');if(t==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
+// Self-hosted at build time by Next.js (no request to Google from visitors' phones).
+const sans = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-body", display: "swap" });
+const display = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["600", "700"], variable: "--font-display-face", display: "swap" });
 
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -52,9 +55,10 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const dataSaver = jar.get("hg_ds")?.value === "1" || (jar.get("hg_ds")?.value !== "0" && hdrs.get("save-data") === "on");
 
   return (
-    <html lang={locale} suppressHydrationWarning className={dataSaver ? "data-saver" : undefined}>
+    <html lang={locale} suppressHydrationWarning className={`${sans.variable} ${display.variable}${dataSaver ? " data-saver" : ""}`} {...themeAttrs(settings.theme)}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* Applies light/dark before paint to avoid a flash */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript(fullTheme(settings.theme).defaultMode) }} />
         {themeCss(settings.theme) && <style dangerouslySetInnerHTML={{ __html: themeCss(settings.theme) }} />}
       </head>
       <body className="min-h-dvh antialiased">

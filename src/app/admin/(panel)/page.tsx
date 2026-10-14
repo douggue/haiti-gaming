@@ -12,6 +12,9 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
   const sp = await searchParams;
   const since = new Date();
   since.setHours(0, 0, 0, 0);
+  // Same part of yesterday (midnight → this time) so the comparison is fair early in the day.
+  const ySince = new Date(since.getTime() - 86_400_000);
+  const yUntil = new Date(Date.now() - 86_400_000);
   const [todayOrders, todayRevenue, reviews, processing, risks, liabilities, lowStock] = await Promise.all([
     prisma.order.count({ where: { createdAt: { gte: since } } }),
     prisma.ledgerEntry.groupBy({ by: ["currency"], where: { createdAt: { gte: since }, account: { type: "REVENUE" } }, _sum: { amount: true } }),
@@ -27,6 +30,16 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       GROUP BY v.id, p.name HAVING COUNT(c.id) FILTER (WHERE c.status = 'AVAILABLE') < 3
       ORDER BY stock ASC LIMIT 10`,
   ]);
+  const [yOrders, yRevenue] = await Promise.all([
+    prisma.order.count({ where: { createdAt: { gte: ySince, lt: yUntil } } }),
+    prisma.ledgerEntry.groupBy({ by: ["currency"], where: { createdAt: { gte: ySince, lt: yUntil }, account: { type: "REVENUE" } }, _sum: { amount: true } }),
+  ]);
+  const delta = (now: number, before: number) => {
+    if (!before) return now ? { text: "new", good: true } : undefined;
+    const pct = Math.round(((now - before) / before) * 100);
+    return { text: `${pct >= 0 ? "↗" : "↘"} ${Math.abs(pct)}% vs yesterday`, good: pct >= 0 };
+  };
+  const yRev = Math.abs(yRevenue.find((r) => r.currency === "HTG")?._sum.amount ?? 0);
   const rev = (c: "HTG" | "USD") => todayRevenue.find((r) => r.currency === c)?._sum.amount ?? 0;
   const liab = (c: "HTG" | "USD") => liabilities.find((r) => r.currency === c)?._sum.balance ?? 0;
   const recent = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 8, include: { user: { select: { name: true } } } });
@@ -36,8 +49,8 @@ export default async function AdminDashboard({ searchParams }: { searchParams: P
       {sp.denied && <p className="mb-4 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">Your role does not have access to that page.</p>}
       <PageTitle title="Dashboard" sub="Today at a glance" />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Orders today" value={todayOrders} />
-        <Stat label="Sales today" value={<span className="text-xl">{formatMoney(rev("HTG"), "HTG", "en")}{rev("USD") ? ` + ${formatMoney(rev("USD"), "USD", "en")}` : ""}</span>} />
+        <Stat label="Orders today" value={todayOrders} delta={delta(todayOrders, yOrders)} />
+        <Stat label="Sales today" value={<span className="text-xl">{formatMoney(rev("HTG"), "HTG", "en")}{rev("USD") ? ` + ${formatMoney(rev("USD"), "USD", "en")}` : ""}</span>} delta={delta(Math.abs(rev("HTG")), yRev)} />
         <Stat label="Payments to review" value={<Link href="/admin/payments">{reviews}</Link>} tone={reviews ? "warn" : undefined} />
         <Stat label="Orders to fulfill" value={<Link href="/admin/orders?status=PROCESSING">{processing}</Link>} tone={processing ? "warn" : undefined} />
         <Stat label="Open risk flags" value={<Link href="/admin/risk">{risks}</Link>} tone={risks ? "danger" : undefined} />

@@ -1,3 +1,4 @@
+import { AuthShell } from "@/components/AuthShell";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -12,10 +13,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   setRequestLocale((await params).locale);
   return (
-    <div className="container-page py-10 sm:py-16">
+    <AuthShell>
       <Suspense>
         <AuthForm mode="register" />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

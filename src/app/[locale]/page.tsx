@@ -10,7 +10,7 @@ import { pageSeo } from "@/lib/seo";
 import { NewsCard } from "@/components/NewsCard";
 import { Link } from "@/i18n/navigation";
 import { getCategories, searchProducts } from "@/lib/catalog";
-import { getDisplaySettings } from "@/lib/settings";
+import { fullTheme, getDisplaySettings } from "@/lib/settings";
 import { t } from "@/lib/text";
 import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
@@ -56,6 +56,8 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     })),
   };
 
+  const marquee = (fullTheme(settings.theme).marquee[locale] ?? "").split(",").map((w) => w.trim()).filter(Boolean).slice(0, 12);
+
   const heroText = (k: "eyebrow" | "title" | "subtitle") =>
     t(home.hero[k], locale) || th(k === "eyebrow" ? "eyebrow" : k === "title" ? "heroTitle" : "heroSubtitle");
 
@@ -64,16 +66,17 @@ export default async function HomePage({ params, searchParams }: { params: Promi
       <>
 <section className="container-page mt-12">
         <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-bold tracking-tight">{th("categoriesTitle")}</h2>
+          <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("categoriesTitle")}</h2>
           <Link href="/categories" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {categories.map((c) => (
-            <Link key={c.id} href={`/categories/${c.slug}`} className="card lift flex items-center gap-3 p-4">
-              <CategoryIcon image={c.image} icon={c.icon} />
-              <span className="min-w-0">
-                <span className="block truncate font-semibold">{t(c.name, locale)}</span>
-                <span className="text-xs text-muted">{c._count.products}</span>
+        <div className="stagger grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {categories.map((c, i) => (
+            <Link key={c.id} href={`/categories/${c.slug}`} className="card lift animate-rise relative flex min-h-36 flex-col justify-between overflow-hidden p-4 sm:p-5">
+              <span aria-hidden className="ds-hide pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-40 blur-2xl" style={{ background: ["#ff7a18", "#2f74ff", "#b04bff", "#2fd27f"][i % 4] }} />
+              <span className="relative"><CategoryIcon image={c.image} icon={c.icon} /></span>
+              <span className="relative mt-4 min-w-0">
+                <span className="block truncate text-base font-bold sm:text-lg">{t(c.name, locale)}</span>
+                <span className="text-sm text-muted">{c._count.products} {tc("products")}</span>
               </span>
             </Link>
           ))}
@@ -85,10 +88,10 @@ export default async function HomePage({ params, searchParams }: { params: Promi
       <>
 <section className="container-page mt-14">
         <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-bold tracking-tight">{th("featured")}</h2>
+          <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("featured")}</h2>
           <Link href="/store" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="stagger grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {featured.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
@@ -100,16 +103,14 @@ export default async function HomePage({ params, searchParams }: { params: Promi
       <>
 <section className="container-page mt-16">
         <div className="card overflow-hidden p-6 sm:p-10">
-          <h2 className="text-2xl font-bold tracking-tight">{th("howToPayTitle")}</h2>
+          <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("howToPayTitle")}</h2>
           <p className="mt-1 text-muted">{th("howToPaySubtitle")}</p>
-          <ol className="mt-8 grid gap-6 sm:grid-cols-3">
+          <ol className="mt-8 grid gap-8 sm:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <li key={i} className="flex gap-4">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary font-bold text-white">{i}</span>
-                <div>
-                  <h3 className="font-semibold">{th(`step${i}Title`)}</h3>
-                  <p className="mt-1 text-sm text-muted">{th(`step${i}Body`)}</p>
-                </div>
+              <li key={i} className="flex flex-col gap-2">
+                <span className="display text-4xl font-bold text-primary" aria-hidden>0{i}</span>
+                <h3 className="text-lg font-bold">{th(`step${i}Title`)}</h3>
+                <p className="text-sm text-muted">{th(`step${i}Body`)}</p>
               </li>
             ))}
           </ol>
@@ -123,13 +124,14 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     wallet: (
       <>
 <section className="container-page mt-6">
-        <div className="flex flex-col items-start gap-5 rounded-2xl bg-navy p-6 text-white sm:flex-row sm:items-center sm:p-8">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary"><WalletIcon /></span>
-          <div className="flex-1">
-            <h2 className="text-lg font-bold">{th("walletTitle")}</h2>
-            <p className="mt-1 text-sm text-[#c4d2ee]">{th("walletBody")}</p>
+        <div className="relative flex flex-col items-start gap-5 overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#3b7dff,#1f56d8_45%,#0d2a78)] p-6 text-white shadow-[0_26px_50px_-24px_var(--glow)] sm:flex-row sm:items-center sm:p-8">
+          <span aria-hidden className="ds-hide pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#46d8ff]/40 blur-3xl" />
+          <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><WalletIcon /></span>
+          <div className="relative flex-1">
+            <h2 className="display text-xl font-bold sm:text-2xl">{th("walletTitle")}</h2>
+            <p className="mt-1 text-sm text-[#dbe7ff]">{th("walletBody")}</p>
           </div>
-          <Link href="/account/wallet" className="btn bg-white text-navy hover:bg-[#e6efff]">{th("walletCta")}</Link>
+          <Link href="/account/wallet" className="btn relative bg-white text-[#0d2a78] hover:bg-[#e6efff]">{th("walletCta")}</Link>
         </div>
       </section>
       </>
@@ -137,7 +139,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     trust: (
       <>
 <section className="container-page mt-16">
-        <h2 className="text-2xl font-bold tracking-tight">{th("trustTitle")}</h2>
+        <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("trustTitle")}</h2>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             [BoltIcon, "trustDelivery"],
@@ -149,7 +151,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
             const k = key as string;
             return (
               <div key={k} className="card p-5">
-                <I className="text-primary" />
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary-soft text-primary"><I /></span>
                 <h3 className="mt-3 font-semibold">{th(k)}</h3>
                 <p className="mt-1 text-sm text-muted">{th(`${k}Body`)}</p>
               </div>
@@ -165,7 +167,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     faq: (
       <>
 <section className="container-page mt-16">
-        <h2 className="text-2xl font-bold tracking-tight">{th("faqTitle")}</h2>
+        <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("faqTitle")}</h2>
         <div className="mt-6 divide-y divide-border rounded-2xl border border-border bg-surface">
           {[1, 2, 3, 4].map((i) => (
             <details key={i} className="group p-5">
@@ -183,7 +185,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     news: news.length > 0 ? (
       <section className="container-page mt-16">
         <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-bold tracking-tight">{th("newsTitle")}</h2>
+          <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("newsTitle")}</h2>
           <Link href="/news" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
@@ -200,69 +202,69 @@ export default async function HomePage({ params, searchParams }: { params: Promi
       {preview && (
         <div className="bg-warning px-4 py-2 text-center text-sm font-semibold text-midnight">Preview of the unpublished homepage draft</div>
       )}
-      {/* Hero (always first) */}
-      <section className="relative overflow-hidden bg-midnight text-white">
-        <div className="pointer-events-none absolute inset-0" aria-hidden>
-          <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-primary/40 blur-3xl" />
-          <div className="absolute -bottom-32 left-10 h-80 w-80 rounded-full bg-[#2b4fa8]/30 blur-3xl" />
-          <svg className="absolute inset-0 h-full w-full opacity-[0.07]" aria-hidden>
-            <defs>
-              <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-                <path d="M32 0H0v32" fill="none" stroke="white" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
-        <div className="container-page relative grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="animate-rise">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#a9c4ff]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#4ade80]" />
+      {/* Hero (always first, always dark) */}
+      <section className="hero-dark relative overflow-hidden">
+        <div className="hero-grid" aria-hidden />
+        <div className="container-page relative grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="stagger flex flex-col gap-5">
+            <p className="animate-rise inline-flex items-center gap-2 self-start rounded-full border border-white/20 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#9fb7e6]">
+              <span className="h-2 w-2 rounded-full bg-[#2fd27f] shadow-[0_0_10px_#2fd27f]" />
               {heroText("eyebrow")}
             </p>
-            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">{heroText("title")}</h1>
-            <p className="mt-5 max-w-xl text-base text-[#c4d2ee] sm:text-lg">{heroText("subtitle")}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={home.ctaHref || "/store"} className="btn-primary min-h-12 px-6 text-base">
+            <h1 className="display neon-text animate-rise text-4xl font-bold leading-[1.04] sm:text-5xl lg:text-6xl">{heroText("title")}</h1>
+            <p className="animate-rise max-w-xl text-base text-[#b7c6e4] sm:text-lg">{heroText("subtitle")}</p>
+            <div className="animate-rise flex flex-wrap gap-3">
+              <Link href={home.ctaHref || "/store"} className="btn-primary glow-btn neon-pulse min-h-13 px-6 text-base">
                 {tc("shopNow")} <ArrowRightIcon width={18} height={18} />
               </Link>
-              <Link href="/categories" className="btn min-h-12 border border-white/20 px-6 text-base text-white hover:bg-white/10">
+              <Link href="/categories" className="btn min-h-13 border border-white/25 px-6 text-base text-white hover:bg-white/10">
                 {tc("browseCategories")}
               </Link>
             </div>
-            <div className="mt-8 flex flex-wrap items-center gap-3 text-sm text-[#c4d2ee]">
+            <div className="animate-rise flex flex-wrap items-center gap-3 text-sm text-[#b7c6e4]">
               <span className="rounded-lg bg-[#e30613] px-2.5 py-1 text-xs font-extrabold tracking-wide text-white">MonCash</span>
-              <span className="rounded-lg bg-[#f7a400] px-2.5 py-1 text-xs font-extrabold tracking-wide text-midnight">NatCash</span>
+              <span className="rounded-lg bg-[#f7a400] px-2.5 py-1 text-xs font-extrabold tracking-wide text-[#060b1a]">NatCash</span>
               <Link href="/guides" className="underline-offset-4 hover:text-white hover:underline">{th("payGuideLink")}</Link>
             </div>
           </div>
           {settings.heroImageUrl ? (
-            <div className="ds-hide animate-rise relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/10 shadow-2xl [animation-delay:120ms]">
+            <div className="ds-hide animate-rise relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/10 shadow-2xl">
               <Image src={settings.heroImageUrl} alt="" fill priority sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover" />
             </div>
           ) : (
-          <div className="relative hidden lg:block" aria-hidden>
-            <div className="animate-rise rounded-3xl border border-white/10 bg-gradient-to-br from-navy to-midnight p-6 shadow-2xl [animation-delay:120ms]">
-              <div className="flex items-center justify-between text-sm text-[#a9c4ff]">
-                <span>{tc("wallet")}</span>
-                <WalletIcon />
+            <div className="relative hidden h-[400px] lg:block" aria-hidden>
+              <div className="animate-rise absolute right-6 top-2 flex h-[340px] w-[280px] rotate-3 flex-col justify-end rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_50%_35%,#ff9a3c,#c2341d_45%,#3a0e18)] p-6 shadow-[0_30px_80px_-30px_rgba(255,120,60,.6)]">
+                <span className="display text-6xl font-bold leading-none">{featured[0] ? t(featured[0].name, locale).slice(0, 2).toUpperCase() : "HG"}</span>
+                <span className="mt-3 font-bold">{featured[0] ? t(featured[0].name, locale) : "Haiti Gaming"}</span>
+                <span className="text-sm opacity-80">{th("trustDelivery")}</span>
               </div>
-              <p className="mt-6 text-4xl font-extrabold">12 450 <span className="text-lg font-semibold text-[#a9c4ff]">HTG</span></p>
-              <p className="mt-1 text-sm text-[#7b92b8]">≈ $94.68 USD</p>
-              <div className="mt-6 grid grid-cols-3 gap-2 text-center text-xs">
-                {["+ HTG", "⇄ USD", "🎮"].map((x) => (
-                  <span key={x} className="rounded-xl bg-white/5 py-3 font-semibold">{x}</span>
-                ))}
+              <div className="animate-rise absolute left-0 top-16 flex w-60 flex-col gap-2 rounded-2xl border border-[#46d8ff]/35 bg-[#0e1830]/90 p-4 shadow-[0_0_40px_-12px_rgba(70,216,255,.6)] backdrop-blur">
+                <span className="text-xs font-semibold text-[#8fa3c8]">{tc("codeReady")}</span>
+                <span className="font-mono text-sm tracking-wider text-[#46d8ff]">XXXX-XXXX-XXXX</span>
+                <span className="flex items-center gap-1.5 text-sm font-bold text-[#2fd27f]"><BoltIcon width={16} height={16} /> {th("trustDelivery")}</span>
+              </div>
+              <div className="animate-rise absolute bottom-0 left-0 flex w-52 flex-col gap-1 rounded-2xl bg-[linear-gradient(135deg,#2f74ff,#1340a8)] p-4 shadow-[0_24px_50px_-20px_rgba(47,116,255,.9)]">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#cfe0ff]">{tc("wallet")}</span>
+                <span className="text-2xl font-extrabold">HTG · USD</span>
+                <span className="text-sm text-[#cfe0ff]">{th("walletTitle")}</span>
               </div>
             </div>
-            <div className="animate-rise absolute -bottom-6 -left-8 rounded-2xl border border-white/10 bg-surface p-4 text-text shadow-xl [animation-delay:240ms]">
-              <p className="flex items-center gap-2 text-sm font-semibold"><BoltIcon className="text-success" width={16} height={16} /> 310 💎 Free Fire</p>
-              <p className="mt-1 text-xs text-muted">✓ {th("trustDelivery")}</p>
-            </div>
-          </div>
           )}
         </div>
       </section>
+      {marquee.length > 0 && (
+        <div className="marquee border-y border-white/15 bg-primary text-white" aria-hidden>
+          <div className="marquee-track">
+            {[0, 1].map((copy) => (
+              <div key={copy} className="display flex shrink-0 items-center gap-8 py-3.5 pr-8 text-lg font-bold sm:text-xl">
+                {marquee.map((w, i) => (
+                  <Fragment key={i}><span className="whitespace-nowrap">{w}</span><span className="opacity-60">✳</span></Fragment>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {home.sections.filter((x) => x.visible).map((x) => <Fragment key={x.id}>{blocks[x.id]}</Fragment>)}
     </>

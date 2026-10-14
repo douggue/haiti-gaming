@@ -59,16 +59,59 @@ export type Settings = {
 
 export type NavLink = { label: Record<string, string>; href: string };
 
+export type MotionStyle = "calm" | "lively" | "neon";
+
 export type ThemeConfig = {
+  /** Accent in light mode (buttons, links) */
   primary: string;
+  /** Accent in dark mode */
   primaryDark: string;
+  /** Dark mode cards and panels */
   navy: string;
+  /** Dark mode page background and the hero */
   midnight: string;
+  /** Light mode page background */
+  lightBg: string;
   radius: number;
+  /** Master switch; visitors who ask for reduced motion never get animations */
   animations: boolean;
+  /** What visitors see before they pick light or dark themselves */
+  defaultMode: "dark" | "light";
+  motion: MotionStyle;
+  /** Strength of the blue glow behind the hero, cards and buttons (0 = off, 100 = strong) */
+  glow: number;
+  /** "gaming" = angular display face for headings, "plain" = the body face everywhere */
+  displayFont: "gaming" | "plain";
+  heroGrid: boolean;
+  /** Words in the scrolling band under the hero, per language, separated by commas. Empty = no band. */
+  marquee: Record<string, string>;
 };
 
-export const DEFAULT_THEME: ThemeConfig = { primary: "#1467F5", primaryDark: "#3D82FF", navy: "#0D1B35", midnight: "#050B18", radius: 16, animations: true };
+export const DEFAULT_THEME: ThemeConfig = {
+  primary: "#1467F5",
+  primaryDark: "#2F74FF",
+  navy: "#0E1830",
+  midnight: "#060B1A",
+  lightBg: "#F3F6FD",
+  radius: 16,
+  animations: true,
+  defaultMode: "dark",
+  motion: "lively",
+  glow: 60,
+  displayFont: "gaming",
+  heroGrid: true,
+  marquee: {
+    ht: "Rechaj jwèt, Kat kado, Abònman, Livrezon touswit, MonCash, NatCash",
+    fr: "Recharges de jeux, Cartes cadeaux, Abonnements, Livraison immédiate, MonCash, NatCash",
+    en: "Game top-ups, Gift cards, Subscriptions, Instant delivery, MonCash, NatCash",
+    es: "Recargas de juegos, Tarjetas de regalo, Suscripciones, Entrega inmediata, MonCash, NatCash",
+  },
+};
+
+/** Saved themes from before these settings existed get the new defaults for anything missing. */
+export function fullTheme(t: Partial<ThemeConfig> | undefined): ThemeConfig {
+  return { ...DEFAULT_THEME, ...(t ?? {}), marquee: { ...DEFAULT_THEME.marquee, ...(t?.marquee ?? {}) } };
+}
 
 // Amounts in minor units (centimes).
 export const DEFAULT_SETTINGS: Settings = {

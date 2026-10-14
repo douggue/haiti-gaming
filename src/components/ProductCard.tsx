@@ -15,10 +15,11 @@ export async function ProductCard({ product }: { product: ProductWithVariants })
   const name = t(product.name, locale);
   const onSale = product.variants.some((v) => v.salePriceHtg);
   return (
-    <Link href={`/products/${product.slug}`} className="card lift group flex flex-col p-3">
+    <Link href={`/products/${product.slug}`} className="card lift animate-rise group flex flex-col bg-[linear-gradient(180deg,var(--surface-2),var(--surface))] p-3">
       <div className="relative">
         <ProductArt name={name} accent={product.accent} image={product.image} />
         {onSale && <span className="badge absolute left-2 top-2 bg-danger text-white">−%</span>}
+        {product.tags?.[0] && <span className="badge absolute right-2 top-2 bg-[#060b1a]/60 text-[11px] text-white backdrop-blur">{product.tags.slice(0, 2).join(" · ")}</span>}
       </div>
       <div className="flex flex-1 flex-col px-1 pb-1 pt-3">
         <h3 className="line-clamp-2 font-semibold leading-snug">{name}</h3>
@@ -29,10 +30,13 @@ export async function ProductCard({ product }: { product: ProductWithVariants })
             t(product.deliveryEstimate, locale)
           )}
         </p>
-        <p className="mt-auto pt-3 text-sm">
-          <span className="text-muted">{tr("from")} </span>
-          <Price htg={minPrice(product)} className="font-bold text-text" />
-        </p>
+        <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-3">
+          <p className="text-sm">
+            <span className="text-muted">{tr("from")} </span>
+            <Price htg={minPrice(product)} className="font-bold text-text" />
+          </p>
+          <span className="inline-flex min-h-9 items-center rounded-xl bg-primary px-3 text-xs font-bold text-white transition-colors group-hover:bg-primary-hover">{tr("choose")}</span>
+        </div>
       </div>
     </Link>
   );
