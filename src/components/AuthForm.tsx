@@ -2,13 +2,17 @@
 import { LoginIcon, UserPlusIcon } from "./Icons";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import { usePathname as useRawPathname, useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Turnstile, turnstileOn } from "./Turnstile";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({ mode: firstMode }: { mode: "login" | "register" }) {
   const t = useTranslations("auth");
+  // Sign in ↔ create account switch in place (no page load): the address changes with history.pushState,
+  // and the mode follows the address so the Back button works too.
+  const rawPath = useRawPathname();
+  const mode = rawPath?.endsWith("/auth/register") ? "register" : rawPath?.endsWith("/auth/login") ? "login" : firstMode;
   const tc = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
@@ -30,6 +34,17 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   useEffect(() => setHydrated(true), []);
   const [captcha, setCaptcha] = useState("");
   const [captchaKey, setCaptchaKey] = useState(0);
+
+  const nextQs = next ? `?next=${encodeURIComponent(next)}` : "";
+  function switchTo(e: React.MouseEvent, to: "login" | "register") {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    if (to === mode) return;
+    setError("");
+    window.history.pushState(null, "", `/${locale}/auth/${to}${nextQs}`);
+    const [from, into] = to === "register" ? [t("loginTitle"), t("registerTitle")] : [t("registerTitle"), t("loginTitle")];
+    document.title = document.title.replace(from, into);
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -105,15 +120,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   return (
     <form method="post" onSubmit={onSubmit} className="card glow-card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
       <nav className="grid grid-cols-2 rounded-2xl bg-surface-2 p-1" aria-label={t("loginTitle")}>
-        <Link href={`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "login" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold ${mode === "login" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
-        <Link href={`/auth/register${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "register" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold ${mode === "register" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
+        <Link href={`/auth/login${nextQs}`} onClick={(e) => switchTo(e, "login")} aria-current={mode === "login" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "login" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
+        <Link href={`/auth/register${nextQs}`} onClick={(e) => switchTo(e, "register")} aria-current={mode === "register" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "register" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
       </nav>
       <div>
         <h1 className="display text-3xl font-bold">{mode === "login" ? tu("welcomeBack") : t("registerTitle")}</h1>
         <p className="mt-1 text-muted">{mode === "login" ? tu("loginSub") : tu("registerSub")}</p>
       </div>
       {mode === "register" && (
-        <div>
+        <div className="animate-rise">
           <label htmlFor="name" className="label">{t("name")}</label>
           <input id="name" name="name" required maxLength={80} autoComplete="name" className="input" />
         </div>
@@ -123,7 +138,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <input id="email" name="email" type="email" required autoComplete="email" className="input" />
       </div>
       {mode === "register" && (
-        <div>
+        <div className="animate-rise">
           <label htmlFor="phone" className="label">{t("phone")}</label>
           <input id="phone" name="phone" type="tel" inputMode="tel" placeholder="+509" autoComplete="tel" maxLength={20} className="input" />
         </div>
@@ -172,7 +187,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       </button>
       <p className="text-center text-sm text-muted">
         {mode === "login" ? t("noAccount") : t("haveAccount")}{" "}
-        <Link href={`${mode === "login" ? "/auth/register" : "/auth/login"}${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-semibold text-primary">
+        <Link href={`${mode === "login" ? "/auth/register" : "/auth/login"}${nextQs}`} onClick={(e) => switchTo(e, mode === "login" ? "register" : "login")} className="font-semibold text-primary">
           {mode === "login" ? tc("signUp") : tc("signIn")}
         </Link>
       </p>

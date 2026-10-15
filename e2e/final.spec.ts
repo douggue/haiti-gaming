@@ -19,19 +19,47 @@ async function signOutKeepDevice(ctx: BrowserContext) {
 
 test("store filters by tag and price", async ({ page }) => {
   await page.goto("/ht/store");
-  await page.getByText("Filtre", { exact: true }).click();
-  await page.getByRole("link", { name: "PC", exact: true }).click();
+  await page.getByRole("button", { name: /^Filtre/ }).click();
+  await page.getByRole("button", { name: /PC/ }).click();
   await page.waitForURL(/tag=PC/);
   await expect(page.locator('a[href$="/products/steam-wallet-card"]').first()).toBeVisible();
   await expect(page.locator('a[href$="/products/netflix-subscription"]')).toHaveCount(0);
 
   await page.goto("/ht/store");
-  await page.getByText("Filtre", { exact: true }).click();
+  await page.getByRole("button", { name: /^Filtre/ }).click();
   await page.getByLabel(/Pri maksimòm/).fill("200");
-  await page.getByRole("button", { name: "Aplike" }).click();
   await page.waitForURL(/max=200/);
   await expect(page.locator('a[href$="/products/free-fire-diamonds"]').first()).toBeVisible();
   await expect(page.locator('a[href$="/products/google-play-gift-card"]')).toHaveCount(0);
+});
+
+test("store: live search with typos, list view and favorites", async ({ page }) => {
+  await page.goto("/ht/store");
+  await page.getByRole("searchbox").pressSequentially("netflx");
+  await expect(page.locator('a[href$="/products/netflix-subscription"]').first()).toBeVisible();
+  await expect(page.locator('a[href$="/products/free-fire-diamonds"]')).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Ou vle di «netflix»/ })).toBeVisible();
+  await page.waitForURL(/q=netflx/);
+  await page.getByRole("button", { name: "Efase rechèch la" }).click();
+  await expect(page.locator('a[href$="/products/free-fire-diamonds"]').first()).toBeVisible();
+
+  await page.getByRole("button", { name: "Lis" }).click();
+  await page.getByRole("button", { name: "Mete nan favori" }).first().click();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Lis" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: /Favori/ }).first().click();
+  await expect(page.locator('a[href*="/products/"]')).toHaveCount(1);
+});
+
+test("sign in ↔ create account switches without a page load", async ({ page }) => {
+  await page.goto("/es/auth/login");
+  await page.evaluate(() => ((window as unknown as { marker: number }).marker = 1));
+  await page.getByRole("link", { name: "Crear cuenta" }).first().click();
+  await expect(page.locator("#name")).toBeVisible();
+  await expect(page).toHaveURL(/\/es\/auth\/register/);
+  expect(await page.evaluate(() => (window as unknown as { marker?: number }).marker)).toBe(1);
+  await page.goBack();
+  await expect(page.locator("#name")).toHaveCount(0);
 });
 
 test("admin: manual method, subcategory, page, menu, announcement, media, security, email", async ({ browser }) => {

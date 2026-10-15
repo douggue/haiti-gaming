@@ -59,7 +59,8 @@
     "notFoundCta": "Retour à la boutique",
     "products": "produits",
     "codeReady": "Votre code est prêt",
-    "choose": "Choisir"
+    "choose": "Choisir",
+    "tabAccount": "Compte"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",
@@ -104,7 +105,7 @@
   "store": {
     "title": "Boutique",
     "subtitle": "Tous les produits, tous les jeux.",
-    "all": "Tout",
+    "all": "Tous",
     "noResults": "Aucun produit ne correspond à votre recherche.",
     "sort": "Trier",
     "sortFeatured": "Recommandés",
@@ -120,7 +121,18 @@
     "apply": "Appliquer",
     "clear": "Effacer les filtres",
     "subcategories": "Sous-catégories",
-    "price": "Prix"
+    "price": "Prix",
+    "clearSearch": "Effacer la recherche",
+    "view": "Affichage",
+    "viewGrid": "Grille",
+    "viewList": "Liste",
+    "resultsFor": "{count, plural, =0 {Aucun résultat} one {# résultat} other {# résultats}} pour « {q} »",
+    "didYouMean": "Vouliez-vous dire « {word} » ?",
+    "favorites": "Favoris",
+    "favorite": "Ajouter aux favoris",
+    "unfavorite": "Retirer des favoris",
+    "activeFilters": "Filtres actifs",
+    "remove": "Retirer {name}"
   },
   "product": {
     "chooseOption": "Choisissez une option",

@@ -59,7 +59,8 @@
     "notFoundCta": "Retounen nan boutik la",
     "products": "pwodwi",
     "codeReady": "Kòd ou pare",
-    "choose": "Chwazi"
+    "choose": "Chwazi",
+    "tabAccount": "Kont"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -120,7 +121,18 @@
     "apply": "Aplike",
     "clear": "Efase filtre yo",
     "subcategories": "Sou-kategori",
-    "price": "Pri"
+    "price": "Pri",
+    "clearSearch": "Efase rechèch la",
+    "view": "Afichaj",
+    "viewGrid": "Griy",
+    "viewList": "Lis",
+    "resultsFor": "{count, plural, =0 {Anyen} one {# rezilta} other {# rezilta}} pou «{q}»",
+    "didYouMean": "Ou vle di «{word}»?",
+    "favorites": "Favori",
+    "favorite": "Mete nan favori",
+    "unfavorite": "Retire nan favori",
+    "activeFilters": "Filtre ki aktif",
+    "remove": "Retire {name}"
   },
   "product": {
     "chooseOption": "Chwazi yon opsyon",

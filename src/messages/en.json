@@ -59,7 +59,8 @@
     "notFoundCta": "Back to the store",
     "products": "products",
     "codeReady": "Your code is ready",
-    "choose": "Choose"
+    "choose": "Choose",
+    "tabAccount": "Account"
   },
   "home": {
     "eyebrow": "Made in Haiti, for gamers",
@@ -120,7 +121,18 @@
     "apply": "Apply",
     "clear": "Clear filters",
     "subcategories": "Subcategories",
-    "price": "Price"
+    "price": "Price",
+    "clearSearch": "Clear search",
+    "view": "View",
+    "viewGrid": "Grid",
+    "viewList": "List",
+    "resultsFor": "{count, plural, =0 {No results} one {# result} other {# results}} for “{q}”",
+    "didYouMean": "Did you mean “{word}”?",
+    "favorites": "Favorites",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites",
+    "activeFilters": "Active filters",
+    "remove": "Remove {name}"
   },
   "product": {
     "chooseOption": "Choose an option",

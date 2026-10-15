@@ -59,7 +59,8 @@
     "notFoundCta": "Volver a la tienda",
     "products": "productos",
     "codeReady": "Tu código está listo",
-    "choose": "Elegir"
+    "choose": "Elegir",
+    "tabAccount": "Cuenta"
   },
   "home": {
     "eyebrow": "Hecho en Haití, para gamers",
@@ -120,7 +121,18 @@
     "apply": "Aplicar",
     "clear": "Borrar filtros",
     "subcategories": "Subcategorías",
-    "price": "Precio"
+    "price": "Precio",
+    "clearSearch": "Borrar búsqueda",
+    "view": "Vista",
+    "viewGrid": "Cuadrícula",
+    "viewList": "Lista",
+    "resultsFor": "{count, plural, =0 {Sin resultados} one {# resultado} other {# resultados}} para «{q}»",
+    "didYouMean": "¿Quisiste decir «{word}»?",
+    "favorites": "Favoritos",
+    "favorite": "Añadir a favoritos",
+    "unfavorite": "Quitar de favoritos",
+    "activeFilters": "Filtros activos",
+    "remove": "Quitar {name}"
   },
   "product": {
     "chooseOption": "Elige una opción",
@@ -567,7 +579,7 @@
     "secure": "Conexión segura",
     "loginSub": "Inicia sesión para ver tus pedidos y tu billetera.",
     "registerSub": "Gratis. Puedes comprar enseguida.",
-    "welcomeBack": "¡Bienvenido de nuevo!"
+    "welcomeBack": "¡Hola de nuevo!"
   },
   "verifyGate": {
     "title": "Confirma tu correo para continuar",
