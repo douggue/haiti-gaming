@@ -18,6 +18,7 @@ import { CategoryCard } from "@/components/CategoryCard";
 import { HaitiEyebrow } from "@/components/HaitiEyebrow";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon } from "@/components/Icons";
+import { PayLogo } from "@/components/PayLogo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -238,8 +239,8 @@ export default async function HomePage({ params, searchParams }: { params: Promi
               </Link>
             </div>
             <div className="animate-rise flex flex-wrap items-center gap-3 text-sm text-[#b7c6e4]">
-              <span className="rounded-lg bg-[#e30613] px-2.5 py-1 text-xs font-extrabold tracking-wide text-white">MonCash</span>
-              <span className="rounded-lg bg-[#f7a400] px-2.5 py-1 text-xs font-extrabold tracking-wide text-[#060b1a]">NatCash</span>
+              <PayLogo brand="moncash" height={30} />
+              <PayLogo brand="natcash" height={25} />
               <Link href="/guides" className="underline-offset-4 hover:text-white hover:underline">{th("payGuideLink")}</Link>
             </div>
           </div>

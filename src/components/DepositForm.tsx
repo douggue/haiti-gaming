@@ -8,6 +8,7 @@ import { compressImage } from "@/lib/compress-image";
 import type { ManualMethodView } from "@/lib/manual-methods";
 import { CopyButton } from "./CopyButton";
 import { Turnstile } from "./Turnstile";
+import { PayLogo } from "./PayLogo";
 
 const HTG_PRESETS = [500, 1000, 2500, 5000];
 const USD_PRESETS = [10, 25, 50, 100];
@@ -20,6 +21,8 @@ type Method = {
   markBg: string;
   markFg: string;
   logo?: string | null;
+  /** MonCash / NatCash: their own logo replaces the tile and the name */
+  brand?: "moncash" | "natcash";
   recipientName: string;
   recipientNumber: string;
   qr?: string | null;
@@ -49,8 +52,8 @@ export function DepositForm(p: Props) {
   const router = useRouter();
 
   const methods: Method[] = [
-    ...(p.moncash ? [{ key: "MONCASH", kind: "moncash" as const, name: "MonCash", mark: "MC", markBg: "#e30613", markFg: "#fff", recipientName: "", recipientNumber: "" }] : []),
-    ...(p.natcash ? [{ key: "NATCASH", kind: "mobile" as const, name: "NatCash", mark: "NC", markBg: "#f7a400", markFg: "#060b1a", recipientName: p.natcashName, recipientNumber: p.natcashPhone, qr: p.natcashQr || null }] : []),
+    ...(p.moncash ? [{ key: "MONCASH", kind: "moncash" as const, name: "MonCash", brand: "moncash" as const, mark: "MC", markBg: "#e30613", markFg: "#fff", recipientName: "", recipientNumber: "" }] : []),
+    ...(p.natcash ? [{ key: "NATCASH", kind: "mobile" as const, name: "NatCash", brand: "natcash" as const, mark: "NC", markBg: "#f7a400", markFg: "#060b1a", recipientName: p.natcashName, recipientNumber: p.natcashPhone, qr: p.natcashQr || null }] : []),
     ...p.manual.map((m) => ({
       key: `MANUAL:${m.id}`,
       kind: m.kind,
@@ -195,16 +198,25 @@ export function DepositForm(p: Props) {
                 onClick={() => switchTo(x.key)}
                 className={`flex min-w-0 items-center gap-2.5 rounded-2xl border-2 p-2.5 text-left transition-colors ${on ? "border-primary bg-primary-soft" : "border-border bg-surface hover:border-primary/50"}`}
               >
-                {x.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={x.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-contain p-1" />
+                {x.brand ? (
+                  <span className="flex min-w-0 flex-col gap-1">
+                    <PayLogo brand={x.brand} height={x.brand === "moncash" ? 28 : 24} className="max-w-full object-contain object-left" />
+                    <span className="block text-[11px] text-muted">{x.kind === "moncash" ? tw("methodAuto") : "HTG"}</span>
+                  </span>
                 ) : (
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-black" style={{ background: x.markBg, color: x.markFg }}>{x.mark}</span>
+                  <>
+                    {x.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={x.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-contain p-1" />
+                    ) : (
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-black" style={{ background: x.markBg, color: x.markFg }}>{x.mark}</span>
+                    )}
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold">{x.name}</span>
+                      <span className="block text-[11px] text-muted">{x.kind === "crypto" ? `USD · ${x.network ?? ""}` : "HTG"}</span>
+                    </span>
+                  </>
                 )}
-                <span className="min-w-0">
-                  <span className="block truncate text-sm font-bold">{x.name}</span>
-                  <span className="block text-[11px] text-muted">{x.kind === "crypto" ? `USD · ${x.network ?? ""}` : x.kind === "moncash" ? tw("methodAuto") : "HTG"}</span>
-                </span>
               </button>
             );
           })}

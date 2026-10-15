@@ -6,6 +6,7 @@ import { placeOrder } from "@/actions/checkout";
 import { formatMoney } from "@/lib/money";
 import { t } from "@/lib/text";
 import { linePrice, useStore } from "./CartProvider";
+import { PayLogo } from "@/components/PayLogo";
 
 type Method = string; // "WALLET" | "MONCASH" | "NATCASH" | "MANUAL:<id>"
 type Manual = { id: string; name: string; instructions: string; logo: string | null };
@@ -57,8 +58,8 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   }
 
   const options: { id: Method; title: string; hint: string; enabled: boolean; badge: React.ReactNode }[] = [
-    { id: "MONCASH", title: tc("moncash"), hint: tc("moncashHint"), enabled: moncashEnabled, badge: <span className="rounded-md bg-[#e30613] px-2 py-1 text-[11px] font-extrabold text-white">MonCash</span> },
-    { id: "NATCASH", title: tc("natcash"), hint: tc("natcashHint"), enabled: natcashEnabled, badge: <span className="rounded-md bg-[#f7a400] px-2 py-1 text-[11px] font-extrabold text-midnight">NatCash</span> },
+    { id: "MONCASH", title: tc("moncash"), hint: tc("moncashHint"), enabled: moncashEnabled, badge: <PayLogo brand="moncash" height={26} /> },
+    { id: "NATCASH", title: tc("natcash"), hint: tc("natcashHint"), enabled: natcashEnabled, badge: <PayLogo brand="natcash" height={24} /> },
     {
       id: "WALLET",
       title: tc("wallet"),
