@@ -15,6 +15,7 @@ import { t } from "@/lib/text";
 import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
+import { HaitiEyebrow } from "@/components/HaitiEyebrow";
 import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon } from "@/components/Icons";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -223,10 +224,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
         <div className="hero-grid" aria-hidden />
         <div className="container-page relative grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="stagger flex flex-col gap-5">
-            <p className="animate-rise inline-flex items-center gap-2 self-start rounded-full border border-white/20 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#9fb7e6]">
-              <span className="h-2 w-2 rounded-full bg-[#2fd27f] shadow-[0_0_10px_#2fd27f]" />
-              {heroText("eyebrow")}
-            </p>
+            <HaitiEyebrow text={heroText("eyebrow")} />
             <h1 className="display neon-text animate-rise text-4xl font-bold leading-[1.04] sm:text-5xl lg:text-6xl">{heroText("title")}</h1>
             <p className="animate-rise max-w-xl text-base text-[#b7c6e4] sm:text-lg">{heroText("subtitle")}</p>
             <div className="animate-rise flex flex-wrap gap-3">
