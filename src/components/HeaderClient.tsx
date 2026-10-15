@@ -358,11 +358,59 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
   );
 }
 
+/**
+ * On phones, iOS Safari keeps fixed bars where they were when the keyboard opens, so they float
+ * in the middle of the screen. While the keyboard is up (a field is focused and the visible area shrank),
+ * <html data-kb> is set and anything with the class "kb-hide" (bottom bar, WhatsApp button) steps aside.
+ */
+function useKeyboardFlag() {
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv || !window.matchMedia("(pointer: coarse)").matches) return;
+    const root = document.documentElement;
+    const typing = (el: Element | null) =>
+      el instanceof HTMLTextAreaElement ||
+      el instanceof HTMLSelectElement ||
+      (el instanceof HTMLElement && el.isContentEditable) ||
+      (el instanceof HTMLInputElement && !["checkbox", "radio", "button", "submit", "reset", "file", "range", "color", "image", "hidden"].includes(el.type));
+    // Tallest visible area seen so far = no keyboard. Reset on rotation.
+    let full = vv.height;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const check = () => {
+      full = Math.max(full, vv.height);
+      // Hidden only while a field is focused AND the visible area really shrank (keyboard up). Anything else: shown.
+      if (typing(document.activeElement) && vv.height < full * 0.8) root.dataset.kb = "";
+      else delete root.dataset.kb;
+    };
+    const later = () => {
+      clearTimeout(timer);
+      timer = setTimeout(check, 100);
+    };
+    const rotate = () => {
+      full = 0;
+      later();
+    };
+    vv.addEventListener("resize", later);
+    document.addEventListener("focusin", later);
+    document.addEventListener("focusout", later);
+    window.addEventListener("orientationchange", rotate);
+    return () => {
+      clearTimeout(timer);
+      vv.removeEventListener("resize", later);
+      document.removeEventListener("focusin", later);
+      document.removeEventListener("focusout", later);
+      window.removeEventListener("orientationchange", rotate);
+      delete root.dataset.kb;
+    };
+  }, []);
+}
+
 /** Phone-only bottom navigation: the five places customers go most. */
 export function BottomNav({ signedIn }: { signedIn: boolean }) {
   const t = useTranslations("common");
   const pathname = usePathname();
   const { count, ready } = useStore();
+  useKeyboardFlag();
   const items = [
     { href: "/", label: t("home"), icon: HomeIcon, active: pathname === "/" },
     { href: "/store", label: t("store"), icon: StoreIcon, active: pathname.startsWith("/store") || pathname.startsWith("/categories") || pathname.startsWith("/products") },
@@ -373,7 +421,7 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
   return (
     <nav
       aria-label={t("menu")}
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur md:hidden"
+      className="kb-hide fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)", paddingLeft: "env(safe-area-inset-left, 0px)", paddingRight: "env(safe-area-inset-right, 0px)" }}
     >
       <ul className="mx-auto grid h-16 max-w-md grid-cols-5">

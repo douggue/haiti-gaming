@@ -10,7 +10,7 @@ export async function WhatsAppButton({ number, message }: { number: string; mess
       target="_blank"
       rel="noopener"
       style={{ bottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
-      className="fixed right-4 z-30 md:!bottom-6 md:right-6 inline-flex h-14 items-center gap-2 rounded-full bg-[#1fa855] px-4 font-semibold text-white shadow-lg shadow-black/20 hover:bg-[#178a45]"
+      className="kb-hide fixed right-4 z-30 md:!bottom-6 md:right-6 inline-flex h-14 items-center gap-2 rounded-full bg-[#1fa855] px-4 font-semibold text-white shadow-lg shadow-black/20 hover:bg-[#178a45]"
       aria-label={t("whatsappHelp")}
     >
       <WhatsAppIcon />
