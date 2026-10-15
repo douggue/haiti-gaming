@@ -10,7 +10,7 @@ import { formatMoney, parseAmount } from "@/lib/money";
 import { amountInRange, customerRate, quoteAmount } from "@/lib/amount";
 import type { ExchangePricing } from "@/lib/amount";
 
-type Variant = { id: string; name: Record<string, string>; priceHtg: number; salePriceHtg: number | null; inStock: boolean };
+type Variant = { id: string; name: Record<string, string>; priceHtg: number; salePriceHtg: number | null; inStock: boolean; lowStock?: boolean };
 type Props = {
   product: { id: string; slug: string; name: Record<string, string>; accent: string | null; image: string | null; fields: FieldDef[]; variants: Variant[] };
   saved: { id: string; label: string | null; values: Record<string, string> }[];
@@ -137,10 +137,12 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                   {v.salePriceHtg && <Price htg={v.priceHtg} className="ml-1.5 text-xs text-muted line-through" />}
                 </span>
                 {!v.inStock && <span className="mt-1 text-xs text-danger">—</span>}
+                {v.inStock && v.lowStock && <span className="low-dot absolute right-2 top-2 h-2 w-2 rounded-full bg-warning" title={tp("lowStock")} aria-hidden />}
               </label>
             );
           })}
         </div>
+        {variant?.inStock && variant.lowStock && <LowStock name={t(variant.name, locale)} />}
       </fieldset>
       )}
 
@@ -205,6 +207,23 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
         </button>
       </div>
       <p className="sr-only" aria-live="polite">{added ? tp("added") : ""}</p>
+    </div>
+  );
+}
+
+/** "Stock is low" — never a number: only appears on options under the limit set in Admin → Trust. */
+function LowStock({ name }: { name: string }) {
+  const tp = useTranslations("product");
+  return (
+    <div role="status" className="animate-rise mt-3 flex items-center gap-3 rounded-2xl border border-warning/40 bg-warning-soft px-4 py-3">
+      <span className="low-dot h-3 w-3 shrink-0 rounded-full bg-warning" aria-hidden />
+      <span className="min-w-0 flex-1">
+        <b className="block text-sm text-warning">{tp("lowStock")}</b>
+        <span className="text-xs text-muted">{tp("lowStockHint", { name })}</span>
+        <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
+          <span className="low-bar block h-full w-1/4 rounded-full" />
+        </span>
+      </span>
     </div>
   );
 }

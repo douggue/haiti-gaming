@@ -6,7 +6,8 @@ import { verifyMoncashIntent } from "@/lib/payments/verify";
 /** Customer lands here after MonCash. We verify server-side, then send them to their order or wallet. */
 export async function GET(req: NextRequest) {
   const url = req.nextUrl;
-  const locale = req.cookies.get("NEXT_LOCALE")?.value ?? "ht";
+  const saved = req.cookies.get("NEXT_LOCALE")?.value;
+  let locale = saved && ["ht", "fr", "en", "es"].includes(saved) ? saved : "ht";
   let ref = url.searchParams.get("ref") ?? url.searchParams.get("orderId");
   const transactionId = url.searchParams.get("transactionId");
   if (!ref && transactionId) ref = (await retrieveByTransaction(transactionId))?.reference ?? null;
@@ -17,7 +18,9 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     console.error("MonCash verification failed", e);
   }
-  const intent = await prisma.paymentIntent.findUnique({ where: { id: ref } });
+  const intent = await prisma.paymentIntent.findUnique({ where: { id: ref }, include: { user: { select: { locale: true } } } });
+  // No language picked on this device: use the one the account was created in.
+  if (!saved && intent?.user?.locale) locale = intent.user.locale;
   const dest = intent?.orderId ? `/${locale}/account/orders/${intent.orderId}` : `/${locale}/account/wallet`;
   return NextResponse.redirect(new URL(dest, url));
 }

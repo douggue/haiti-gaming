@@ -54,6 +54,10 @@ model User {
   notifyPrefs      Json          @default("{\"email\":true,\"whatsapp\":true,\"marketing\":false}")
   /// Cart saved to the account so it follows the customer across devices
   savedCart        Json          @default("[]")
+  /// City picked by the customer (shown as "Jean P. · Santo Domingo" in the recent sales popup)
+  city             String?
+  /// Customer may hide their first name from the recent sales popup (Account → Privacy)
+  showInFeed       Boolean       @default(true)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -73,6 +77,7 @@ model User {
   ticketMessages SupportMessage[]
   referralsMade  Referral[]        @relation("Referrer")
   referredBy     Referral?         @relation("Referred")
+  reviews        Review[]
 
   @@map("user")
 }
@@ -199,7 +204,11 @@ model Product {
   sortOrder        Int              @default(0)
   /// Filter tags such as platform:android, region:us (shown as store filters)
   tags             String[]         @default([])
+  /// Show the recent sales popup on this product's page (Admin → Trust)
+  salesPopup       Boolean          @default(false)
   variants         ProductVariant[]
+  saleFeed         SaleFeedItem[]
+  reviews          Review[]
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -216,6 +225,9 @@ model ProductVariant {
   salePriceHtg Int?
   sortOrder    Int         @default(0)
   isActive     Boolean     @default(true)
+  /// "Stock is low" message: off | auto (codes left under the limit) | on (manual, until lowStockUntil)
+  lowStock     String      @default("off")
+  lowStockUntil DateTime?
   sku          String?     @unique
   codes        CodeItem[]
   orderItems   OrderItem[]
@@ -299,6 +311,7 @@ model Order {
   items         OrderItem[]
   events        OrderEvent[]
   payments      PaymentIntent[]
+  review        Review?
   riskFlags     RiskFlag[]
   paidAt        DateTime?
   fulfilledAt   DateTime?
@@ -763,4 +776,44 @@ model NewsletterSubscriber {
   token          String    @unique
   consentAt      DateTime  @default(now())
   unsubscribedAt DateTime?
+}
+
+/// A sale shown in the recent sales popup that was made outside the site (WhatsApp…). Site orders are read from Order directly.
+model SaleFeedItem {
+  id        String   @id @default(cuid())
+  /// "Jean P." (first name + last initial only)
+  name      String
+  city      String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  soldAt    DateTime @default(now())
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([soldAt])
+}
+
+/// Customer review: asked after delivery (source "order") or typed in by staff from a real comment (source "admin").
+model Review {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderId   String?  @unique
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  rating    Int
+  quote     String
+  /// "Jean-Philippe M."
+  name      String
+  city      String?
+  locale    String   @default("ht")
+  source    String   @default("order")
+  /// pending | approved | hidden
+  status    String   @default("pending")
+  /// Shown in the homepage reviews section
+  onHome    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([status, onHome])
 }

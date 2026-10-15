@@ -1,4 +1,4 @@
-export const HOME_SECTIONS = ["categories", "featured", "howItWorks", "wallet", "news", "trust", "faq"] as const;
+export const HOME_SECTIONS = ["categories", "featured", "howItWorks", "wallet", "news", "reviews", "trust", "faq"] as const;
 export type HomeSectionId = (typeof HOME_SECTIONS)[number];
 
 export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
@@ -7,6 +7,7 @@ export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
   howItWorks: "How it works (3 steps)",
   wallet: "Wallet promotion",
   news: "Latest news (3 newest articles)",
+  reviews: "Customer reviews (Admin → Trust; hidden until one is approved)",
   trust: "Why players choose us",
   faq: "Frequently asked questions",
 };
@@ -24,14 +25,19 @@ export const DEFAULT_HOMEPAGE: HomepageConfig = {
   ctaHref: "/store",
 };
 
-/** Accepts stored JSON of any age and returns a complete, valid config (unknown sections dropped, new ones appended). */
+/** Accepts stored JSON of any age and returns a complete, valid config (unknown sections dropped, new ones placed after their usual neighbour). */
 export function normalizeHomepage(raw: unknown): HomepageConfig {
   const r = (raw && typeof raw === "object" ? raw : {}) as Partial<HomepageConfig>;
   const seen = new Set<string>();
   const sections = (Array.isArray(r.sections) ? r.sections : [])
     .filter((x) => x && HOME_SECTIONS.includes(x.id as HomeSectionId) && !seen.has(x.id) && seen.add(x.id))
     .map((x) => ({ id: x.id as HomeSectionId, visible: x.visible !== false }));
-  for (const id of HOME_SECTIONS) if (!seen.has(id)) sections.push({ id, visible: true });
+  HOME_SECTIONS.forEach((id, i) => {
+    if (seen.has(id)) return;
+    const after = i > 0 ? sections.findIndex((x) => x.id === HOME_SECTIONS[i - 1]) : -1;
+    sections.splice(after >= 0 ? after + 1 : sections.length, 0, { id, visible: true });
+    seen.add(id);
+  });
   return {
     sections,
     hero: { eyebrow: r.hero?.eyebrow ?? {}, title: r.hero?.title ?? {}, subtitle: r.hero?.subtitle ?? {} },

@@ -154,7 +154,9 @@
     "fee": "fee",
     "youPay": "Price",
     "amountRange": "Between {min} and {max}",
-    "amountError": "Enter an amount between {min} and {max}."
+    "amountError": "Enter an amount between {min} and {max}.",
+    "lowStock": "Stock is running low",
+    "lowStockHint": "{name}: grab it while it’s available."
   },
   "cart": {
     "title": "Your cart",
@@ -376,7 +378,11 @@
     "title": "Profile",
     "saved": "Saved.",
     "language": "Preferred language",
-    "currency": "Display currency"
+    "currency": "Display currency",
+    "city": "Your city",
+    "cityNone": "Prefer not to say",
+    "showInFeed": "Show my first name in recent purchases",
+    "showInFeedHint": "Example: “Jean P. · Port-au-Prince bought…”. Only your first name and last initial."
   },
   "security": {
     "title": "Security",
@@ -602,5 +608,32 @@
       "already_verified": "Your email is already confirmed. Refresh the page.",
       "generic": "Something went wrong. Try again."
     }
+  },
+  "trust": {
+    "today": "today",
+    "yesterday": "yesterday",
+    "thisWeek": "this week",
+    "bought": "bought {product}",
+    "delivered": "Delivered ✓",
+    "close": "Close",
+    "thanks": "Thank you!",
+    "thanksBody": "Your review helps other players trust us.",
+    "ratingMissing": "Pick a number of stars first.",
+    "askTitle": "How was it?",
+    "askBody": "Your order was delivered. Rate it, it takes 10 seconds.",
+    "stars": "Rating",
+    "starsN": "{n, plural, one {# star} other {# stars}}",
+    "comment": "A few words (optional)",
+    "commentPlaceholder": "Example: Diamonds arrived fast, thanks!",
+    "yourCity": "Your city",
+    "cityNone": "Prefer not to say",
+    "send": "Send review",
+    "privacyNote": "If we show your review on the site, only your first name, last initial and city appear.",
+    "reviewsEyebrow": "What our customers say",
+    "reviewsTitle": "Trusted by players",
+    "reviewsTitleAccent": "every day",
+    "reviewsSummary": "{avg} / 5 · {count, plural, one {# customer review} other {# customer reviews}}",
+    "verifiedOrder": "Bought on the site",
+    "verifiedCustomer": "Verified customer"
   }
 }

@@ -154,7 +154,9 @@
     "fee": "frè",
     "youPay": "Pri",
     "amountRange": "Ant {min} ak {max}",
-    "amountError": "Antre yon montan ant {min} ak {max}."
+    "amountError": "Antre yon montan ant {min} ak {max}.",
+    "lowStock": "Stòk la ap fini",
+    "lowStockHint": "{name}: pran l kounye a pandan l disponib."
   },
   "cart": {
     "title": "Panye ou",
@@ -376,7 +378,11 @@
     "title": "Pwofil",
     "saved": "Anrejistre.",
     "language": "Lang ou prefere",
-    "currency": "Lajan pou montre pri yo"
+    "currency": "Lajan pou montre pri yo",
+    "city": "Vil ou",
+    "cityNone": "Pa di",
+    "showInFeed": "Montre premye non m nan acha resan yo",
+    "showInFeedHint": "Egzanp: \"Jean P. · Pòtoprens achte…\". Sèlman premye non ou ak premye lèt siyati ou."
   },
   "security": {
     "title": "Sekirite",
@@ -602,5 +608,32 @@
       "already_verified": "Imèl ou deja konfime. Rafrechi paj la.",
       "generic": "Gen yon pwoblèm. Eseye ankò."
     }
+  },
+  "trust": {
+    "today": "jodi a",
+    "yesterday": "yè",
+    "thisWeek": "semèn sa a",
+    "bought": "achte {product}",
+    "delivered": "Livre ✓",
+    "close": "Fèmen",
+    "thanks": "Mèsi anpil!",
+    "thanksBody": "Avi ou ede lòt jwè yo fè nou konfyans.",
+    "ratingMissing": "Chwazi kantite zetwal la anvan.",
+    "askTitle": "Kijan l te ye?",
+    "askBody": "Kòmand ou livre. Bay yon nòt, sa pran 10 segonn.",
+    "stars": "Nòt",
+    "starsN": "{n, plural, one {# zetwal} other {# zetwal}}",
+    "comment": "Yon ti mo (si w vle)",
+    "commentPlaceholder": "Egzanp: Dyaman yo rive vit, mèsi!",
+    "yourCity": "Vil ou",
+    "cityNone": "Pa di",
+    "send": "Voye avi a",
+    "privacyNote": "Si nou montre avi ou sou sit la, se sèlman premye non ou, premye lèt siyati ou ak vil ou ki parèt.",
+    "reviewsEyebrow": "Sa kliyan nou yo di",
+    "reviewsTitle": "Yo fè nou konfyans",
+    "reviewsTitleAccent": "chak jou",
+    "reviewsSummary": "{avg} / 5 · {count, plural, one {# avi kliyan} other {# avi kliyan}}",
+    "verifiedOrder": "Achte sou sit la",
+    "verifiedCustomer": "Kliyan verifye"
   }
 }

@@ -12,7 +12,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
   return (
     <div className="max-w-xl">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{tp("title")}</h1>
-      <ProfileForm user={{ name: user.name, email: user.email, phone: user.phone ?? "", locale: user.locale, displayCurrency: user.displayCurrency }} />
+      <ProfileForm user={{ name: user.name, email: user.email, phone: user.phone ?? "", locale: user.locale, displayCurrency: user.displayCurrency, city: user.city ?? "", showInFeed: user.showInFeed }} />
     </div>
   );
 }

@@ -4,8 +4,9 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { updateProfile } from "@/actions/account";
 import { localeNames, locales, type Locale } from "@/i18n/routing";
+import { CITIES } from "@/lib/cities";
 
-export function ProfileForm({ user }: { user: { name: string; email: string; phone: string; locale: string; displayCurrency: string } }) {
+export function ProfileForm({ user }: { user: { name: string; email: string; phone: string; locale: string; displayCurrency: string; city: string; showInFeed: boolean } }) {
   const tp = useTranslations("profile");
   const ta = useTranslations("auth");
   const tc = useTranslations("common");
@@ -35,6 +36,20 @@ export function ProfileForm({ user }: { user: { name: string; email: string; pho
         <label className="label" htmlFor="phone">{ta("phone")}</label>
         <input id="phone" name="phone" type="tel" defaultValue={user.phone} maxLength={20} className="input" />
       </div>
+      <div>
+        <label className="label" htmlFor="city">{tp("city")}</label>
+        <select id="city" name="city" defaultValue={user.city} className="input">
+          <option value="">{tp("cityNone")}</option>
+          {CITIES.map((c) => <option key={c.name} value={c.name}>{c.flag} {c.name}</option>)}
+        </select>
+      </div>
+      <label className="flex items-start gap-3 rounded-xl bg-surface-2 p-3 text-sm">
+        <input type="checkbox" name="showInFeed" defaultChecked={user.showInFeed} className="mt-0.5 h-5 w-5 accent-[var(--primary)]" />
+        <span>
+          <b className="block">{tp("showInFeed")}</b>
+          <span className="text-muted">{tp("showInFeedHint")}</span>
+        </span>
+      </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="locale">{tp("language")}</label>

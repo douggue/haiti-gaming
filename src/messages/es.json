@@ -154,7 +154,9 @@
     "fee": "comisión",
     "youPay": "Precio",
     "amountRange": "Entre {min} y {max}",
-    "amountError": "Ingrese un monto entre {min} y {max}."
+    "amountError": "Ingrese un monto entre {min} y {max}.",
+    "lowStock": "Quedan pocas unidades",
+    "lowStockHint": "{name}: aprovéchalo mientras está disponible."
   },
   "cart": {
     "title": "Tu carrito",
@@ -376,7 +378,11 @@
     "title": "Perfil",
     "saved": "Guardado.",
     "language": "Idioma preferido",
-    "currency": "Moneda de visualización"
+    "currency": "Moneda de visualización",
+    "city": "Tu ciudad",
+    "cityNone": "Prefiero no decirlo",
+    "showInFeed": "Mostrar mi nombre en las compras recientes",
+    "showInFeedHint": "Ejemplo: «Jean P. · Puerto Príncipe compró…». Solo tu nombre y la inicial de tu apellido."
   },
   "security": {
     "title": "Seguridad",
@@ -602,5 +608,32 @@
       "already_verified": "Tu correo ya está confirmado. Actualiza la página.",
       "generic": "Algo salió mal. Inténtalo de nuevo."
     }
+  },
+  "trust": {
+    "today": "hoy",
+    "yesterday": "ayer",
+    "thisWeek": "esta semana",
+    "bought": "compró {product}",
+    "delivered": "Entregado ✓",
+    "close": "Cerrar",
+    "thanks": "¡Muchas gracias!",
+    "thanksBody": "Tu opinión ayuda a otros jugadores a confiar en nosotros.",
+    "ratingMissing": "Elige primero el número de estrellas.",
+    "askTitle": "¿Qué tal fue?",
+    "askBody": "Tu pedido fue entregado. Califícalo, toma 10 segundos.",
+    "stars": "Calificación",
+    "starsN": "{n, plural, one {# estrella} other {# estrellas}}",
+    "comment": "Unas palabras (opcional)",
+    "commentPlaceholder": "Ejemplo: Los diamantes llegaron rápido, ¡gracias!",
+    "yourCity": "Tu ciudad",
+    "cityNone": "Prefiero no decirlo",
+    "send": "Enviar opinión",
+    "privacyNote": "Si mostramos tu opinión en el sitio, solo aparecen tu nombre, la inicial de tu apellido y tu ciudad.",
+    "reviewsEyebrow": "Lo que dicen nuestros clientes",
+    "reviewsTitle": "Confían en nosotros",
+    "reviewsTitleAccent": "cada día",
+    "reviewsSummary": "{avg} / 5 · {count, plural, one {# opinión de cliente} other {# opiniones de clientes}}",
+    "verifiedOrder": "Compró en el sitio",
+    "verifiedCustomer": "Cliente verificado"
   }
 }

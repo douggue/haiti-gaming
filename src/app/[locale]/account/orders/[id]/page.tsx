@@ -13,6 +13,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
 import { NatcashOrderForm, MoncashRetryButton } from "@/components/OrderPayment";
 import { WhatsAppIcon } from "@/components/Icons";
+import { ReviewRequest } from "@/components/ReviewRequest";
 
 export default async function OrderPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
@@ -24,6 +25,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       items: { include: { codes: true, variant: { include: { product: { select: { slug: true } } } } } },
       events: { orderBy: { createdAt: "asc" } },
       payments: { orderBy: { createdAt: "desc" }, take: 1 },
+      review: { select: { id: true } },
     },
   });
   if (!order) notFound();
@@ -47,6 +49,8 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         </div>
         <StatusBadge status={order.status} label={to(`status.${order.status}`)} />
       </div>
+
+      {order.status === "FULFILLED" && !order.review && <ReviewRequest orderId={order.id} city={(await prisma.user.findUnique({ where: { id: user.id }, select: { city: true } }))?.city ?? ""} />}
 
       {order.status === "AWAITING_PAYMENT" && order.paymentMethod === "MANUAL" && manual && (
         <section className="card border-warning p-5">

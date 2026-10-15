@@ -154,7 +154,9 @@
     "fee": "frais",
     "youPay": "Prix",
     "amountRange": "Entre {min} et {max}",
-    "amountError": "Entrez un montant entre {min} et {max}."
+    "amountError": "Entrez un montant entre {min} et {max}.",
+    "lowStock": "Stock presque épuisé",
+    "lowStockHint": "{name} : prenez-le maintenant tant qu’il est disponible."
   },
   "cart": {
     "title": "Votre panier",
@@ -376,7 +378,11 @@
     "title": "Profil",
     "saved": "Enregistré.",
     "language": "Langue préférée",
-    "currency": "Devise d'affichage"
+    "currency": "Devise d'affichage",
+    "city": "Votre ville",
+    "cityNone": "Ne pas indiquer",
+    "showInFeed": "Afficher mon prénom dans les achats récents",
+    "showInFeedHint": "Exemple : « Jean P. · Port-au-Prince a acheté… ». Seulement votre prénom et l’initiale de votre nom."
   },
   "security": {
     "title": "Sécurité",
@@ -602,5 +608,32 @@
       "already_verified": "Votre e-mail est déjà confirmé. Actualisez la page.",
       "generic": "Un problème est survenu. Réessayez."
     }
+  },
+  "trust": {
+    "today": "aujourd’hui",
+    "yesterday": "hier",
+    "thisWeek": "cette semaine",
+    "bought": "a acheté {product}",
+    "delivered": "Livré ✓",
+    "close": "Fermer",
+    "thanks": "Merci beaucoup !",
+    "thanksBody": "Votre avis aide les autres joueurs à nous faire confiance.",
+    "ratingMissing": "Choisissez d’abord le nombre d’étoiles.",
+    "askTitle": "Comment ça s’est passé ?",
+    "askBody": "Votre commande est livrée. Donnez une note, ça prend 10 secondes.",
+    "stars": "Note",
+    "starsN": "{n, plural, one {# étoile} other {# étoiles}}",
+    "comment": "Un petit mot (facultatif)",
+    "commentPlaceholder": "Exemple : Diamants reçus très vite, merci !",
+    "yourCity": "Votre ville",
+    "cityNone": "Ne pas indiquer",
+    "send": "Envoyer mon avis",
+    "privacyNote": "Si votre avis est affiché sur le site, seuls votre prénom, l’initiale de votre nom et votre ville apparaissent.",
+    "reviewsEyebrow": "Ce que disent nos clients",
+    "reviewsTitle": "Ils nous font confiance",
+    "reviewsTitleAccent": "au quotidien",
+    "reviewsSummary": "{avg} / 5 · {count, plural, one {# avis client} other {# avis clients}}",
+    "verifiedOrder": "Acheté sur le site",
+    "verifiedCustomer": "Client vérifié"
   }
 }

@@ -4,6 +4,12 @@ import { prisma } from "./db";
 import { DEFAULT_EXCHANGE, type ExchangePricing } from "./amount";
 
 export type Settings = {
+  /** Recent sales popup on the products ticked in Admin → Trust */
+  salesPopupEnabled: boolean;
+  /** Popups per visit (2–3 feels natural; max 5) */
+  salesPopupPerVisit: number;
+  /** "Stock is low" shows when a code product has this many codes left or fewer (mode "auto") */
+  lowStockLimit: number;
   /** HTG per 1 USD (mid rate) */
   htgPerUsd: number;
   /** Exchange spread applied against the customer, in basis points */
@@ -124,6 +130,9 @@ export function fullTheme(t: Partial<ThemeConfig> | undefined): ThemeConfig {
 
 // Amounts in minor units (centimes).
 export const DEFAULT_SETTINGS: Settings = {
+  salesPopupEnabled: true,
+  salesPopupPerVisit: 3,
+  lowStockLimit: 5,
   htgPerUsd: 131.5,
   exchangeSpreadBps: 150,
   exchangeFeeBps: 0,

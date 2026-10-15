@@ -3,8 +3,8 @@ import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "rea
 import { createPortal } from "react-dom";
 import { Flag } from "./Flags";
 import { useLocale, useTranslations } from "next-intl";
-import { useParams } from "next/navigation";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { useParams, useRouter as useNextRouter } from "next/navigation";
+import { Link, getPathname, usePathname, useRouter } from "@/i18n/navigation";
 import { localeNames, locales, type Locale } from "@/i18n/routing";
 import { setCurrency, saveLocalePreference } from "@/actions/prefs";
 import { authClient } from "@/lib/auth-client";
@@ -100,15 +100,20 @@ function useChangeLocale() {
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
+  const nextRouter = useNextRouter();
   const [pending, start] = useTransition();
   const [picked, setPicked] = useState<Locale>(locale);
   useEffect(() => setPicked(locale), [locale]);
 
-  /** Fetch the other languages of this page ahead of time, so switching is near-instant. */
+  /**
+   * Fetch the other languages of this page ahead of time, so switching is near-instant.
+   * Through Next's own router: next-intl's router.prefetch would also save each prefetched language
+   * as the visitor's choice (the last one, Español, would win).
+   */
   const prefetch = () => {
     for (const l of locales) {
       // @ts-expect-error -- params are compatible with the current pathname
-      if (l !== locale) router.prefetch({ pathname, params }, { locale: l });
+      if (l !== locale) nextRouter.prefetch(getPathname({ href: { pathname, params }, locale: l, forcePrefix: true }));
     }
   };
 

@@ -412,3 +412,36 @@ html[data-switched] .stagger > * {
 html[data-kb] .kb-hide {
   display: none !important;
 }
+
+/* Trust: "stock is low" pulse + striped bar, recent sale popup slide-in */
+.low-dot {
+  animation: low-pulse 1.6s ease-out infinite;
+}
+@keyframes low-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--warning) 55%, transparent); }
+  70% { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.low-bar {
+  background: repeating-linear-gradient(45deg, #ffb547 0 7px, #ff8a3d 7px 14px);
+  background-size: 28px 100%;
+  animation: low-stripes 1s linear infinite;
+}
+@keyframes low-stripes {
+  to { background-position: 28px 0; }
+}
+.sale-pop {
+  animation: sale-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.sale-pop[data-leaving] {
+  animation: sale-out 0.35s ease-in both;
+}
+@keyframes sale-in {
+  from { transform: translateY(24px) scale(0.96); opacity: 0; }
+}
+@keyframes sale-out {
+  to { transform: translateY(16px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .low-dot, .low-bar, .sale-pop, .sale-pop[data-leaving] { animation: none; }
+}

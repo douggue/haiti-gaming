@@ -16,6 +16,7 @@ import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { HaitiEyebrow } from "@/components/HaitiEyebrow";
+import { ReviewsSection } from "@/components/ReviewsSection";
 import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon } from "@/components/Icons";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -153,6 +154,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
       </section>
       </>
     ),
+    reviews: <ReviewsSection locale={locale} />,
     trust: (
       <>
 <section className="container-page mt-16">
