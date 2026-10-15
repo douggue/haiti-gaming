@@ -358,44 +358,11 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
   );
 }
 
-/**
- * On phones, iOS Safari keeps fixed bars where they were when the keyboard opens, so they float
- * in the middle of the screen. While a text field is focused on a touch screen, <html data-kb> is set
- * and anything with the class "kb-hide" (bottom bar, WhatsApp button) steps aside.
- */
-function useKeyboardFlag() {
-  useEffect(() => {
-    if (!window.matchMedia("(pointer: coarse)").matches) return;
-    const root = document.documentElement;
-    const typing = (el: EventTarget | null) =>
-      el instanceof HTMLTextAreaElement ||
-      el instanceof HTMLSelectElement ||
-      (el instanceof HTMLElement && el.isContentEditable) ||
-      (el instanceof HTMLInputElement && !["checkbox", "radio", "button", "submit", "reset", "file", "range", "color", "image", "hidden"].includes(el.type));
-    const onIn = (e: FocusEvent) => { if (typing(e.target)) root.dataset.kb = ""; };
-    // Moving straight to the next field fires focusout then focusin: wait a moment before showing the bars again.
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const onOut = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => { if (!typing(document.activeElement)) delete root.dataset.kb; }, 120);
-    };
-    document.addEventListener("focusin", onIn);
-    document.addEventListener("focusout", onOut);
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener("focusin", onIn);
-      document.removeEventListener("focusout", onOut);
-      delete root.dataset.kb;
-    };
-  }, []);
-}
-
 /** Phone-only bottom navigation: the five places customers go most. */
 export function BottomNav({ signedIn }: { signedIn: boolean }) {
   const t = useTranslations("common");
   const pathname = usePathname();
   const { count, ready } = useStore();
-  useKeyboardFlag();
   const items = [
     { href: "/", label: t("home"), icon: HomeIcon, active: pathname === "/" },
     { href: "/store", label: t("store"), icon: StoreIcon, active: pathname.startsWith("/store") || pathname.startsWith("/categories") || pathname.startsWith("/products") },
@@ -406,7 +373,7 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
   return (
     <nav
       aria-label={t("menu")}
-      className="kb-hide fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)", paddingLeft: "env(safe-area-inset-left, 0px)", paddingRight: "env(safe-area-inset-right, 0px)" }}
     >
       <ul className="mx-auto grid h-16 max-w-md grid-cols-5">

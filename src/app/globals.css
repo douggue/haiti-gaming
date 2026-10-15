@@ -406,8 +406,3 @@ html[data-switched] .stagger > * {
   from { opacity: 0.55; }
   to { opacity: 1; }
 }
-
-/* Phone keyboard open (set by BottomNav): fixed bars step aside instead of floating mid-screen on iOS. */
-html[data-kb] .kb-hide {
-  display: none !important;
-}
