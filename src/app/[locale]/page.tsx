@@ -34,11 +34,15 @@ const MARQUEE_ICONS = [
   // lightning
   "M13 2 4 14h7l-1 8 9-12h-7Z",
 ];
+const MARQUEE_COLORS = ["#FFB020", "#2EE6A8", "#FF5DA2", "#46D8FF"];
 function MarqueeIcon({ n }: { n: number }) {
+  const color = MARQUEE_COLORS[n % MARQUEE_COLORS.length];
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-white/80" aria-hidden>
-      <path d={MARQUEE_ICONS[n % MARQUEE_ICONS.length]} />
-    </svg>
+    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-black/25 shadow-inner ring-1 ring-white/20" style={{ color }}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden style={{ filter: `drop-shadow(0 0 6px ${color})` }}>
+        <path d={MARQUEE_ICONS[n % MARQUEE_ICONS.length]} />
+      </svg>
+    </span>
   );
 }
 export default async function HomePage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ preview?: string }> }) {
@@ -272,7 +276,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
         </div>
       </section>
       {marquee.length > 0 && (
-        <div className="marquee border-y border-white/15 bg-primary text-white" aria-hidden>
+        <div className="marquee marquee-color text-white" aria-hidden>
           <div className="marquee-track">
             {[0, 1].map((copy) => (
               <div key={copy} className="display flex shrink-0 items-center gap-8 py-3.5 pr-8 text-lg font-bold sm:text-xl">

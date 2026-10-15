@@ -21,7 +21,7 @@ export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { c
         <circle cx="20.5" cy="15.6" r="1.1" style={{ fill: "var(--primary)" }} />
         <circle cx="22.6" cy="17.7" r="1.1" style={{ fill: "var(--primary)" }} />
       </svg>
-      <span className="display text-[1.1rem] leading-none">
+      <span className="display text-[0.95rem] leading-none max-[349px]:sr-only min-[400px]:text-[1.1rem]">
         Haiti<span className="text-primary">Gaming</span>
       </span>
     </span>

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { BoltIcon, ShieldIcon, WalletIcon } from "./Icons";
+import { LanguageFlags } from "./HeaderClient";
 
 /** Sign-in pages: dark welcome panel beside the form on wide screens; the form alone on phones. */
 export async function AuthShell({ children }: { children: React.ReactNode }) {
@@ -31,7 +32,10 @@ export async function AuthShell({ children }: { children: React.ReactNode }) {
           </ul>
         </div>
       </section>
-      <div className="flex items-center justify-center px-4 py-10 sm:py-16">{children}</div>
+      <div className="flex flex-col items-center justify-center gap-5 px-4 py-8 sm:py-14">
+        <LanguageFlags className="justify-center" />
+        {children}
+      </div>
     </div>
   );
 }

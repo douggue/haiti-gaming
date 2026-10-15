@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
+import { Flag } from "./Flags";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -8,7 +9,7 @@ import { localeNames, locales, type Locale } from "@/i18n/routing";
 import { setCurrency, saveLocalePreference } from "@/actions/prefs";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "./cart/CartProvider";
-import { CartIcon, CloseIcon, HomeIcon, MenuIcon, MoonIcon, StoreIcon, SunIcon, UserIcon, WalletIcon } from "./Icons";
+import { BagIcon, BookIcon, CartIcon, CloseIcon, FileIcon, HelpIcon, HomeIcon, MenuIcon, MoonIcon, NewsIcon, StoreIcon, SunIcon, TagIcon, UserIcon, WalletIcon } from "./Icons";
 
 export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
   const t = useTranslations("common");
@@ -60,36 +61,93 @@ export function CurrencySwitch({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function LocaleSwitch() {
-  const t = useTranslations("common");
-  const locale = useLocale();
+/** Switch language and stay on the same page; signed-in customers keep the choice on their account. */
+function useChangeLocale() {
+  const locale = useLocale() as Locale;
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
   const [pending, start] = useTransition();
+  const change = (next: Locale) => {
+    if (next === locale) return;
+    start(() => {
+      saveLocalePreference(next);
+      // @ts-expect-error -- params are compatible with the current pathname
+      router.replace({ pathname, params }, { locale: next });
+    });
+  };
+  return { locale, change, pending };
+}
+
+/** Header: the current flag; tapping it opens the four languages. */
+export function LocaleSwitch() {
+  const t = useTranslations("common");
+  const { locale, change, pending } = useChangeLocale();
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [open]);
   return (
-    <label>
-      <span className="sr-only">{t("language")}</span>
-      <select
-        value={locale}
-        disabled={pending}
-        onChange={(e) => {
-          const next = e.target.value as Locale;
-          start(() => {
-            saveLocalePreference(next);
-            // @ts-expect-error -- params are compatible with the current pathname
-            router.replace({ pathname, params }, { locale: next });
-          });
-        }}
-        className="min-h-10 cursor-pointer appearance-none rounded-lg border border-border bg-surface px-2.5 text-sm font-semibold"
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`${t("language")}: ${localeNames[locale]}`}
+        className={`grid h-9 w-9 place-items-center rounded-full border border-border bg-surface-2 transition-transform hover:scale-105 ${pending ? "opacity-60" : ""}`}
       >
-        {locales.map((l) => (
-          <option key={l} value={l}>
-            {l.toUpperCase()} · {localeNames[l]}
-          </option>
-        ))}
-      </select>
-    </label>
+        <Flag locale={locale} size={24} />
+      </button>
+      {open && (
+        <ul role="listbox" aria-label={t("language")} className="animate-rise absolute right-0 top-11 z-50 w-44 overflow-hidden rounded-2xl border border-border bg-surface p-1.5 shadow-2xl">
+          {locales.map((l) => (
+            <li key={l}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={l === locale}
+                onClick={() => {
+                  setOpen(false);
+                  change(l);
+                }}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold ${l === locale ? "bg-primary-soft text-primary" : "hover:bg-surface-2"}`}
+              >
+                <Flag locale={l} size={22} />
+                {localeNames[l]}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Row of four flags (menu, sign-in and sign-up pages): one tap changes the language. */
+export function LanguageFlags({ className = "" }: { className?: string }) {
+  const t = useTranslations("common");
+  const { locale, change, pending } = useChangeLocale();
+  return (
+    <div role="radiogroup" aria-label={t("language")} className={`flex items-center gap-2 ${pending ? "opacity-60" : ""} ${className}`}>
+      {locales.map((l) => (
+        <button
+          key={l}
+          type="button"
+          role="radio"
+          aria-checked={l === locale}
+          aria-label={localeNames[l]}
+          title={localeNames[l]}
+          onClick={() => change(l)}
+          className={`grid h-10 w-10 place-items-center rounded-full border-2 transition-transform hover:scale-110 ${l === locale ? "border-primary bg-primary-soft shadow-[0_0_14px_var(--glow)]" : "border-transparent opacity-70 hover:opacity-100"}`}
+        >
+          <Flag locale={l} size={26} />
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -128,6 +186,33 @@ export function SignOutButton({ className = "btn-secondary" }: { className?: str
 
 type NavItem = { href: string; label: string };
 
+/** Icon for a menu link, chosen from its address (custom menu links get a page icon). */
+function navIcon(href: string) {
+  if (href === "/" || href === "") return HomeIcon;
+  if (href.startsWith("/store")) return StoreIcon;
+  if (href.startsWith("/categor")) return TagIcon;
+  if (href.startsWith("/guide")) return BookIcon;
+  if (href.startsWith("/news")) return NewsIcon;
+  if (href.startsWith("/faq") || href.startsWith("/help") || href.startsWith("/support")) return HelpIcon;
+  if (href.startsWith("/account/wallet")) return WalletIcon;
+  if (href.startsWith("/account/orders")) return BagIcon;
+  if (href.startsWith("/account")) return UserIcon;
+  return FileIcon;
+}
+
+function MenuLink({ href, label }: { href: string; label: string }) {
+  const Icon = navIcon(href);
+  return (
+    <Link href={href} className="group flex items-center gap-3 rounded-2xl px-2 py-2 font-semibold hover:bg-surface-2">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary transition-transform group-hover:scale-105">
+        <Icon width={20} height={20} />
+      </span>
+      <span className="flex-1">{label}</span>
+      <span className="text-muted transition-transform group-hover:translate-x-0.5" aria-hidden>›</span>
+    </Link>
+  );
+}
+
 export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: boolean; name?: string }) {
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
@@ -144,7 +229,7 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
 
   return (
     <>
-      <button type="button" className="btn-ghost min-h-10 px-2.5 md:hidden" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen(true)}>
+      <button type="button" className="btn-ghost min-h-10 px-2 sm:px-2.5 md:hidden" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen(true)}>
         <MenuIcon />
         <span className="sr-only">{t("menu")}</span>
       </button>
@@ -160,17 +245,13 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
                 <span className="sr-only">{t("close")}</span>
               </button>
             </div>
-            {nav.map((n) => (
-              <Link key={n.href} href={n.href} className="rounded-xl px-3 py-3 font-medium hover:bg-surface-2">
-                {n.label}
-              </Link>
-            ))}
+            {nav.map((n) => <MenuLink key={n.href} href={n.href} label={n.label} />)}
             <div className="my-3 border-t border-border" />
             {signedIn ? (
               <>
-                <Link href="/account" className="rounded-xl px-3 py-3 font-medium hover:bg-surface-2">{t("account")}</Link>
-                <Link href="/account/wallet" className="rounded-xl px-3 py-3 font-medium hover:bg-surface-2">{t("wallet")}</Link>
-                <Link href="/account/orders" className="rounded-xl px-3 py-3 font-medium hover:bg-surface-2">{t("orders")}</Link>
+                <MenuLink href="/account" label={t("account")} />
+                <MenuLink href="/account/wallet" label={t("wallet")} />
+                <MenuLink href="/account/orders" label={t("orders")} />
                 <SignOutButton className="btn-secondary mt-2" />
               </>
             ) : (
@@ -179,10 +260,12 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
                 <Link href="/auth/register" className="btn-primary">{t("signUp")}</Link>
               </div>
             )}
-            <div className="mt-auto flex flex-wrap items-center gap-2 pt-6">
-              <LocaleSwitch />
-              <CurrencySwitch />
-              <ThemeToggle withLabel />
+            <div className="mt-auto space-y-3 rounded-2xl border border-border bg-surface-2/60 p-3">
+              <LanguageFlags className="justify-between" />
+              <div className="flex items-center justify-between gap-2">
+                <CurrencySwitch />
+                <ThemeToggle withLabel />
+              </div>
             </div>
           </div>
         </div>,

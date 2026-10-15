@@ -25,7 +25,7 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md">
-      <div className="container-page flex h-16 items-center gap-3">
+      <div className="container-page flex h-16 items-center gap-2 sm:gap-3">
         <Link href="/" className="shrink-0">
           <Logo src={settings.logoUrl} darkSrc={settings.logoDarkUrl} alt={settings.businessName} />
         </Link>
@@ -43,20 +43,21 @@ export async function Header() {
             <input name="q" type="search" placeholder={t("searchPlaceholder")} className="input min-h-10 pl-9" />
           </label>
         </form>
-        <div className="ml-auto flex shrink-0 items-center gap-1 2xl:ml-2">
+        <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1 2xl:ml-2">
           <div className="hidden items-center gap-1.5 md:flex">
             <LocaleSwitch />
             <CurrencySwitch />
             <ThemeToggle />
           </div>
-          <div className="md:hidden">
+          <div className="flex items-center gap-1.5 md:hidden">
+            <LocaleSwitch />
             <CurrencySwitch compact />
           </div>
           <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex 2xl:hidden" aria-label={t("search")}>
             <SearchIcon />
           </Link>
           {user && (
-            <Link href="/account/notifications" className="btn-ghost relative min-h-10 px-2.5" aria-label={`${t("notifications")} (${unread})`}>
+            <Link href="/account/notifications" className="btn-ghost relative min-h-10 px-2 sm:px-2.5" aria-label={`${t("notifications")} (${unread})`}>
               <BellIcon />
               {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-danger ring-2 ring-surface" />}
             </Link>
