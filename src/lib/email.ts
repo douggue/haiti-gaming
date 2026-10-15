@@ -5,8 +5,27 @@ import { prisma } from "./db";
  * Turns on only when RESEND_API_KEY and EMAIL_FROM are set. Until a domain is verified in Resend,
  * leave them empty: password resets then go through WhatsApp support + an admin-generated link.
  */
+/** Values pasted on a phone often carry spaces, line breaks or quotes: clean them before use. */
+function envClean(v: string | undefined) {
+  return (v ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim().replace(/^["']|["']$/g, "").trim();
+}
+export const resendKey = () => envClean(process.env.RESEND_API_KEY);
+export const emailFrom = () => envClean(process.env.EMAIL_FROM);
+
 export function emailEnabled(): boolean {
-  return !!process.env.RESEND_API_KEY && !!process.env.EMAIL_FROM;
+  return !!resendKey() && !!emailFrom();
+}
+
+/** Turn Resend's answer into a sentence the owner can act on (shown in Admin → Email). */
+export function explainResendError(status: number, body: string): string {
+  const b = body.toLowerCase();
+  if (b.includes("api key is invalid") || status === 401) return "The API key is wrong or was deleted. Create a new key in Resend (API Keys), copy it with the copy button, and replace RESEND_API_KEY in Vercel. Then redeploy.";
+  if (b.includes("restricted")) return "This key can only send. That is fine for email, so this is not the problem.";
+  if (b.includes("only send testing emails to your own email")) return "Your domain is not verified yet: Resend only lets you send to your own Resend account email. Verify your domain in Resend → Domains and use an address on it in EMAIL_FROM.";
+  if (b.includes("domain is not verified") || b.includes("not verified")) return "The domain in EMAIL_FROM is not verified in Resend. Finish the DNS records in Resend → Domains, or change EMAIL_FROM to an address on your verified domain.";
+  if (b.includes("invalid `from`") || b.includes("from") && status === 422) return "EMAIL_FROM is not in the right format. Use: Haiti Gaming <noreply@yourdomain.com>";
+  if (status === 429) return "Too many emails at once (Resend limit). Wait a minute and try again.";
+  return `Resend refused the message (HTTP ${status}).`;
 }
 
 async function log(to: string, subject: string, status: "sent" | "failed" | "skipped", error?: string) {
@@ -19,28 +38,34 @@ async function log(to: string, subject: string, status: "sent" | "failed" | "ski
 
 /** Every attempt is written to EmailLog (Admin → Email), including messages skipped while email is off. */
 export async function sendEmail(msg: { to: string; subject: string; html: string; text: string }): Promise<boolean> {
+  return (await sendEmailResult(msg)).ok;
+}
+
+/** Same as sendEmail, plus a plain-language reason when it fails (used by the admin test button). */
+export async function sendEmailResult(msg: { to: string; subject: string; html: string; text: string }): Promise<{ ok: boolean; error?: string }> {
   if (!emailEnabled()) {
     await log(msg.to, msg.subject, "skipped", "RESEND_API_KEY / EMAIL_FROM not set");
-    return false;
+    return { ok: false, error: "Email is off: RESEND_API_KEY / EMAIL_FROM not set" };
   }
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: process.env.EMAIL_FROM, to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
+      headers: { Authorization: `Bearer ${resendKey()}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: emailFrom(), to: [msg.to], subject: msg.subject, html: msg.html, text: msg.text }),
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       console.error("Resend error", res.status, body);
-      await log(msg.to, msg.subject, "failed", `HTTP ${res.status} ${body}`);
-    } else {
-      await log(msg.to, msg.subject, "sent");
+      const reason = explainResendError(res.status, body);
+      await log(msg.to, msg.subject, "failed", `${reason} — HTTP ${res.status} ${body}`);
+      return { ok: false, error: reason };
     }
-    return res.ok;
+    await log(msg.to, msg.subject, "sent");
+    return { ok: true };
   } catch (e) {
     console.error("Resend request failed", e);
     await log(msg.to, msg.subject, "failed", e instanceof Error ? e.message : "request failed");
-    return false;
+    return { ok: false, error: "Could not reach Resend. Try again in a minute." };
   }
 }
 

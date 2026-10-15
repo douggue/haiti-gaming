@@ -5,7 +5,7 @@ import { assertStaff, assertStepUp, getSession } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { can } from "@/lib/permissions";
 import { deletePublicImage, isOwnImageUrl } from "@/lib/storage";
-import { emailEnabled, sendEmail } from "@/lib/email";
+import { emailEnabled, sendEmailResult } from "@/lib/email";
 
 type R = { ok: true; message?: string } | { ok: false; error: string };
 const fail = (e: unknown): R => ({ ok: false, error: e instanceof Error ? e.message : "Unexpected error" });
@@ -141,7 +141,7 @@ export async function sendTestEmail(to: string): Promise<R> {
     const addr = to.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) return { ok: false, error: "Enter a valid email address" };
     if (!emailEnabled()) return { ok: false, error: "Email is off: set RESEND_API_KEY and EMAIL_FROM in Vercel, then redeploy" };
-    const ok = await sendEmail({
+    const { ok, error } = await sendEmailResult({
       to: addr,
       subject: "Haiti Gaming test email",
       html: "<p>This is a test from the Haiti Gaming admin. Email delivery works.</p>",
@@ -149,7 +149,7 @@ export async function sendTestEmail(to: string): Promise<R> {
     });
     await audit(staff.id, "email.test", "EmailLog", null, { to: addr, ok });
     revalidatePath("/admin/email");
-    return ok ? { ok: true, message: "Sent — check the inbox" } : { ok: false, error: "Resend refused the message (see the log below)" };
+    return ok ? { ok: true, message: "Sent — check the inbox" } : { ok: false, error: error ?? "Resend refused the message (see the log below)" };
   } catch (e) {
     return fail(e);
   }

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { requireStaff } from "@/lib/session";
-import { emailEnabled, previewEmail } from "@/lib/email";
+import { emailEnabled, emailFrom, previewEmail, resendKey } from "@/lib/email";
 import { TestEmailForm } from "@/components/admin/TestEmailForm";
 import { PageTitle, Stat, Table } from "@/components/admin/ui";
 
@@ -18,8 +18,23 @@ export default async function Email({ searchParams }: { searchParams: Promise<{ 
   ]);
   const count = (s: string) => counts.find((c) => c.status === s)?._count ?? 0;
   const on = emailEnabled();
+  const from = emailFrom();
   const preview = previewEmail(kind, lang);
-  const from = process.env.EMAIL_FROM ?? "";
+  // Never show the key itself: only enough to compare with the one in Resend.
+  const key = resendKey();
+  const fromDomain = /@([^>\s]+)>?\s*$/.exec(from)?.[1]?.toLowerCase() ?? "";
+  const checks = [
+    {
+      label: "RESEND_API_KEY",
+      ok: /^re_[A-Za-z0-9_]{20,}$/.test(key),
+      detail: !key ? "is missing." : !key.startsWith("re_") ? "does not start with re_ — it is not a Resend key." : key.length < 30 ? `looks too short (${key.length} characters, starts ${key.slice(0, 6)}…). It was probably cut when copying: copy it again with Resend's copy button.` : `is set (${key.length} characters, starts ${key.slice(0, 6)}…).`,
+    },
+    {
+      label: "EMAIL_FROM",
+      ok: !!fromDomain && !fromDomain.endsWith("vercel.app"),
+      detail: !from ? "is missing. Example: Haiti Gaming <noreply@yourdomain.com>" : !fromDomain ? `"${from}" has no email address in it. Example: Haiti Gaming <noreply@yourdomain.com>` : fromDomain.endsWith("vercel.app") ? "uses vercel.app, which cannot be verified in Resend. Use your own domain." : fromDomain === "resend.dev" ? "uses resend.dev: test mode, emails only reach your own Resend account email." : `sends from ${fromDomain}. This domain must show "Verified" in Resend → Domains.`,
+    },
+  ];
   return (
     <>
       <PageTitle title="Email" sub="Delivery status, a test send, recent messages and template previews." />
@@ -30,6 +45,18 @@ export default async function Email({ searchParams }: { searchParams: Promise<{ 
           <p><span className="font-semibold text-warning">Email is off.</span> Password resets go through WhatsApp support and the one-time link in Admin → Customers. To turn it on: verify your domain in Resend, then set <span className="font-mono">RESEND_API_KEY</span> and <span className="font-mono">EMAIL_FROM</span> in Vercel and redeploy.</p>
         )}
       </div>
+      <section className="card mb-6 p-5 text-sm">
+        <h2 className="mb-3 font-bold">Setup check</h2>
+        <ul className="space-y-2">
+          {checks.map((c) => (
+            <li key={c.label} className="flex gap-2">
+              <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-black text-white ${c.ok ? "bg-success" : "bg-danger"}`}>{c.ok ? "✓" : "!"}</span>
+              <span><b>{c.label}</b> <span className="text-muted">{c.detail}</span></span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-muted">After changing a value in Vercel → Settings → Environment Variables, redeploy (Deployments → ⋯ → Redeploy) so the site uses it. Then try "Send test email": if Resend refuses, the reason appears there.</p>
+      </section>
       <div className="grid grid-cols-3 gap-3">
         <Stat label="Sent (7 days)" value={count("sent")} />
         <Stat label="Failed (7 days)" value={count("failed")} tone={count("failed") ? "danger" : undefined} />
