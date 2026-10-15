@@ -14,7 +14,7 @@ import { fullTheme, getDisplaySettings } from "@/lib/settings";
 import { t } from "@/lib/text";
 import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
-import { CategoryIcon } from "@/components/CategoryIcon";
+import { CategoryCard } from "@/components/CategoryCard";
 import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon } from "@/components/Icons";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -94,14 +94,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
         </div>
         <div className="stagger grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {categories.map((c, i) => (
-            <Link key={c.id} href={`/categories/${c.slug}`} className="card lift animate-rise relative flex min-h-36 flex-col justify-between overflow-hidden p-4 sm:p-5">
-              <span aria-hidden className="ds-hide pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-40 blur-2xl" style={{ background: ["#ff7a18", "#2f74ff", "#b04bff", "#2fd27f"][i % 4] }} />
-              <span className="relative"><CategoryIcon image={c.image} icon={c.icon} /></span>
-              <span className="relative mt-4 min-w-0">
-                <span className="block truncate text-base font-bold sm:text-lg">{t(c.name, locale)}</span>
-                <span className="text-sm text-muted">{c._count.products} {tc("products")}</span>
-              </span>
-            </Link>
+            <CategoryCard key={c.id} href={`/categories/${c.slug}`} name={t(c.name, locale)} count={`${c._count.products} ${tc("products")}`} cover={c.cover} image={c.image} icon={c.icon} index={i} />
           ))}
         </div>
       </section>

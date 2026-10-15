@@ -34,7 +34,7 @@ export default async function AdminProducts() {
       </Table>
 
       <h2 className="mb-3 mt-10 text-lg font-semibold">Categories</h2>
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-2 [&>*]:min-w-0">
         {categories.map((c) => (
           <ActionForm key={c.id} action={saveCategory} className="card space-y-3 p-4">
             <input type="hidden" name="id" value={c.id} />
@@ -50,7 +50,10 @@ export default async function AdminProducts() {
                 {categories.filter((x) => !x.parentId && x.id !== c.id).map((x) => <option key={x.id} value={x.id}>{t(x.name, "en")}</option>)}
               </select>
             </label>
-            <ImageField name="image" label="Image (optional, replaces the icon)" value={c.image} folder="categories" aspect="aspect-square" />
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&>*]:min-w-0">
+              <ImageField name="cover" label="Background image (big)" value={c.cover} folder="categories" aspect="aspect-[16/9]" hint="Wide picture filling the whole card, about 1200×700 px. Keep the left side calm: the name and icon sit there. Empty = colored background." />
+              <ImageField name="image" label="Square icon (small)" value={c.image} folder="categories" aspect="aspect-square" hint="Replaces the emoji in the white tile." />
+            </div>
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isVisible" defaultChecked={c.isVisible} /> Visible · {c._count.products} products</label>
               <button className="btn-secondary min-h-9 px-3 text-xs">Save</button>
@@ -71,7 +74,10 @@ export default async function AdminProducts() {
               {categories.filter((x) => !x.parentId).map((x) => <option key={x.id} value={x.id}>{t(x.name, "en")}</option>)}
             </select>
           </label>
-          <ImageField name="image" label="Image (optional)" folder="categories" aspect="aspect-square" />
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&>*]:min-w-0">
+            <ImageField name="cover" label="Background image (big)" folder="categories" aspect="aspect-[16/9]" hint="Wide picture filling the whole card, about 1200×700 px. Keep the left side calm: the name and icon sit there. Empty = colored background." />
+            <ImageField name="image" label="Square icon (small)" folder="categories" aspect="aspect-square" />
+          </div>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isVisible" defaultChecked /> Visible</label>
           <button className="btn-primary min-h-9 px-3 text-xs">Create</button>
         </ActionForm>

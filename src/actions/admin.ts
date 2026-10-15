@@ -247,13 +247,15 @@ export async function saveCategory(form: FormData): Promise<R> {
     if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug)) return { ok: false, error: "Invalid slug" };
     const image = String(form.get("image") ?? "").trim();
     if (image && !isOwnImageUrl(image)) return { ok: false, error: "Invalid image" };
+    const cover = String(form.get("cover") ?? "").trim();
+    if (cover && !isOwnImageUrl(cover)) return { ok: false, error: "Invalid background image" };
     const parentRaw = String(form.get("parentId") ?? "") || null;
     if (parentRaw) {
       const parent = await prisma.category.findUnique({ where: { id: parentRaw } });
       if (!parent || parent.parentId || parent.id === id) return { ok: false, error: "A subcategory's parent must be a top-level category" };
       if (id && (await prisma.category.count({ where: { parentId: id } })) > 0) return { ok: false, error: "This category has subcategories, so it can't become one" };
     }
-    const data = { slug, parentId: parentRaw, image: image || null, name: localized(form, "name"), icon: String(form.get("icon") ?? "").slice(0, 4) || null, sortOrder: Number(form.get("sortOrder") ?? 0) || 0, isVisible: form.get("isVisible") === "on" };
+    const data = { slug, parentId: parentRaw, image: image || null, cover: cover || null, name: localized(form, "name"), icon: String(form.get("icon") ?? "").slice(0, 4) || null, sortOrder: Number(form.get("sortOrder") ?? 0) || 0, isVisible: form.get("isVisible") === "on" };
     const c = id ? await prisma.category.update({ where: { id }, data }) : await prisma.category.create({ data });
     await audit(staff.id, id ? "category.update" : "category.create", "Category", c.id, { slug });
     revalidatePath("/admin/products");

@@ -43,9 +43,9 @@ export async function mediaUsage(url: string): Promise<string[]> {
   const like = `%${url}%`;
   const [products, categories, news, methods, settings, pages] = await Promise.all([
     prisma.$queryRaw<{ slug: string }[]>`SELECT slug FROM "Product" WHERE image = ${url} OR gallery::text LIKE ${like}`,
-    prisma.category.findMany({ where: { image: url }, select: { slug: true } }),
+    prisma.category.findMany({ where: { OR: [{ image: url }, { cover: url }] }, select: { slug: true } }),
     prisma.newsArticle.findMany({ where: { image: url }, select: { slug: true } }),
-    prisma.manualMethod.findMany({ where: { logo: url }, select: { name: true } }),
+    prisma.manualMethod.findMany({ where: { OR: [{ logo: url }, { qrImage: url }] }, select: { name: true } }),
     prisma.$queryRaw<{ key: string }[]>`SELECT key FROM "SiteSetting" WHERE value::text LIKE ${like}`,
     prisma.$queryRaw<{ slug: string }[]>`SELECT slug FROM "Page" WHERE blocks::text LIKE ${like}`,
   ]);
@@ -82,13 +82,13 @@ export async function scanMedia(): Promise<R> {
     const staff = await assertMediaStaff();
     const [products, categories, news, settings] = await Promise.all([
       prisma.product.findMany({ select: { image: true, gallery: true } }),
-      prisma.category.findMany({ select: { image: true } }),
+      prisma.category.findMany({ select: { image: true, cover: true } }),
       prisma.newsArticle.findMany({ select: { image: true } }),
       prisma.siteSetting.findMany({ where: { key: { in: ["logoUrl", "logoDarkUrl", "heroImageUrl", "ogImageUrl"] } } }),
     ]);
     const found = new Map<string, string>();
     for (const p of products) [p.image, ...(Array.isArray(p.gallery) ? p.gallery : [])].forEach((u) => typeof u === "string" && u && found.set(u, "products"));
-    for (const c of categories) if (c.image) found.set(c.image, "categories");
+    for (const c of categories) for (const u of [c.image, c.cover]) if (u) found.set(u, "categories");
     for (const n of news) if (n.image) found.set(n.image, "products");
     for (const s of settings) if (typeof s.value === "string" && s.value) found.set(s.value, "brand");
     const rows = [...found].filter(([u]) => isOwnImageUrl(u)).map(([url, folder]) => ({ url, folder, uploadedBy: staff.id }));

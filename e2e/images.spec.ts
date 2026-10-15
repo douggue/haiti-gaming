@@ -49,7 +49,10 @@ test("admin uploads images and the store shows them", async ({ page, browser }) 
   await page.goto("/admin/products");
   await page.waitForLoadState("networkidle");
   const catForm = page.locator("form", { has: page.locator('input[name=slug][value="game-top-ups"]') });
-  await catForm.locator("input[type=file]").setInputFiles({ name: "cat.png", mimeType: "image/png", buffer: cat });
+  // Two uploads per category: the big background first, then the small square icon.
+  await catForm.locator("input[type=file]").nth(0).setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: main });
+  await expect(catForm.locator('input[name=cover]')).toHaveValue(/\/media\/categories\//);
+  await catForm.locator("input[type=file]").nth(1).setInputFiles({ name: "cat.png", mimeType: "image/png", buffer: cat });
   await expect(catForm.locator('input[name=image]')).toHaveValue(/\/media\/categories\//);
   await catForm.getByRole("button", { name: "Save" }).click();
   await expect(catForm.getByText("Saved")).toBeVisible();
@@ -65,6 +68,8 @@ test("admin uploads images and the store shows them", async ({ page, browser }) 
   await expect(page.getByRole("button", { name: "Dyaman Free Fire 2" })).toBeVisible();
   await page.goto("/ht");
   await expect(page.locator('img[alt="Dyaman Free Fire"]').first()).toBeVisible();
+  // The category card shows the big background picture
+  await expect(page.locator('a[href$="/categories/game-top-ups"] img[src*="categories"]').first()).toBeVisible();
   await page.screenshot({ path: "docs/screenshots/home-with-images.png", fullPage: false });
   await page.goto("/ht/products/free-fire-diamonds");
   await page.screenshot({ path: "docs/screenshots/product-with-gallery.png" });

@@ -157,7 +157,10 @@ model Category {
   name        Json
   description Json?
   icon        String?
+  /// Small square picture in the white tile (replaces the emoji icon)
   image       String?
+  /// Big background picture filling the category card
+  cover       String?
   sortOrder   Int        @default(0)
   isVisible   Boolean    @default(true)
   parentId    String?
