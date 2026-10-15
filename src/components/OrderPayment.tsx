@@ -1,4 +1,5 @@
 "use client";
+import { PhotoPicker } from "./PhotoPicker";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -36,10 +37,7 @@ export function NatcashOrderForm({ orderId, phone, methodName }: { orderId: stri
         <label className="label" htmlFor="payerPhone">{to("payerPhone")}</label>
         <input id="payerPhone" name="payerPhone" type="tel" inputMode="tel" maxLength={20} placeholder="+509" className="input" />
       </div>
-      <div>
-        <label className="label" htmlFor="evidence">{to("evidence")}</label>
-        <input id="evidence" name="evidence" type="file" accept="image/jpeg,image/png,image/webp" className="block w-full text-sm" />
-      </div>
+      <PhotoPicker name="evidence" label={to("evidence")} />
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
       <button className="btn-primary w-full sm:w-auto" disabled={pending}>{pending ? tc("loading") : to("submitProof")}</button>
     </form>

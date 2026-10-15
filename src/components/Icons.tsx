@@ -35,3 +35,6 @@ export const NewsIcon = (p: P) => (<svg {...base} {...p}><path d="M4 4h13v16H6a2
 export const HelpIcon = (p: P) => (<svg {...base} {...p}><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17v.01" /></svg>);
 export const BagIcon = (p: P) => (<svg {...base} {...p}><path d="M6 7h12l1 13H5Z" /><path d="M9 7a3 3 0 0 1 6 0" /></svg>);
 export const FileIcon = (p: P) => (<svg {...base} {...p}><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8Z" /><path d="M14 3v5h5M9 13h6M9 17h4" /></svg>);
+export const LoginIcon = (p: P) => (<svg {...base} {...p}><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><path d="m10 17 5-5-5-5" /><path d="M15 12H3" /></svg>);
+export const UserPlusIcon = (p: P) => (<svg {...base} {...p}><circle cx="9" cy="8" r="4" /><path d="M2 21c1.2-3.6 3.8-5.5 7-5.5s5.8 1.9 7 5.5" /><path d="M19 8v6M16 11h6" /></svg>);
+export const LogoutIcon = (p: P) => (<svg {...base} {...p}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /></svg>);

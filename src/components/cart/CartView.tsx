@@ -34,7 +34,7 @@ export function CartView() {
               <div className="min-w-0 flex-1">
                 <Link href={`/products/${l.productSlug}`} className="font-semibold hover:text-primary">{t(l.productName, locale)}</Link>
                 <p className="text-sm text-muted">{t(l.variantName, locale)}</p>
-                {Object.values(l.fields).length > 0 && <p className="mt-0.5 truncate text-xs text-muted">ID: {Object.values(l.fields).join(" · ")}</p>}
+                {Object.values(l.fields).length > 0 && <p className="mt-0.5 truncate text-xs text-muted">{Object.values(l.fields).join(" · ")}</p>}
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <div className="flex items-center rounded-lg border border-border">
                     <button type="button" className="h-9 w-9" onClick={() => setQuantity(l.key, l.quantity - 1)} aria-label="−">−</button>

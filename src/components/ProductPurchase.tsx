@@ -175,9 +175,12 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
               />
             </div>
           ))}
-          <p className="text-xs text-muted">
-            <strong>{tp("sendToSomeone")}</strong> {tp("sendToSomeoneHint")}
-          </p>
+          {/* Only game top-ups ask for a player ID: the "for someone else" tip makes no sense on an email or phone field. */}
+          {product.fields.some((f) => /player|uid|gameid|game_id|zone|server/i.test(f.key)) && (
+            <p className="text-xs text-muted">
+              <strong>{tp("sendToSomeone")}</strong> {tp("sendToSomeoneHint")}
+            </p>
+          )}
         </fieldset>
       )}
 

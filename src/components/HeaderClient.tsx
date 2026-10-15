@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { Flag } from "./Flags";
 import { useLocale, useTranslations } from "next-intl";
@@ -9,7 +9,25 @@ import { localeNames, locales, type Locale } from "@/i18n/routing";
 import { setCurrency, saveLocalePreference } from "@/actions/prefs";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "./cart/CartProvider";
-import { BagIcon, BookIcon, CartIcon, CloseIcon, FileIcon, HelpIcon, HomeIcon, MenuIcon, MoonIcon, NewsIcon, StoreIcon, SunIcon, TagIcon, UserIcon, WalletIcon } from "./Icons";
+import { BagIcon, BookIcon, CartIcon, CloseIcon, FileIcon, HelpIcon, HomeIcon, LoginIcon, LogoutIcon, MenuIcon, MoonIcon, NewsIcon, StoreIcon, SunIcon, TagIcon, UserIcon, UserPlusIcon, WalletIcon } from "./Icons";
+
+/**
+ * Keeps light/dark after client-side navigation. Changing language re-renders <html> from the server,
+ * which drops the "dark" class the first-paint script had added; this puts it back before the browser paints.
+ */
+export function ThemeKeeper({ defaultMode }: { defaultMode: "dark" | "light" }) {
+  const locale = useLocale();
+  const pathname = usePathname();
+  useLayoutEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem("hg_theme");
+    } catch {}
+    const dark = saved ? saved === "dark" : defaultMode === "dark";
+    document.documentElement.classList.toggle("dark", dark);
+  }, [locale, pathname, defaultMode]);
+  return null;
+}
 
 export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
   const t = useTranslations("common");
@@ -179,6 +197,7 @@ export function SignOutButton({ className = "btn-secondary" }: { className?: str
         router.refresh();
       }}
     >
+      <LogoutIcon width={18} height={18} aria-hidden />
       {t("signOut")}
     </button>
   );
@@ -256,8 +275,8 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
               </>
             ) : (
               <div className="grid gap-2">
-                <Link href="/auth/login" className="btn-secondary">{t("signIn")}</Link>
-                <Link href="/auth/register" className="btn-primary">{t("signUp")}</Link>
+                <Link href="/auth/login" className="btn-secondary"><LoginIcon width={18} height={18} aria-hidden />{t("signIn")}</Link>
+                <Link href="/auth/register" className="btn-primary"><UserPlusIcon width={18} height={18} aria-hidden />{t("signUp")}</Link>
               </div>
             )}
             <div className="mt-auto space-y-3 rounded-2xl border border-border bg-surface-2/60 p-3">

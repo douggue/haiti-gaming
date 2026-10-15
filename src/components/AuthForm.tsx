@@ -1,4 +1,5 @@
 "use client";
+import { LoginIcon, UserPlusIcon } from "./Icons";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -104,8 +105,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   return (
     <form method="post" onSubmit={onSubmit} className="card glow-card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
       <nav className="grid grid-cols-2 rounded-2xl bg-surface-2 p-1" aria-label={t("loginTitle")}>
-        <Link href={`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "login" ? "page" : undefined} className={`grid min-h-11 place-items-center rounded-xl text-sm font-bold ${mode === "login" ? "bg-surface text-text shadow-sm" : "text-muted"}`}>{tc("signIn")}</Link>
-        <Link href={`/auth/register${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "register" ? "page" : undefined} className={`grid min-h-11 place-items-center rounded-xl text-sm font-bold ${mode === "register" ? "bg-surface text-text shadow-sm" : "text-muted"}`}>{tc("signUp")}</Link>
+        <Link href={`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "login" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold ${mode === "login" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
+        <Link href={`/auth/register${next ? `?next=${encodeURIComponent(next)}` : ""}`} aria-current={mode === "register" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold ${mode === "register" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
       </nav>
       <div>
         <h1 className="display text-3xl font-bold">{mode === "login" ? tu("welcomeBack") : t("registerTitle")}</h1>
@@ -160,7 +161,14 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       <Turnstile key={captchaKey} onToken={setCaptcha} locale={locale} />
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
       <button className="btn-primary glow-btn min-h-12 w-full text-base" disabled={loading || !hydrated || (turnstileOn && !captcha)}>
-        {loading ? tc("loading") : mode === "login" ? tc("signIn") : tc("signUp")}
+        {loading ? (
+          tc("loading")
+        ) : (
+          <>
+            {mode === "login" ? <LoginIcon width={20} height={20} aria-hidden /> : <UserPlusIcon width={20} height={20} aria-hidden />}
+            {mode === "login" ? tc("signIn") : tc("signUp")}
+          </>
+        )}
       </button>
       <p className="text-center text-sm text-muted">
         {mode === "login" ? t("noAccount") : t("haveAccount")}{" "}
