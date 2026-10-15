@@ -13,7 +13,7 @@ import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { BottomNav, ThemeKeeper } from "@/components/HeaderClient";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { alternates } from "@/lib/seo";
-import { themeAttrs, themeCss, themeScript } from "@/lib/theme-css";
+import { themeAttrs, themeCss, themeScript, cssGuardScript } from "@/lib/theme-css";
 import { fullTheme } from "@/lib/settings";
 import { Chakra_Petch, Figtree } from "next/font/google";
 import { cookies, headers } from "next/headers";
@@ -62,6 +62,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
       <head>
         {/* Applies light/dark before paint to avoid a flash */}
         <script dangerouslySetInnerHTML={{ __html: themeScript(fullTheme(settings.theme).defaultMode) }} />
+        <script dangerouslySetInnerHTML={{ __html: cssGuardScript }} />
         {themeCss(settings.theme) && <style dangerouslySetInnerHTML={{ __html: themeCss(settings.theme) }} />}
       </head>
       <body className="min-h-dvh antialiased">

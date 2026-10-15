@@ -4,6 +4,7 @@
 
 /* Brand palette: midnight blue ground, one blue accent. Admin → Appearance overrides these per store (theme-css.ts). */
 :root {
+  --hg-css: 1; /* checked by cssGuardScript: proves the stylesheet loaded */
   --bg: #f3f6fd;
   --surface: #ffffff;
   --surface-2: #eef2fa;

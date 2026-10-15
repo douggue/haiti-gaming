@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Chakra_Petch, Figtree } from "next/font/google";
 import { getDisplaySettings } from "@/lib/settings";
-import { themeCss, themeScript } from "@/lib/theme-css";
+import { themeCss, themeScript, cssGuardScript } from "@/lib/theme-css";
 import "../globals.css";
 
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Haiti Gaming Admin" }, robots: { index: false, follow: false } };
@@ -17,6 +17,7 @@ export default async function AdminRootLayout({ children }: { children: React.Re
     <html lang="en" suppressHydrationWarning className={`${sans.variable} ${display.variable}`} data-motion="calm">
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript("light", "hg_admin_theme") }} />
+        <script dangerouslySetInnerHTML={{ __html: cssGuardScript }} />
         {css && <style dangerouslySetInnerHTML={{ __html: css }} />}
       </head>
       <body className="min-h-dvh antialiased">{children}</body>
