@@ -1,4 +1,4 @@
-/** Uploaded logo (Settings → Brand images) or the built-in mark: a compact controller inside a rounded tile. */
+/** Uploaded logo (Settings → Brand images) or the built-in mark: a controller with Haiti's blue and red buttons in a rounded tile. */
 export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { className?: string; src?: string; darkSrc?: string; alt?: string }) {
   if (src) {
     return (
@@ -14,12 +14,19 @@ export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { c
   }
   return (
     <span className={`inline-flex items-center gap-2 font-extrabold tracking-tight ${className}`}>
-      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden>
-        <rect width="32" height="32" rx="9" style={{ fill: "var(--primary)" }} />
-        <path d="M9.5 12h13a4.5 4.5 0 0 1 4.3 5.7l-.9 3.3a2.6 2.6 0 0 1-4.5 1l-1.9-2.2h-7l-1.9 2.2a2.6 2.6 0 0 1-4.5-1l-.9-3.3A4.5 4.5 0 0 1 9.5 12Z" fill="#fff" />
-        <path d="M11 15.2v3M9.5 16.7h3" style={{ stroke: "var(--primary)" }} strokeWidth="1.6" strokeLinecap="round" />
-        <circle cx="20.5" cy="15.6" r="1.1" style={{ fill: "var(--primary)" }} />
-        <circle cx="22.6" cy="17.7" r="1.1" style={{ fill: "var(--primary)" }} />
+      <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden>
+        <rect width="100" height="100" rx="24" style={{ fill: "var(--primary)" }} />
+        <g fill="#fff">
+          <rect x="12" y="34" width="76" height="34" rx="17" />
+          <circle cx="27" cy="63" r="15" />
+          <circle cx="73" cy="63" r="15" />
+        </g>
+        {/* Haiti's flag colours on the D-pad and buttons */}
+        <path d="M24 47h5v-5h5v5h5v5h-5v5h-5v-5h-5z" fill="#00209F" />
+        <circle cx="67" cy="46" r="4.2" fill="#D21034" />
+        <circle cx="76" cy="53" r="4.2" fill="#D21034" />
+        <circle cx="58" cy="53" r="4.2" fill="#00209F" />
+        <circle cx="67" cy="60" r="4.2" fill="#00209F" />
       </svg>
       <span className="display text-[0.95rem] leading-none max-[349px]:sr-only min-[400px]:text-[1.1rem]">
         Haiti<span className="text-primary">Gaming</span>
