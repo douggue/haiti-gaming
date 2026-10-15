@@ -70,25 +70,24 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
       role="status"
       aria-live="polite"
       data-leaving={leaving ? "" : undefined}
-      className="sale-pop kb-hide fixed inset-x-3 z-40 flex items-center gap-3 rounded-2xl border border-border bg-surface/95 p-2.5 pr-3 shadow-[0_18px_40px_-16px_rgba(0,0,0,.6)] backdrop-blur md:inset-x-auto md:bottom-24 md:left-6 md:w-[22rem]"
+      className="sale-pop kb-hide fixed left-3 z-40 flex max-w-[calc(100vw-1.5rem)] items-center gap-2.5 rounded-2xl border border-border bg-surface/95 py-2 pl-2 pr-1.5 shadow-[0_12px_30px_-14px_rgba(0,0,0,.6)] backdrop-blur sm:max-w-xs md:bottom-6 md:left-6"
       style={{ bottom: "calc(9.5rem + env(safe-area-inset-bottom, 0px))" }}
     >
-      <span className="relative h-13 w-13 shrink-0">
+      <span className="relative h-9 w-9 shrink-0">
         <span
-          className="relative grid h-full w-full place-items-center overflow-hidden rounded-xl"
+          className="relative grid h-full w-full place-items-center overflow-hidden rounded-lg"
           style={{ background: `radial-gradient(circle at 50% 42%, ${color} 0%, color-mix(in srgb, ${color} 45%, #060b1a) 60%, #060b1a 100%)` }}
         >
-          {product.image ? <Image src={product.image} alt="" fill sizes="52px" className="object-cover" /> : <b className="display text-base text-white">{initials}</b>}
+          {product.image ? <Image src={product.image} alt="" fill sizes="36px" className="object-cover" /> : <b className="display text-[11px] text-white">{initials}</b>}
         </span>
-        <span className="absolute -bottom-1 -right-1 grid h-5 w-5 place-items-center rounded-full border-2 border-surface bg-success text-[10px] font-black text-white" aria-hidden>✓</span>
+        <span className="absolute -bottom-1 -right-1 grid h-4 w-4 place-items-center rounded-full border-2 border-surface bg-success text-[8px] font-black text-white" aria-hidden>✓</span>
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-xs text-muted">
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block truncate text-[11px] text-muted">
           <b className="text-text">{current.name}</b> · {current.flag} {current.city}
         </span>
-        <span className="block truncate text-sm font-bold leading-tight">{t("bought", { product: product.name })}</span>
-        <span className="mt-0.5 block text-[11px] text-muted">
-          {when} · <span className="text-success">{t("delivered")}</span>
+        <span className="block truncate text-xs font-semibold">
+          {t("bought", { product: product.name })} <span className="font-normal text-muted">· {when}</span>
         </span>
       </span>
       <button
@@ -98,9 +97,9 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
           setCurrent(null);
         }}
         aria-label={t("close")}
-        className="grid h-8 w-8 shrink-0 self-start place-items-center rounded-lg bg-surface-2 text-muted hover:text-text"
+        className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-muted hover:bg-surface-2 hover:text-text"
       >
-        <CloseIcon width={14} height={14} />
+        <CloseIcon width={12} height={12} />
       </button>
     </div>
   );
