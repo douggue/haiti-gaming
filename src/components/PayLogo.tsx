@@ -1,6 +1,6 @@
 /** MonCash / NatCash logos (public/brand), shown wherever customers pick or see a payment method. */
 const LOGOS = {
-  moncash: { src: "/brand/moncash.webp", alt: "MonCash", ratio: 287 / 96 },
+  moncash: { src: "/brand/moncash.webp", alt: "MonCash", ratio: 391 / 96 },
   natcash: { src: "/brand/natcash.webp", alt: "NatCash", ratio: 408 / 96 },
 } as const;
 

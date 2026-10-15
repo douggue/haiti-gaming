@@ -58,7 +58,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   }
 
   const options: { id: Method; title: string; hint: string; enabled: boolean; badge: React.ReactNode }[] = [
-    { id: "MONCASH", title: tc("moncash"), hint: tc("moncashHint"), enabled: moncashEnabled, badge: <PayLogo brand="moncash" height={26} /> },
+    { id: "MONCASH", title: tc("moncash"), hint: tc("moncashHint"), enabled: moncashEnabled, badge: <PayLogo brand="moncash" height={24} /> },
     { id: "NATCASH", title: tc("natcash"), hint: tc("natcashHint"), enabled: natcashEnabled, badge: <PayLogo brand="natcash" height={24} /> },
     {
       id: "WALLET",

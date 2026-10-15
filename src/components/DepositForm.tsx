@@ -200,7 +200,7 @@ export function DepositForm(p: Props) {
               >
                 {x.brand ? (
                   <span className="flex min-w-0 flex-col gap-1">
-                    <PayLogo brand={x.brand} height={x.brand === "moncash" ? 28 : 24} className="max-w-full object-contain object-left" />
+                    <PayLogo brand={x.brand} height={24} className="max-w-full object-contain object-left" />
                     <span className="block text-[11px] text-muted">{x.kind === "moncash" ? tw("methodAuto") : "HTG"}</span>
                   </span>
                 ) : (

@@ -239,7 +239,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
               </Link>
             </div>
             <div className="animate-rise flex flex-wrap items-center gap-3 text-sm text-[#b7c6e4]">
-              <PayLogo brand="moncash" height={30} />
+              <PayLogo brand="moncash" height={25} />
               <PayLogo brand="natcash" height={25} />
               <Link href="/guides" className="underline-offset-4 hover:text-white hover:underline">{th("payGuideLink")}</Link>
             </div>

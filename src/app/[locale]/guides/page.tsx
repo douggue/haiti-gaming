@@ -15,7 +15,7 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
   setRequestLocale((await params).locale);
   const [t, s] = await Promise.all([getTranslations("pages"), getDisplaySettings()]);
   const guides = [
-    { id: "moncash", title: t("guideMoncashTitle"), steps: t.raw("guideMoncash") as string[], badge: <PayLogo brand="moncash" height={28} /> },
+    { id: "moncash", title: t("guideMoncashTitle"), steps: t.raw("guideMoncash") as string[], badge: <PayLogo brand="moncash" height={26} /> },
     { id: "natcash", title: t("guideNatcashTitle"), steps: t.raw("guideNatcash") as string[], badge: <PayLogo brand="natcash" height={26} />, extra: `${s.natcashRecipientName} · ${s.natcashRecipientPhone}` },
     { id: "player-id", title: t("guidePlayerIdTitle"), steps: t.raw("guidePlayerId") as string[], badge: <span aria-hidden>🎮</span> },
   ];
