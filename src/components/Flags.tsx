@@ -2,9 +2,18 @@ import type { Locale } from "@/i18n/routing";
 
 /**
  * Small round flags for the language picker. Drawn as SVG so they look the same everywhere
- * (Windows does not draw flag emoji). Kreyòl → Haiti, Français → France, English → USA, Español → Spain.
+ * (Windows does not draw flag emoji). Kreyòl → Haiti (real flag file in /public/flags), Français → France, English → USA, Español → Spain.
  */
 export function Flag({ locale, size = 22, className = "" }: { locale: Locale; size?: number; className?: string }) {
+  // Haiti: the real flag with the coat of arms (flag-icons, MIT), zoomed a little so the arms show in the small circle.
+  if (locale === "ht") {
+    return (
+      <span style={{ width: size, height: size }} className={`relative inline-block shrink-0 overflow-hidden rounded-full ring-1 ring-black/10 ${className}`} aria-hidden>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/flags/ht.svg" alt="" width={size} height={size} decoding="async" className="h-full w-full scale-[1.35] object-cover" />
+      </span>
+    );
+  }
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={`shrink-0 rounded-full ring-1 ring-black/10 ${className}`} aria-hidden>
       <clipPath id={`flag-${locale}`}>
