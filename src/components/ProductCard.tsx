@@ -30,12 +30,12 @@ export async function ProductCard({ product }: { product: ProductWithVariants })
             t(product.deliveryEstimate, locale)
           )}
         </p>
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-3">
+        <div className="mt-auto flex flex-col gap-2.5 pt-3">
           <p className="text-sm">
             <span className="text-muted">{tr("from")} </span>
             <Price htg={minPrice(product)} className="font-bold text-text" />
           </p>
-          <span className="inline-flex min-h-9 items-center rounded-xl bg-primary px-3 text-xs font-bold text-white transition-colors group-hover:bg-primary-hover">{tr("choose")}</span>
+          <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-white transition-colors group-hover:bg-primary-hover">{tr("choose")}</span>
         </div>
       </div>
     </Link>

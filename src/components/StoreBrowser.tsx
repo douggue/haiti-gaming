@@ -382,19 +382,19 @@ function Tile({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => v
     <Link href={`/products/${p.slug}`} className="card lift group flex flex-col bg-[linear-gradient(180deg,var(--surface-2),var(--surface))] p-3">
       <div className="relative">
         <ProductArt name={p.name} accent={p.accent} image={p.image} />
-        {p.tags[0] && <span className="badge absolute right-2 top-2 bg-[#060b1a]/60 text-[11px] text-white backdrop-blur">{p.tags.slice(0, 2).join(" · ")}</span>}
+        {p.tags[0] && <span className="badge absolute right-2 top-2 block max-w-[calc(100%-3.5rem)] truncate bg-[#060b1a]/60 text-[11px] text-white backdrop-blur">{p.tags.slice(0, 2).join(" · ")}</span>}
         {p.onSale && <span className="badge absolute bottom-2 left-2 bg-danger text-white">−%</span>}
         <FavButton fav={fav} onFav={onFav} />
       </div>
       <div className="flex flex-1 flex-col px-1 pb-1 pt-3">
         <h3 className="line-clamp-2 font-semibold leading-snug">{p.name}</h3>
         <Delivery p={p} />
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-3">
+        <div className="mt-auto flex flex-col gap-2.5 pt-3">
           <p className="text-sm">
             <span className="text-muted">{tc("from")} </span>
             <Price htg={p.price} className="font-bold text-text" />
           </p>
-          <span className="inline-flex min-h-9 items-center rounded-xl bg-primary px-3 text-xs font-bold text-white transition-colors group-hover:bg-primary-hover">{tc("choose")}</span>
+          <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-white transition-colors group-hover:bg-primary-hover">{tc("choose")}</span>
         </div>
       </div>
     </Link>
