@@ -7,7 +7,7 @@ import "../globals.css";
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Haiti Gaming Admin" }, robots: { index: false, follow: false } };
 
 const sans = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-body", display: "swap" });
-const display = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["600", "700"], variable: "--font-display-face", display: "swap" });
+const display = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["600", "700"], variable: "--font-display-face", display: "optional" });
 
 /** The back office uses the store's colors but starts light; staff can switch to dark (remembered separately from the store). */
 export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {

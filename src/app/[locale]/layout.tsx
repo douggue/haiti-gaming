@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 // Self-hosted at build time by Next.js (no request to Google from visitors' phones).
 const sans = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-body", display: "swap" });
-const display = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["600", "700"], variable: "--font-display-face", display: "swap" });
+const display = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["600", "700"], variable: "--font-display-face", display: "optional" });
 
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -53,9 +53,12 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const [settings, currency, t, user, hdrs, jar] = await Promise.all([getDisplaySettings(), getDisplayCurrency(), getTranslations("common"), getUser(), headers(), cookies()]);
   // Data saver: the visitor's toggle, or the browser's Save-Data signal.
   const dataSaver = jar.get("hg_ds")?.value === "1" || (jar.get("hg_ds")?.value !== "0" && hdrs.get("save-data") === "on");
+  // Light/dark: the visitor's saved choice (cookie), else the store default. Rendered by the server, so it never flashes.
+  const themeCookie = jar.get("hg_theme")?.value;
+  const dark = themeCookie ? themeCookie === "dark" : fullTheme(settings.theme).defaultMode === "dark";
 
   return (
-    <html lang={locale} suppressHydrationWarning className={`${sans.variable} ${display.variable}${dataSaver ? " data-saver" : ""}`} {...themeAttrs(settings.theme)}>
+    <html lang={locale} suppressHydrationWarning className={`${sans.variable} ${display.variable}${dataSaver ? " data-saver" : ""}${dark ? " dark" : ""}`} {...themeAttrs(settings.theme)}>
       <head>
         {/* Applies light/dark before paint to avoid a flash */}
         <script dangerouslySetInnerHTML={{ __html: themeScript(fullTheme(settings.theme).defaultMode) }} />

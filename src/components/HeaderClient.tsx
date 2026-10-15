@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { Flag } from "./Flags";
 import { useLocale, useTranslations } from "next-intl";
@@ -52,6 +52,8 @@ export function ThemeToggle({ withLabel = false }: { withLabel?: boolean }) {
     document.documentElement.classList.toggle("dark", next);
     try {
       localStorage.setItem("hg_theme", next ? "dark" : "light");
+      // Also a cookie, so the server sends the page already in the right theme (no flash on any navigation).
+      document.cookie = `hg_theme=${next ? "dark" : "light"}; path=/; max-age=31536000; samesite=lax`;
     } catch {}
   }
   return (
@@ -208,6 +210,31 @@ export function LanguageFlags({ className = "" }: { className?: string }) {
   );
 }
 
+/**
+ * Cart count. It "pops" only when the count goes up while the page is open (something was just added),
+ * not when a page loads, the language changes or the saved cart arrives.
+ */
+function CountBadge({ count, className }: { count: number; className: string }) {
+  const seen = useRef<number | null>(null);
+  const mountedAt = useRef(0);
+  const [bump, setBump] = useState(0);
+  useEffect(() => {
+    mountedAt.current = performance.now();
+  }, []);
+  useEffect(() => {
+    const before = seen.current;
+    seen.current = count;
+    // First value after loading: just show it. The account cart merging in a moment later is not an "add" either.
+    if (before === null || performance.now() - mountedAt.current < 2500) return;
+    if (count > before) setBump((b) => b + 1);
+  }, [count]);
+  return (
+    <span key={bump} className={`${bump ? "pop " : ""}${className}`}>
+      {count}
+    </span>
+  );
+}
+
 export function CartButton() {
   const t = useTranslations("common");
   const { count, ready } = useStore();
@@ -215,9 +242,7 @@ export function CartButton() {
     <Link href="/cart" className="btn-ghost relative min-h-10 px-2.5" aria-label={`${t("cart")} (${count})`}>
       <CartIcon />
       {ready && count > 0 && (
-        <span key={count} className="pop absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white shadow-[0_0_10px_var(--glow)]">
-          {count}
-        </span>
+        <CountBadge count={count} className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white shadow-[0_0_10px_var(--glow)]" />
       )}
     </Link>
   );
@@ -362,7 +387,7 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
               <span className={`relative grid h-7 w-12 place-items-center rounded-full transition-colors ${active ? "bg-primary-soft" : ""}`}>
                 <Icon width={20} height={20} />
                 {!!badge && (
-                  <span key={badge} className="pop absolute -right-0.5 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{badge}</span>
+                  <CountBadge count={badge} className="absolute -right-0.5 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white" />
                 )}
               </span>
               <span className="max-w-full truncate px-1">{label}</span>
