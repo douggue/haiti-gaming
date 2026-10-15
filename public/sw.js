@@ -1,10 +1,10 @@
 // Haiti Gaming service worker: offline fallback page only. Pages and data are never cached,
 // so customers always see current prices, balances and order status.
-const CACHE = "hg-offline-v1";
+const CACHE = "hg-offline-v2";
 const OFFLINE = "/offline.html";
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll([OFFLINE, "/icon.svg"])));
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll([OFFLINE, "/icon-192.png"])));
   self.skipWaiting();
 });
 
