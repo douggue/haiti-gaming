@@ -7,7 +7,7 @@ import type { FeedSale } from "@/lib/trust";
 
 const COUNT_KEY = "hg_pop_count";
 const OFF_KEY = "hg_pop_off";
-const SHOW_MS = 6500;
+const SHOW_MS = 3500;
 
 function session(key: string): string | null {
   try {
@@ -24,7 +24,7 @@ function setSession(key: string, v: string) {
 const between = (a: number, b: number) => a + Math.random() * (b - a);
 
 /**
- * "Jean P. · 🇭🇹 Pòtoprens — bought 520 Diamonds — today · Delivered ✓"
+ * "Jean P. · 🇭🇹 Pòtoprens — bought 520 Diamonds · today", as a quick notification under the header (3.5 s).
  * Real sales only (site orders + sales staff added from WhatsApp). At most `perVisit` per browser session across pages,
  * first after ~10 s then every 40–60 s, gone for the visit once closed, never with data saver on.
  */
@@ -32,6 +32,7 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
   const t = useTranslations("trust");
   const [current, setCurrent] = useState<FeedSale | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [top, setTop] = useState(72);
   const order = useRef<FeedSale[]>([]);
 
   useEffect(() => {
@@ -45,6 +46,9 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
         if (count >= perVisit || session(OFF_KEY) || shownHere >= order.current.length) return;
         setSession(COUNT_KEY, String(count + 1));
         setLeaving(false);
+        // Right under the header (taller at the top of the page when the announcement bar shows).
+        const h = document.querySelector("header")?.getBoundingClientRect().bottom ?? 64;
+        setTop(Math.max(8, Math.round(h)) + 8);
         setCurrent(order.current[shownHere++]);
         timer = setTimeout(() => {
           setLeaving(true);
@@ -66,12 +70,12 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
   const initials = product.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
   return (
+    <div className="pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 md:justify-end md:px-6" style={{ top }}>
     <div
       role="status"
       aria-live="polite"
       data-leaving={leaving ? "" : undefined}
-      className="sale-pop kb-hide fixed left-3 z-40 flex max-w-[calc(100vw-1.5rem)] items-center gap-2.5 rounded-2xl border border-border bg-surface/95 py-2 pl-2 pr-1.5 shadow-[0_12px_30px_-14px_rgba(0,0,0,.6)] backdrop-blur sm:max-w-xs md:bottom-6 md:left-6"
-      style={{ bottom: "calc(9.5rem + env(safe-area-inset-bottom, 0px))" }}
+      className="sale-pop pointer-events-auto flex max-w-full items-center gap-2.5 rounded-2xl border border-border bg-surface/95 py-2 pl-2 pr-1.5 shadow-[0_12px_30px_-14px_rgba(0,0,0,.6)] backdrop-blur sm:max-w-xs"
     >
       <span className="relative h-9 w-9 shrink-0">
         <span
@@ -101,6 +105,7 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
       >
         <CloseIcon width={12} height={12} />
       </button>
+    </div>
     </div>
   );
 }

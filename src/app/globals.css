@@ -431,16 +431,16 @@ html[data-kb] .kb-hide {
   to { background-position: 28px 0; }
 }
 .sale-pop {
-  animation: sale-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation: sale-in 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
 }
 .sale-pop[data-leaving] {
-  animation: sale-out 0.35s ease-in both;
+  animation: sale-out 0.3s ease-in both;
 }
 @keyframes sale-in {
-  from { transform: translateY(24px) scale(0.96); opacity: 0; }
+  from { transform: translateY(-18px) scale(0.97); opacity: 0; }
 }
 @keyframes sale-out {
-  to { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(-14px); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .low-dot, .low-bar, .sale-pop, .sale-pop[data-leaving] { animation: none; }
