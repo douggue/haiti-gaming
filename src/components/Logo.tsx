@@ -1,4 +1,4 @@
-/** Uploaded logo (Settings → Brand images) or the built-in mark: a controller with Haiti's blue and red buttons in a rounded tile. */
+/** Uploaded logo (Settings → Brand images) or the built-in mark: a controller half blue (red D-pad) and half red (blue buttons), with "Haiti" in blue and "Gaming" in red. */
 export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { className?: string; src?: string; darkSrc?: string; alt?: string }) {
   if (src) {
     return (
@@ -15,21 +15,30 @@ export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { c
   return (
     <span className={`inline-flex items-center gap-2 font-extrabold tracking-tight ${className}`}>
       <svg width="30" height="30" viewBox="0 0 100 100" aria-hidden>
-        <rect width="100" height="100" rx="24" style={{ fill: "var(--primary)" }} />
-        <g fill="#fff">
-          <rect x="12" y="34" width="76" height="34" rx="17" />
-          <circle cx="27" cy="63" r="15" />
-          <circle cx="73" cy="63" r="15" />
+        <defs>
+          <clipPath id="hg-pad">
+            <rect x="10" y="32" width="80" height="38" rx="19" />
+            <circle cx="27" cy="64" r="16" />
+            <circle cx="73" cy="64" r="16" />
+          </clipPath>
+        </defs>
+        <rect width="100" height="100" rx="24" fill="#fff" />
+        {/* Haiti's flag on the controller: blue half with a red D-pad, red half with blue buttons */}
+        <g clipPath="url(#hg-pad)">
+          <rect width="50" height="100" fill="#00209F" />
+          <rect x="50" width="50" height="100" fill="#D21034" />
         </g>
-        {/* Haiti's flag colours on the D-pad and buttons */}
-        <path d="M24 47h5v-5h5v5h5v5h-5v5h-5v-5h-5z" fill="#00209F" />
-        <circle cx="67" cy="46" r="4.2" fill="#D21034" />
-        <circle cx="76" cy="53" r="4.2" fill="#D21034" />
-        <circle cx="58" cy="53" r="4.2" fill="#00209F" />
-        <circle cx="67" cy="60" r="4.2" fill="#00209F" />
+        <path d="M22 48h6v-6h6v6h6v6h-6v6h-6v-6h-6z" fill="#D21034" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" />
+        <g fill="#00209F" stroke="#fff" strokeWidth="1.5">
+          <circle cx="68" cy="45" r="4.6" />
+          <circle cx="77" cy="53" r="4.6" />
+          <circle cx="59" cy="53" r="4.6" />
+          <circle cx="68" cy="61" r="4.6" />
+        </g>
       </svg>
       <span className="display text-[0.95rem] leading-none max-[349px]:sr-only min-[400px]:text-[1.1rem]">
-        Haiti<span className="text-primary">Gaming</span>
+        <span className="text-[#00209F] dark:text-[#5b86ff]">Haiti</span>
+        <span className="text-[#D21034] dark:text-[#ff4d6a]">Gaming</span>
       </span>
     </span>
   );
