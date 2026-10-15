@@ -13,6 +13,7 @@ import { InsufficientFundsError } from "@/lib/ledger";
 import { addEvent } from "@/lib/orders";
 import { notify } from "@/lib/notify";
 import { savePrivateImage, uploadsEnabled, UploadError } from "@/lib/storage";
+import { mustVerifyEmail } from "@/lib/verify-email";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -29,6 +30,7 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
   if (!(await verifyTurnstile(String(form.get("cf-turnstile-response") ?? ""), (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim()))) {
     return { ok: false, error: "captcha" };
   }
+  if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
   const settings = await getSettings();
   const method = form.get("method");
   const amount = parseAmount(String(form.get("amount") ?? ""));
@@ -138,6 +140,7 @@ export async function retryMoncash(orderId: string): Promise<ActionResult<{ redi
 
 export async function requestQuote(from: "HTG" | "USD", amountInput: string): Promise<ActionResult<{ quote: { id: string; from: string; to: string; fromAmount: number; toAmount: number; rate: number; fee: number; expiresAt: string } }>> {
   const user = await assertUser();
+  if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
   if (from !== "HTG" && from !== "USD") return { ok: false, error: "invalid" };
   const amount = parseAmount(amountInput);
   if (!amount || amount > 100_000_000) return { ok: false, error: "invalidAmount" };
@@ -153,6 +156,7 @@ export async function requestQuote(from: "HTG" | "USD", amountInput: string): Pr
 
 export async function confirmExchange(quoteId: string): Promise<ActionResult> {
   const user = await assertUser();
+  if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
   try {
     await prisma.$transaction(async (tx) => {
       // Mark used first: the conditional update makes a double-submit a no-op.

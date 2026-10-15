@@ -3,13 +3,16 @@ import { requireUser } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
 import { moncashAvailable } from "@/lib/payments/moncash";
 import { DepositForm } from "@/components/DepositForm";
+import { VerifyGate } from "@/components/VerifyGate";
+import { mustVerifyEmail } from "@/lib/verify-email";
 import { getManualMethods } from "@/lib/manual-methods";
 import { Link } from "@/i18n/navigation";
 
 export default async function DepositPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireUser(locale);
+  const user = await requireUser(locale);
+  if (await mustVerifyEmail(user.id)) return <VerifyGate email={user.email} />;
   const [tw, tc, s, manual] = await Promise.all([getTranslations("wallet"), getTranslations("common"), getSettings(), getManualMethods(locale, "deposits")]);
   return (
     <div className="max-w-2xl space-y-6">

@@ -122,6 +122,7 @@ export function DepositForm(p: Props) {
     method_unavailable: tco("errors.method_unavailable"),
     upload: tw("uploadBad"),
     captcha: tc("captcha"),
+    verify_email: tco("errors.verify_email"),
   };
 
   async function pickShot(f: File | undefined) {

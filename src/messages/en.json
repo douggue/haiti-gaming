@@ -182,7 +182,8 @@
       "insufficient": "Your wallet balance is too low for this order.",
       "account_restricted": "Your account cannot place orders right now. Please contact support.",
       "generic": "We could not place your order. Please try again.",
-      "invalid_amount": "The amount is invalid or outside the limits. Change it and try again."
+      "invalid_amount": "The amount is invalid or outside the limits. Change it and try again.",
+      "verify_email": "Confirm your email before continuing. Check your inbox."
     }
   },
   "order": {
@@ -567,5 +568,27 @@
     "loginSub": "Sign in to see your orders and wallet.",
     "registerSub": "Free. You can buy right after.",
     "welcomeBack": "Welcome back!"
+  },
+  "verifyGate": {
+    "title": "Confirm your email to continue",
+    "body": "To protect your account, confirm your email before buying, depositing or exchanging. We sent a link to:",
+    "why": "You can still browse products, fill your cart and contact support.",
+    "resend": "Resend the email",
+    "sent": "Email sent! Check your inbox (and spam).",
+    "wait": "Wait {s}s",
+    "done": "I already confirmed it",
+    "wrong": "Wrong email?",
+    "change": "Change the email",
+    "newEmail": "New email",
+    "save": "Save and send the link",
+    "changed": "Email changed. We sent a new link.",
+    "cancel": "Cancel",
+    "errors": {
+      "invalid_email": "That email isn't valid.",
+      "email_taken": "Another account already uses this email.",
+      "too_many": "Too many changes today. Try tomorrow or contact support.",
+      "already_verified": "Your email is already confirmed. Refresh the page.",
+      "generic": "Something went wrong. Try again."
+    }
   }
 }

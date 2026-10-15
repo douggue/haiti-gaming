@@ -6,6 +6,7 @@ import { InsufficientFundsError } from "@/lib/ledger";
 import { LimitExceededError } from "@/lib/risk";
 import { createMoncashPayment } from "@/lib/payments/moncash";
 import { z } from "zod";
+import { mustVerifyEmail } from "@/lib/verify-email";
 
 const input = z.object({
   items: cartSchema,
@@ -24,6 +25,7 @@ export async function placeOrder(raw: unknown): Promise<PlaceOrderResult> {
   } catch {
     return { ok: false, error: "signin" };
   }
+  if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
   const parsed = input.safeParse(raw);
   if (!parsed.success) return { ok: false, error: "invalid_field" };
   const { items, currency, method, note, manualMethodId } = parsed.data;

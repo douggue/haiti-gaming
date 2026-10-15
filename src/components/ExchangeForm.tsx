@@ -30,7 +30,7 @@ export function ExchangeForm({ balances, midRate }: { balances: { HTG: number; U
     return () => clearInterval(id);
   }, [quote]);
 
-  const errText = (e: string) => (e === "insufficient" ? tco("errors.insufficient") : tw.has(e) ? tw(e as "quoteExpired") : tc("error"));
+  const errText = (e: string) => (e === "insufficient" || e === "verify_email" ? tco(`errors.${e}`) : tw.has(e) ? tw(e as "quoteExpired") : tc("error"));
 
   return (
     <div className="card space-y-5 p-5 sm:p-6">

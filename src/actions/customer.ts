@@ -138,3 +138,33 @@ export async function deleteAccount(password: string): Promise<R> {
   await audit(user.id, "account.delete", "User", user.id);
   return { ok: true };
 }
+
+/**
+ * Fix a mistyped email before it is confirmed (the lock screen offers this). A confirmed email is changed by support only.
+ * At most 3 changes a day, and the new address must not belong to another account.
+ */
+export async function changeUnverifiedEmail(newEmail: string, callbackURL: string): Promise<R> {
+  const user = await assertUser();
+  const row = await prisma.user.findUnique({ where: { id: user.id }, select: { email: true, emailVerified: true } });
+  if (!row) return { ok: false, error: "generic" };
+  if (row.emailVerified) return { ok: false, error: "already_verified" };
+  const parsed = z.string().trim().toLowerCase().email().max(200).safeParse(newEmail);
+  if (!parsed.success) return { ok: false, error: "invalid_email" };
+  const email = parsed.data;
+  if (email === row.email) return { ok: true };
+  const since = new Date(Date.now() - 86_400_000);
+  const recent = await prisma.auditEvent.count({ where: { actorId: user.id, action: "email.change_unverified", createdAt: { gte: since } } });
+  if (recent >= 3) return { ok: false, error: "too_many" };
+  if (await prisma.user.findUnique({ where: { email }, select: { id: true } })) return { ok: false, error: "email_taken" };
+  await prisma.user.update({ where: { id: user.id }, data: { email } });
+  await audit(user.id, "email.change_unverified", "User", user.id, { from: row.email, to: email });
+  const { auth } = await import("@/lib/auth");
+  const back = callbackURL.startsWith("/") && !callbackURL.startsWith("//") ? callbackURL : "/";
+  try {
+    await auth.api.sendVerificationEmail({ body: { email, callbackURL: back } });
+  } catch (e) {
+    console.error("verification email after change failed", e);
+  }
+  revalidatePath("/", "layout");
+  return { ok: true };
+}

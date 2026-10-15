@@ -182,7 +182,8 @@
       "insufficient": "Le solde de votre portefeuille est insuffisant.",
       "account_restricted": "Votre compte ne peut pas passer de commande pour le moment. Contactez le support.",
       "generic": "Impossible de passer votre commande. Veuillez réessayer.",
-      "invalid_amount": "Le montant n'est pas valide ou hors limites. Modifiez-le et réessayez."
+      "invalid_amount": "Le montant n'est pas valide ou hors limites. Modifiez-le et réessayez.",
+      "verify_email": "Confirmez votre e-mail avant de continuer. Vérifiez votre boîte de réception."
     }
   },
   "order": {
@@ -567,5 +568,27 @@
     "loginSub": "Connectez-vous pour voir vos commandes et votre portefeuille.",
     "registerSub": "Gratuit. Vous pouvez acheter tout de suite après.",
     "welcomeBack": "Bon retour !"
+  },
+  "verifyGate": {
+    "title": "Confirmez votre e-mail pour continuer",
+    "body": "Pour protéger votre compte, confirmez votre e-mail avant d'acheter, de déposer ou d'échanger. Nous avons envoyé un lien à :",
+    "why": "Vous pouvez toujours parcourir les produits, remplir votre panier et contacter le support.",
+    "resend": "Renvoyer l'e-mail",
+    "sent": "E-mail envoyé ! Vérifiez votre boîte de réception (et les spams).",
+    "wait": "Patientez {s} s",
+    "done": "Je l'ai déjà confirmé",
+    "wrong": "Ce n'est pas le bon e-mail ?",
+    "change": "Changer l'e-mail",
+    "newEmail": "Nouvel e-mail",
+    "save": "Enregistrer et envoyer le lien",
+    "changed": "E-mail modifié. Un nouveau lien a été envoyé.",
+    "cancel": "Annuler",
+    "errors": {
+      "invalid_email": "Cet e-mail n'est pas valide.",
+      "email_taken": "Un autre compte utilise déjà cet e-mail.",
+      "too_many": "Trop de changements aujourd'hui. Réessayez demain ou contactez le support.",
+      "already_verified": "Votre e-mail est déjà confirmé. Actualisez la page.",
+      "generic": "Un problème est survenu. Réessayez."
+    }
   }
 }

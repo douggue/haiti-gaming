@@ -39,6 +39,8 @@ export type Settings = {
   /** Header and footer links (Admin → Navigation). Empty = built-in links. */
   navigation: { header: NavLink[]; footer: NavLink[] };
   newsletterEnabled: boolean;
+  /** Customers must confirm their email before ordering, depositing or exchanging (only while email sending is on) */
+  requireEmailVerification: boolean;
   /** New accounts on a browser already used by this many other accounts are flagged for review */
   maxAccountsPerDevice: number;
   /** Brand images (URLs). Empty = built-in logo / default artwork. */
@@ -163,6 +165,7 @@ export const DEFAULT_SETTINGS: Settings = {
   themeHistory: [],
   navigation: { header: [], footer: [] },
   newsletterEnabled: false,
+  requireEmailVerification: true,
   maxAccountsPerDevice: 3,
   moneyExchange: DEFAULT_EXCHANGE,
 };

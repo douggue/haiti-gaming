@@ -182,7 +182,8 @@
       "insufficient": "Pa gen ase lajan nan bous ou pou kòmand sa a.",
       "account_restricted": "Kont ou pa ka pase kòmand kounye a. Tanpri kontakte sipò.",
       "generic": "Nou pa t ka pase kòmand ou. Tanpri eseye ankò.",
-      "invalid_amount": "Montan an pa bon oswa li pa nan limit yo. Chanje l epi eseye ankò."
+      "invalid_amount": "Montan an pa bon oswa li pa nan limit yo. Chanje l epi eseye ankò.",
+      "verify_email": "Konfime imèl ou anvan ou kontinye. Gade bwat resepsyon ou."
     }
   },
   "order": {
@@ -567,5 +568,27 @@
     "loginSub": "Konekte pou wè kòmand ou ak bous ou.",
     "registerSub": "Gratis. Ou ka achte touswit apre.",
     "welcomeBack": "Bon retou!"
+  },
+  "verifyGate": {
+    "title": "Konfime imèl ou pou kontinye",
+    "body": "Pou pwoteje kont ou, konfime imèl ou anvan ou achte, mete lajan oswa chanje lajan. Nou voye yon lyen bay:",
+    "why": "Ou ka toujou gade pwodwi yo, mete yo nan panye epi ekri sipò.",
+    "resend": "Voye imèl la ankò",
+    "sent": "Imèl la pati! Gade bwat resepsyon ou (ak spam).",
+    "wait": "Tann {s} segonn",
+    "done": "Mwen konfime l deja",
+    "wrong": "Se pa bon imèl la?",
+    "change": "Chanje imèl la",
+    "newEmail": "Nouvo imèl",
+    "save": "Anrejistre epi voye lyen an",
+    "changed": "Imèl la chanje. Nou voye yon nouvo lyen.",
+    "cancel": "Anile",
+    "errors": {
+      "invalid_email": "Imèl sa a pa bon.",
+      "email_taken": "Yon lòt kont deja itilize imèl sa a.",
+      "too_many": "Ou chanje imèl la twòp fwa jodi a. Eseye demen oswa ekri sipò.",
+      "already_verified": "Imèl ou deja konfime. Rafrechi paj la.",
+      "generic": "Gen yon pwoblèm. Eseye ankò."
+    }
   }
 }
