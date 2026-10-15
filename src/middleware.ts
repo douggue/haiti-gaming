@@ -1,5 +1,6 @@
 import createMiddleware from "next-intl/middleware";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { CANONICAL_SITE } from "./lib/site-url";
 import { routing } from "./i18n/routing";
 
 const intl = createMiddleware(routing);
@@ -8,6 +9,10 @@ const intl = createMiddleware(routing);
 // Phones in Haiti are usually set to French or English, so the phone language alone would rarely pick Kreyòl.
 // Referral links (?ref=CODE) are remembered for 30 days so the invite counts when the friend signs up later.
 export default function middleware(req: NextRequest) {
+  // The live site has one address: send visitors of the .vercel.app address to haitigaming.net (same page).
+  if (process.env.VERCEL_ENV === "production" && req.nextUrl.hostname.endsWith(".vercel.app")) {
+    return NextResponse.redirect(new URL(req.nextUrl.pathname + req.nextUrl.search, CANONICAL_SITE), 308);
+  }
   const res = intl(inHaitiWithoutChoice(req) ? withLanguage(req, "ht") : req);
   const ref = req.nextUrl.searchParams.get("ref");
   if (ref && /^[A-Z0-9]{6,12}$/i.test(ref)) {
