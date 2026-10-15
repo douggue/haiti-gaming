@@ -372,3 +372,37 @@ body {
     display: none;
   }
 }
+
+/* Language switch: a thin progress bar and a soft dim while the new language loads,
+   then the page fades back in without replaying every entrance animation. */
+html[data-switching] main,
+html[data-switching] footer {
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+html[data-switching] body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  z-index: 100;
+  background: linear-gradient(90deg, transparent, var(--primary), #7c3aed, transparent);
+  background-size: 200% 100%;
+  animation: lang-progress 0.9s linear infinite;
+}
+@keyframes lang-progress {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+html[data-switched] main,
+html[data-switched] footer {
+  animation: lang-fade-in 0.28s ease-out both;
+}
+html[data-switched] .animate-rise,
+html[data-switched] .stagger > * {
+  animation: none !important;
+}
+@keyframes lang-fade-in {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}

@@ -24,7 +24,20 @@ export function ThemeKeeper({ defaultMode }: { defaultMode: "dark" | "light" }) 
       saved = localStorage.getItem("hg_theme");
     } catch {}
     const dark = saved ? saved === "dark" : defaultMode === "dark";
-    document.documentElement.classList.toggle("dark", dark);
+    const html = document.documentElement;
+    html.classList.toggle("dark", dark);
+    // After a language switch: same scroll position, no entrance animations replaying, a short fade in.
+    if (html.dataset.switching) {
+      delete html.dataset.switching;
+      html.dataset.switched = "1";
+      try {
+        const y = Number(sessionStorage.getItem("hg_scroll"));
+        sessionStorage.removeItem("hg_scroll");
+        if (y > 0) window.scrollTo(0, y);
+      } catch {}
+      const id = setTimeout(() => delete html.dataset.switched, 700);
+      return () => clearTimeout(id);
+    }
   }, [locale, pathname, defaultMode]);
   return null;
 }
@@ -86,21 +99,39 @@ function useChangeLocale() {
   const params = useParams();
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [picked, setPicked] = useState<Locale>(locale);
+  useEffect(() => setPicked(locale), [locale]);
+
+  /** Fetch the other languages of this page ahead of time, so switching is near-instant. */
+  const prefetch = () => {
+    for (const l of locales) {
+      // @ts-expect-error -- params are compatible with the current pathname
+      if (l !== locale) router.prefetch({ pathname, params }, { locale: l });
+    }
+  };
+
   const change = (next: Locale) => {
     if (next === locale) return;
+    setPicked(next); // the chosen flag lights up at once
+    // A thin progress bar and a soft fade while the new language loads (see globals.css: data-switching).
+    document.documentElement.dataset.switching = "1";
+    setTimeout(() => delete document.documentElement.dataset.switching, 8000); // never stay dimmed if the network fails
+    try {
+      sessionStorage.setItem("hg_scroll", String(window.scrollY));
+    } catch {}
     start(() => {
       saveLocalePreference(next);
       // @ts-expect-error -- params are compatible with the current pathname
-      router.replace({ pathname, params }, { locale: next });
+      router.replace({ pathname, params }, { locale: next, scroll: false });
     });
   };
-  return { locale, change, pending };
+  return { locale: picked, change, pending, prefetch };
 }
 
 /** Header: the current flag; tapping it opens the four languages. */
 export function LocaleSwitch() {
   const t = useTranslations("common");
-  const { locale, change, pending } = useChangeLocale();
+  const { locale, change, pending, prefetch } = useChangeLocale();
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -112,7 +143,11 @@ export function LocaleSwitch() {
     <div className="relative" onClick={(e) => e.stopPropagation()}>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          if (!open) prefetch();
+          setOpen((o) => !o);
+        }}
+        onPointerEnter={prefetch}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`${t("language")}: ${localeNames[locale]}`}
@@ -148,7 +183,11 @@ export function LocaleSwitch() {
 /** Row of four flags (menu, sign-in and sign-up pages): one tap changes the language. */
 export function LanguageFlags({ className = "" }: { className?: string }) {
   const t = useTranslations("common");
-  const { locale, change, pending } = useChangeLocale();
+  const { locale, change, pending, prefetch } = useChangeLocale();
+  useEffect(() => {
+    const id = setTimeout(prefetch, 800); // after the page has settled
+    return () => clearTimeout(id);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div role="radiogroup" aria-label={t("language")} className={`flex items-center gap-2 ${pending ? "opacity-60" : ""} ${className}`}>
       {locales.map((l) => (
