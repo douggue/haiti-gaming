@@ -7,6 +7,7 @@ import { approvePayment, rejectPaymentAction } from "@/actions/admin";
 import { ActionButton } from "@/components/admin/ActionButton";
 import { PageTitle, Table } from "@/components/admin/ui";
 import { StatusBadge } from "@/components/StatusBadge";
+import { formatPhone } from "@/lib/phone";
 
 export const metadata = { title: "Payments" };
 
@@ -44,7 +45,7 @@ export default async function AdminPayments() {
             <div key={p.id} className="card flex flex-wrap items-start justify-between gap-4 p-4">
               <div className="space-y-1 text-sm">
                 <p className="text-lg font-bold">{formatMoney(p.amount, p.currency, "en")} <span className="text-sm font-medium text-muted">via {p.manualMethod ? `${p.manualMethod.code} (${p.manualMethod.recipientNumber})` : p.provider}</span></p>
-                <p className="break-all">{p.manualMethod?.kind === "crypto" ? "Transaction hash" : "Reference"}: <span className="font-mono font-bold">{p.providerRef}</span> {p.payerPhone && <>· from {p.payerPhone}</>}</p>
+                <p className="break-all">{p.manualMethod?.kind === "crypto" ? "Transaction hash" : "Reference"}: <span className="font-mono font-bold">{p.providerRef}</span> {p.payerPhone && <>· from {formatPhone(p.payerPhone)}</>}</p>
                 {p.manualMethod?.kind === "crypto" && p.providerRef && explorer(p.manualMethod.network, p.providerRef) && (
                   <a href={explorer(p.manualMethod.network, p.providerRef)!} target="_blank" rel="noreferrer" className="font-semibold text-primary">Check on the blockchain ({p.manualMethod.network}) ↗</a>
                 )}

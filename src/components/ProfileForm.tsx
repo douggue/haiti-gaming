@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { updateProfile } from "@/actions/account";
 import { localeNames, locales, type Locale } from "@/i18n/routing";
 import { CITIES } from "@/lib/cities";
+import { PhoneInput } from "./PhoneInput";
 
 export function ProfileForm({ user }: { user: { name: string; email: string; phone: string; locale: string; displayCurrency: string; city: string; showInFeed: boolean } }) {
   const tp = useTranslations("profile");
@@ -34,7 +35,7 @@ export function ProfileForm({ user }: { user: { name: string; email: string; pho
       </div>
       <div>
         <label className="label" htmlFor="phone">{ta("phone")}</label>
-        <input id="phone" name="phone" type="tel" defaultValue={user.phone} maxLength={20} className="input" />
+        <PhoneInput id="phone" name="phone" defaultValue={user.phone} />
       </div>
       <div>
         <label className="label" htmlFor="city">{tp("city")}</label>

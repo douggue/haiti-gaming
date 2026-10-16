@@ -12,6 +12,7 @@ import { ActionButton, ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle, Stat } from "@/components/admin/ui";
 import { StatusBadge } from "@/components/StatusBadge";
 import { linkedAccounts } from "@/lib/devices";
+import { formatPhone } from "@/lib/phone";
 
 export const metadata = { title: "Customer" };
 
@@ -31,7 +32,7 @@ export default async function Customer({ params }: { params: Promise<{ id: strin
   ]);
   return (
     <>
-      <PageTitle title={user.name} sub={`${user.email}${user.phone ? ` · ${user.phone}` : ""} · joined ${user.createdAt.toLocaleDateString("en-US")} · ${user.locale.toUpperCase()}`} actions={<span className="badge bg-surface-2">{user.status}</span>} />
+      <PageTitle title={user.name} sub={`${user.email}${user.phone ? ` · ${formatPhone(user.phone)}` : ""} · joined ${user.createdAt.toLocaleDateString("en-US")} · ${user.locale.toUpperCase()}`} actions={<span className="badge bg-surface-2">{user.status}</span>} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="HTG available" value={formatMoney(balances.HTG.available, "HTG", "en")} />
         <Stat label="HTG held" value={formatMoney(balances.HTG.held, "HTG", "en")} />

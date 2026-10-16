@@ -659,5 +659,23 @@
     "pushUnsupported": "This browser can't receive notifications.",
     "pushError": "We couldn't turn on notifications. Please try again.",
     "welcome": "Notifications are on! We'll let you know about your payments and orders."
+  },
+  "phone": {
+    "bad": "That number looks incomplete. Example: +509 3456 7890 (or +1 809… for another country)."
+  },
+  "gift": {
+    "shareTitle": "Is it a gift? Send it to them",
+    "shareBody": "Tap the button, pick the person in WhatsApp and send the message.",
+    "shareBodyNote": "Your message is ready. Tap the button, pick the person in WhatsApp and send it.",
+    "shareButton": "Send on WhatsApp",
+    "copy": "Copy message",
+    "copied": "Copied!",
+    "messageCode": "🎁 I got you {what}! Open this link to see the code:\n{url}",
+    "messageTopup": "🎁 I sent you {what}! It's already on your account, check the game",
+    "pageTitle": "{name} sent you a gift!",
+    "reveal": "Show the code",
+    "deliveredToAccount": "Already delivered to your account.",
+    "privateNote": "This link is private: don't share it. The code can only be used once.",
+    "shopToo": "Shop on Haiti Gaming too"
   }
 }

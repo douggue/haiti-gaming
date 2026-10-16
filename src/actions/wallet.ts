@@ -13,6 +13,7 @@ import { InsufficientFundsError } from "@/lib/ledger";
 import { addEvent } from "@/lib/orders";
 import { notify } from "@/lib/notify";
 import { savePrivateImage, uploadsEnabled } from "@/lib/storage";
+import { normalizePhone } from "@/lib/phone";
 import { mustVerifyEmail } from "@/lib/verify-email";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
@@ -31,7 +32,7 @@ async function saveEvidence(form: FormData): Promise<string | null> {
     return null;
   }
 }
-const phoneSchema = z.string().trim().max(20).optional();
+const phoneSchema = z.string().max(30).optional().transform((v) => normalizePhone(v) ?? v?.trim().slice(0, 20));
 /** EVM (0x + 64 hex) or Tron (64 hex) transaction hash */
 const txHashSchema = z.string().trim().regex(/^(0x)?[0-9a-fA-F]{64}$/);
 
@@ -83,7 +84,7 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
       await prisma.paymentIntent.create({
         data: {
           userId: user.id, provider: method, manualMethodId, amount, currency, status: "REVIEW",
-          providerRef: manual?.kind === "crypto" ? ref.data.toLowerCase() : ref.data.toUpperCase(), payerPhone: phone.success ? phone.data : null, evidencePath,
+          providerRef: manual?.kind === "crypto" ? ref.data.toLowerCase() : ref.data.toUpperCase(), payerPhone: phone.success ? phone.data || null : null, evidencePath,
         },
       });
     } catch (e) {
@@ -111,7 +112,7 @@ export async function submitOrderNatcash(form: FormData): Promise<ActionResult> 
       await tx.paymentIntent.create({
         data: {
           userId: user.id, orderId: order.id, provider: order.paymentMethod === "MANUAL" ? "MANUAL" : "NATCASH", manualMethodId: order.manualMethodId, amount: order.total, currency: "HTG", status: "REVIEW",
-          providerRef: ref.data.toUpperCase(), payerPhone: phone.success ? phone.data : null, evidencePath,
+          providerRef: ref.data.toUpperCase(), payerPhone: phone.success ? phone.data || null : null, evidencePath,
         },
       });
       await tx.order.update({ where: { id: order.id }, data: { status: "PAYMENT_REVIEW" } });

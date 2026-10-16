@@ -6,6 +6,8 @@ import { usePathname as useRawPathname, useSearchParams } from "next/navigation"
 import { Link, useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
 import { Turnstile, turnstileOn } from "./Turnstile";
+import { PhoneInput } from "./PhoneInput";
+import { normalizePhone } from "@/lib/phone";
 
 export function AuthForm({ mode: firstMode }: { mode: "login" | "register" }) {
   const t = useTranslations("auth");
@@ -61,7 +63,7 @@ export function AuthForm({ mode: firstMode }: { mode: "login" | "register" }) {
             email,
             password,
             name: String(f.get("name")).trim(),
-            phone: String(f.get("phone") ?? "").trim() || undefined,
+            phone: normalizePhone(String(f.get("phone") ?? "")) ?? (String(f.get("phone") ?? "").trim() || undefined),
             locale,
             fetchOptions,
           } as Parameters<typeof authClient.signUp.email>[0]);
@@ -140,7 +142,7 @@ export function AuthForm({ mode: firstMode }: { mode: "login" | "register" }) {
       {mode === "register" && (
         <div className="animate-rise">
           <label htmlFor="phone" className="label">{t("phone")}</label>
-          <input id="phone" name="phone" type="tel" inputMode="tel" placeholder="+509" autoComplete="tel" maxLength={20} className="input" />
+          <PhoneInput id="phone" name="phone" />
         </div>
       )}
       <div>

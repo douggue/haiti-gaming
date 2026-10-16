@@ -47,6 +47,7 @@ test("customer reviews a delivered order, admin puts it on the homepage", async 
   const c = await newPage(browser);
   await registerCustomer(c, "Kervens Augustin", `kervens.${stamp}@example.com`, "Kliyan-Avi-2026!");
   await c.goto("/ht/products/google-play-gift-card");
+  await c.waitForLoadState("networkidle");
   await c.getByRole("button", { name: "Achte kounye a" }).click();
   await c.waitForURL("**/ht/cart");
   await c.getByRole("link", { name: "Peye" }).click();

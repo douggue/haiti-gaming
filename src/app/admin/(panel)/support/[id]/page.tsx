@@ -5,6 +5,7 @@ import { requireStaff } from "@/lib/session";
 import { setTicketStatus, staffReply } from "@/actions/admin";
 import { ActionButton, ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle } from "@/components/admin/ui";
+import { formatPhone, waNumber } from "@/lib/phone";
 
 export const metadata = { title: "Support request" };
 
@@ -48,8 +49,8 @@ export default async function TicketAdmin({ params }: { params: Promise<{ id: st
         <aside className="card h-fit space-y-2 p-5 text-sm">
           <h2 className="font-semibold">Customer</h2>
           <Link href={`/admin/customers/${t.userId}`} className="font-medium text-primary">{t.user.name}</Link>
-          <p className="text-muted">{t.user.email}{t.user.phone ? ` · ${t.user.phone}` : ""} · {t.user.locale.toUpperCase()}</p>
-          {t.user.phone && <a href={`https://wa.me/${t.user.phone.replace(/\D/g, "")}`} target="_blank" className="inline-block text-[#1fa855]">WhatsApp ↗</a>}
+          <p className="text-muted">{t.user.email}{t.user.phone ? ` · ${formatPhone(t.user.phone)}` : ""} · {t.user.locale.toUpperCase()}</p>
+          {t.user.phone && <a href={`https://wa.me/${waNumber(t.user.phone)}`} target="_blank" className="inline-block text-[#1fa855]">WhatsApp ↗</a>}
           {order && <p>Order: <Link href={`/admin/orders/${order.id}`} className="text-primary">#{order.number}</Link> ({order.status})</p>}
         </aside>
       </div>

@@ -9,6 +9,7 @@ import type { ManualMethodView } from "@/lib/manual-methods";
 import { CopyButton } from "./CopyButton";
 import { Turnstile } from "./Turnstile";
 import { PayLogo } from "./PayLogo";
+import { PhoneInput } from "./PhoneInput";
 
 const HTG_PRESETS = [500, 1000, 2500, 5000];
 const USD_PRESETS = [10, 25, 50, 100];
@@ -321,7 +322,7 @@ export function DepositForm(p: Props) {
             {!crypto && (
               <div>
                 <label className="label" htmlFor="payerPhone">{to("payerPhone")}</label>
-                <input id="payerPhone" name="payerPhone" type="tel" inputMode="tel" maxLength={20} placeholder="+509" className="input h-12" />
+                <PhoneInput id="payerPhone" name="payerPhone" className="input h-12" />
               </div>
             )}
 

@@ -659,5 +659,23 @@
     "pushUnsupported": "Este navegador no puede recibir notificaciones.",
     "pushError": "No pudimos activar las notificaciones. Inténtalo de nuevo.",
     "welcome": "¡Notificaciones activadas! Te avisaremos de tus pagos y pedidos."
+  },
+  "phone": {
+    "bad": "Número incompleto. Ejemplo: +509 3456 7890 (o +1 809… para otro país)."
+  },
+  "gift": {
+    "shareTitle": "¿Es un regalo? Envíaselo",
+    "shareBody": "Toca el botón, elige a la persona en WhatsApp y envía el mensaje.",
+    "shareBodyNote": "Tu mensaje está listo. Toca el botón, elige a la persona en WhatsApp y envíalo.",
+    "shareButton": "Enviar por WhatsApp",
+    "copy": "Copiar mensaje",
+    "copied": "¡Copiado!",
+    "messageCode": "🎁 ¡Te regalo {what}! Abre este enlace para ver el código:\n{url}",
+    "messageTopup": "🎁 ¡Te envié {what}! Ya está en tu cuenta, revisa el juego",
+    "pageTitle": "¡{name} te envió un regalo!",
+    "reveal": "Mostrar el código",
+    "deliveredToAccount": "Ya entregado en tu cuenta.",
+    "privateNote": "Este enlace es privado: no lo compartas. El código solo se puede usar una vez.",
+    "shopToo": "Compra tú también en Haiti Gaming"
   }
 }

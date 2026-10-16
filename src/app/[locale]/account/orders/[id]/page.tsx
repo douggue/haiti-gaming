@@ -14,6 +14,9 @@ import { CopyButton } from "@/components/CopyButton";
 import { NatcashOrderForm, MoncashRetryButton } from "@/components/OrderPayment";
 import { WhatsAppIcon } from "@/components/Icons";
 import { ReviewRequest } from "@/components/ReviewRequest";
+import { formatPhone } from "@/lib/phone";
+import { randomToken } from "@/lib/crypto";
+import { GiftShare } from "@/components/GiftShare";
 
 export default async function OrderPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
@@ -36,6 +39,20 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   if (codes.length > 0) await audit(user.id, "code.view.customer", "Order", order.id, { codes: codes.length });
 
   const statusUrl = `${siteUrl()}/${locale}/order-status/${order.id}?t=${order.accessToken}`;
+  // Gift: after delivery, a ready WhatsApp message for the person receiving it (codes go through a private link).
+  let giftText: string | null = null;
+  if (order.status === "FULFILLED") {
+    const tg = await getTranslations("gift");
+    const what = order.items.map((i) => `${t(i.variantName, locale)} ${t(i.productName, locale)}`).join(", ");
+    const note = order.recipientNote ? `"${order.recipientNote}"\n\n` : "";
+    if (codes.length > 0) {
+      const token = order.giftToken ?? (await prisma.order.update({ where: { id: order.id }, data: { giftToken: randomToken(24) } })).giftToken!;
+      giftText = `${note}${tg("messageCode", { what, url: `${siteUrl()}/${locale}/gift/${token}` })}`;
+    } else {
+      const ids = order.items.flatMap((i) => Object.values(i.fieldValues as Record<string, string>)).filter(Boolean).join(", ");
+      giftText = `${note}${tg("messageTopup", { what })}${ids ? ` (${ids})` : ""}\n\n— Haiti Gaming · haitigaming.net`;
+    }
+  }
   const helpText = encodeURIComponent(`${tc("whatsappMessage")} ${to("title", { number: order.number })} ${statusUrl}`);
   const lastPayment = order.payments[0];
 
@@ -57,7 +74,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
           <h2 className="font-semibold">{t(manual.name, locale)}</h2>
           {t(manual.instructions, locale) && <p className="mt-1 whitespace-pre-line text-sm">{t(manual.instructions, locale)}</p>}
           <p className="mt-1 text-sm text-muted">
-            {to("payNatcashBody", { amount: formatMoney(order.total, "HTG", locale), name: manual.recipientName, phone: manual.recipientNumber }).replace("NatCash", t(manual.name, locale))}
+            {to("payNatcashBody", { amount: formatMoney(order.total, "HTG", locale), name: manual.recipientName, phone: formatPhone(manual.recipientNumber) }).replace("NatCash", t(manual.name, locale))}
           </p>
           {lastPayment?.status === "REJECTED" && lastPayment.reviewNote && <p className="mt-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{lastPayment.reviewNote}</p>}
           <NatcashOrderForm orderId={order.id} phone={manual.recipientNumber} methodName={t(manual.name, locale)} />
@@ -67,7 +84,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         <section className="card border-warning p-5">
           <h2 className="font-semibold">{to("payNatcashTitle")}</h2>
           <p className="mt-1 text-sm text-muted">
-            {to("payNatcashBody", { amount: formatMoney(order.total, "HTG", locale), name: settings.natcashRecipientName, phone: settings.natcashRecipientPhone })}
+            {to("payNatcashBody", { amount: formatMoney(order.total, "HTG", locale), name: settings.natcashRecipientName, phone: formatPhone(settings.natcashRecipientPhone) })}
           </p>
           {lastPayment?.status === "REJECTED" && lastPayment.reviewNote && (
             <p className="mt-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{lastPayment.reviewNote}</p>
@@ -136,6 +153,8 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         </div>
         {order.recipientNote && <p className="p-5 text-sm"><span className="text-muted">{to("recipientNote")}:</span> {order.recipientNote}</p>}
       </section>
+
+      {giftText && <GiftShare text={giftText} hasNote={!!order.recipientNote} />}
 
       <section className="card p-5">
         <h2 className="mb-4 font-semibold">{to("timeline")}</h2>

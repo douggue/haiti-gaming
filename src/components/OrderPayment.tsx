@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { retryMoncash, submitOrderNatcash } from "@/actions/wallet";
 import { CopyButton } from "./CopyButton";
+import { PhoneInput } from "./PhoneInput";
+import { formatPhone } from "@/lib/phone";
 
 export function NatcashOrderForm({ orderId, phone, methodName }: { orderId: string; phone: string; methodName?: string }) {
   const to = useTranslations("order");
@@ -30,7 +32,7 @@ export function NatcashOrderForm({ orderId, phone, methodName }: { orderId: stri
     >
       <input type="hidden" name="orderId" value={orderId} />
       <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2">
-        <span className="flex-1 font-mono font-semibold">{phone}</span>
+        <span className="flex-1 font-mono font-semibold">{formatPhone(phone) || phone}</span>
         <CopyButton value={phone.replace(/\s/g, "")} label={to("copy")} done={to("copied")} />
       </div>
       <div>
@@ -39,7 +41,7 @@ export function NatcashOrderForm({ orderId, phone, methodName }: { orderId: stri
       </div>
       <div>
         <label className="label" htmlFor="payerPhone">{to("payerPhone")}</label>
-        <input id="payerPhone" name="payerPhone" type="tel" inputMode="tel" maxLength={20} placeholder="+509" className="input" />
+        <PhoneInput id="payerPhone" name="payerPhone" />
       </div>
       <PhotoPicker name="evidence" label={to("evidence")} />
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
