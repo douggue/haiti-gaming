@@ -635,5 +635,26 @@
     "reviewsSummary": "{avg} / 5 · {count, plural, one {# avi kliyan} other {# avi kliyan}}",
     "verifiedOrder": "Achte sou sit la",
     "verifiedCustomer": "Kliyan verifye"
+  },
+  "pwa": {
+    "title": "Enstale app Haiti Gaming",
+    "iosTitle": "Mete app la sou ekran telefòn ou",
+    "body": "Ouvri boutik la dirèkteman sou ekran telefòn ou, pi vit, san ba navigatè a.",
+    "install": "Enstale",
+    "notNow": "Pita",
+    "iosStep1": "Peze bouton Pataje a (kare ak flèch) anba ekran an",
+    "iosStep2": "Chwazi « Sur l'écran d'accueil » (Add to Home Screen)",
+    "iosStep3": "Peze « Ajouter » (Add) anlè adwat",
+    "installLink": "Enstale app la",
+    "pushTitle": "Notifikasyon sou telefòn ou",
+    "pushBody": "Konnen touswit lè peman w pase, lè kòd ou pare oswa lè kòmand ou livre.",
+    "pushEnable": "Aktive notifikasyon",
+    "pushDisable": "Dezaktive",
+    "pushOn": "✓ Aktive sou aparèy sa a",
+    "pushDenied": "Notifikasyon yo bloke pou sit sa a. Ale nan paramèt telefòn ou pou otorize Haiti Gaming.",
+    "pushIos": "Sou iPhone, enstale app la anvan (Pataje → Sur l'écran d'accueil), epi ouvri l sou ekran an pou aktive notifikasyon.",
+    "pushUnsupported": "Navigatè sa a pa ka resevwa notifikasyon.",
+    "pushError": "Nou pa t ka aktive notifikasyon yo. Eseye ankò.",
+    "welcome": "Notifikasyon aktive! N ap avèti w pou peman ak kòmand ou yo."
   }
 }

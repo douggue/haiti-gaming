@@ -70,6 +70,7 @@ model User {
   reviewed       PaymentIntent[]  @relation("PaymentReviewer")
   quotes         ExchangeQuote[]
   notifications  Notification[]
+  pushSubs       PushSubscription[]
   savedPlayerIds SavedPlayerId[]
   riskFlags      RiskFlag[]
   auditEvents    AuditEvent[]
@@ -527,6 +528,20 @@ model SiteSetting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+/// A browser/phone that accepted push notifications (Web Push). Removed when the push service says it's gone.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Notification {

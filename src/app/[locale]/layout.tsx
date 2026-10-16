@@ -19,6 +19,8 @@ import { Chakra_Petch, Figtree } from "next/font/google";
 import { cookies, headers } from "next/headers";
 import { getUser } from "@/lib/session";
 import { ServiceWorker } from "@/components/ServiceWorker";
+import { InstallPrompt } from "@/components/InstallPrompt";
+import { SPLASH } from "@/lib/splash";
 import "../globals.css";
 
 export const viewport: Viewport = {
@@ -38,6 +40,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     alternates: alternates(locale, ""),
     openGraph: { siteName: settings.businessName, locale, type: "website", ...(settings.ogImageUrl ? { images: [{ url: settings.ogImageUrl, width: 1200, height: 630 }] } : {}) },
     manifest: "/manifest.webmanifest",
+    // Installed on iPhone: full screen, no Safari bar, logo launch screen.
+    appleWebApp: { capable: true, title: "Haiti Gaming", statusBarStyle: "black", startupImage: SPLASH },
     icons: { icon: [{ url: "/favicon-48.png", sizes: "48x48", type: "image/png" }, { url: "/icon-192.png", sizes: "192x192", type: "image/png" }], apple: "/apple-touch-icon.png" },
   };
 }
@@ -81,6 +85,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <BottomNav signedIn={!!user} />
             <ThemeKeeper defaultMode={fullTheme(settings.theme).defaultMode} />
             <ServiceWorker />
+            <InstallPrompt />
           </CartProvider>
         </NextIntlClientProvider>
       </body>

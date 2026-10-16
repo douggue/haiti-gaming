@@ -6,6 +6,7 @@ import es from "@/messages/es.json";
 import { prisma, type Tx } from "./db";
 import { emailEnabled, sendEmail } from "./email";
 import { formatMoney } from "./money";
+import { sendPush } from "./push";
 
 export type NotificationType =
   | "deposit_approved"
@@ -30,7 +31,8 @@ function render(type: string, params: Record<string, string | number>, locale: s
 }
 
 /**
- * In-app notification, plus an email when email is configured and the customer keeps email notifications on.
+ * In-app notification, plus a push notification on the devices where the customer turned them on,
+ * plus an email when email is configured and the customer keeps email notifications on.
  * WhatsApp delivery plugs in here once a WhatsApp Business account is connected.
  */
 export async function notify(
@@ -41,13 +43,15 @@ export async function notify(
   db: Tx = prisma,
 ) {
   await db.notification.create({ data: { userId, type, params, link } });
-  if (!emailEnabled()) return;
   try {
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true, locale: true, status: true, notifyPrefs: true } });
-    const prefs = (user?.notifyPrefs ?? {}) as { email?: boolean };
-    if (!user || user.status === "CLOSED" || prefs.email === false) return;
+    if (!user || user.status === "CLOSED") return;
     const text = render(type, params, user.locale);
-    const url = `${siteUrl()}/${user.locale}${link ?? "/account"}`;
+    const path = `/${user.locale}${link ?? "/account/notifications"}`;
+    await sendPush(userId, { title: "Haiti Gaming", body: text, url: path, tag: type });
+    const prefs = (user.notifyPrefs ?? {}) as { email?: boolean };
+    if (!emailEnabled() || prefs.email === false) return;
+    const url = `${siteUrl()}${path}`;
     await sendEmail({
       to: user.email,
       subject: `Haiti Gaming: ${text.slice(0, 80)}`,
@@ -55,6 +59,6 @@ export async function notify(
       html: `<p style="font-family:Arial,sans-serif;font-size:15px">${text.replace(/[<>&]/g, "")}</p><p><a href="${url}" style="font-family:Arial,sans-serif;color:#1467F5">${url}</a></p>`,
     });
   } catch (e) {
-    console.error("notification email failed", e);
+    console.error("notification delivery failed", e);
   }
 }

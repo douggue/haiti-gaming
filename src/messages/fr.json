@@ -635,5 +635,26 @@
     "reviewsSummary": "{avg} / 5 · {count, plural, one {# avis client} other {# avis clients}}",
     "verifiedOrder": "Acheté sur le site",
     "verifiedCustomer": "Client vérifié"
+  },
+  "pwa": {
+    "title": "Installer l'app Haiti Gaming",
+    "iosTitle": "Ajoutez l'app à votre écran d'accueil",
+    "body": "Ouvrez la boutique directement depuis l'écran de votre téléphone, plus vite, sans barre de navigateur.",
+    "install": "Installer",
+    "notNow": "Plus tard",
+    "iosStep1": "Touchez le bouton Partager (carré avec flèche) en bas de l'écran",
+    "iosStep2": "Choisissez « Sur l'écran d'accueil »",
+    "iosStep3": "Touchez « Ajouter » en haut à droite",
+    "installLink": "Installer l'app",
+    "pushTitle": "Notifications sur votre téléphone",
+    "pushBody": "Sachez tout de suite quand votre paiement passe, quand votre code est prêt ou quand votre commande est livrée.",
+    "pushEnable": "Activer les notifications",
+    "pushDisable": "Désactiver",
+    "pushOn": "✓ Activées sur cet appareil",
+    "pushDenied": "Les notifications sont bloquées pour ce site. Autorisez Haiti Gaming dans les réglages de votre téléphone.",
+    "pushIos": "Sur iPhone, installez d'abord l'app (Partager → Sur l'écran d'accueil), puis ouvrez-la depuis l'écran d'accueil pour activer les notifications.",
+    "pushUnsupported": "Ce navigateur ne peut pas recevoir de notifications.",
+    "pushError": "Impossible d'activer les notifications. Réessayez.",
+    "welcome": "Notifications activées ! Nous vous préviendrons pour vos paiements et commandes."
   }
 }

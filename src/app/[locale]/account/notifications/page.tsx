@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/money";
 import { markNotificationsRead } from "@/actions/account";
 import { PrefsForm } from "@/components/PrivacyForms";
 import { emailEnabled } from "@/lib/email";
+import { PushToggle } from "@/components/PushToggle";
 
 export default async function NotificationsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -30,6 +31,7 @@ export default async function NotificationsPage({ params }: { params: Promise<{ 
           <form action={markNotificationsRead}><button className="btn-secondary min-h-10">{tn("markAllRead")}</button></form>
         )}
       </div>
+      <div className="mt-6 max-w-xl"><PushToggle /></div>
       {items.length === 0 ? (
         <div className="card mt-6 p-10 text-center text-muted">{tn("empty")}</div>
       ) : (

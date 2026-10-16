@@ -5,6 +5,7 @@ import type { Settings } from "@/lib/settings";
 import { Logo } from "./Logo";
 import { PinIcon } from "./Icons";
 import { DataSaverToggle } from "./DataSaverToggle";
+import { InstallLink } from "./InstallPrompt";
 import { NewsletterForm } from "./NewsletterForm";
 import { prisma } from "@/lib/db";
 import { t as txt } from "@/lib/text";
@@ -87,7 +88,7 @@ export async function Footer({ settings }: { settings: Settings }) {
         </div>
       </div>
       {settings.newsletterEnabled && <div className="container-page pb-6"><NewsletterForm /></div>}
-      <div className="container-page pb-6"><DataSaverToggle /></div>
+      <div className="container-page flex flex-wrap items-center gap-x-6 gap-y-3 pb-6"><DataSaverToggle /><InstallLink /></div>
       <div className="border-t border-border py-5 text-center text-xs text-muted">
         © {new Date().getFullYear()} {settings.businessName}. {t("rights")}
       </div>
