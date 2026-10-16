@@ -15,14 +15,18 @@ export function NatcashOrderForm({ orderId, phone, methodName }: { orderId: stri
   return (
     <form
       className="mt-4 space-y-3"
-      action={(fd) =>
+      // onSubmit (not action) so what the customer typed stays in the fields if something goes wrong
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
         start(async () => {
           setError("");
-          const r = await submitOrderNatcash(fd);
-          if (!r.ok) setError(r.error === "duplicate_ref" ? to("duplicateRef") : tc("error"));
-          else router.refresh();
-        })
-      }
+          const r = await submitOrderNatcash(fd).catch(() => ({ ok: false as const, error: "network" }));
+          if (r.ok) return router.refresh();
+          if (r.error === "not_found") return router.refresh(); // already sent, or the order changed: show its current state
+          setError(r.error === "duplicate_ref" ? to("duplicateRef") : r.error === "reference" ? to("referenceBad") : tc("error"));
+        });
+      }}
     >
       <input type="hidden" name="orderId" value={orderId} />
       <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2">
@@ -31,7 +35,7 @@ export function NatcashOrderForm({ orderId, phone, methodName }: { orderId: stri
       </div>
       <div>
         <label className="label" htmlFor="reference">{methodName ? to("reference").replace("NatCash", methodName) : to("reference")}</label>
-        <input id="reference" name="reference" required minLength={4} maxLength={40} pattern="[A-Za-z0-9\-]+" placeholder={to("referencePlaceholder")} className="input" />
+        <input id="reference" name="reference" required minLength={4} maxLength={40} placeholder={to("referencePlaceholder")} className="input" />
       </div>
       <div>
         <label className="label" htmlFor="payerPhone">{to("payerPhone")}</label>

@@ -12,12 +12,25 @@ import { postExchange, quoteExchange } from "@/lib/wallet";
 import { InsufficientFundsError } from "@/lib/ledger";
 import { addEvent } from "@/lib/orders";
 import { notify } from "@/lib/notify";
-import { savePrivateImage, uploadsEnabled, UploadError } from "@/lib/storage";
+import { savePrivateImage, uploadsEnabled } from "@/lib/storage";
 import { mustVerifyEmail } from "@/lib/verify-email";
 
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
-const refSchema = z.string().trim().min(4).max(40).regex(/^[A-Za-z0-9-]+$/);
+// Spaces are dropped (copied from an SMS: "TX 1234 5678"); dots, slashes and underscores are kept (some wallets use them).
+const refSchema = z.string().transform((s) => s.replace(/\s+/g, "")).pipe(z.string().min(4).max(40).regex(/^[A-Za-z0-9._\/-]+$/));
+
+/** The photo is optional: if it can't be stored, the payment still goes through for review (the reference is what's checked). */
+async function saveEvidence(form: FormData): Promise<string | null> {
+  const file = form.get("evidence");
+  if (!(file instanceof File) || file.size === 0 || !uploadsEnabled()) return null;
+  try {
+    return await savePrivateImage(file, "evidence");
+  } catch (e) {
+    console.error("payment photo not saved", e);
+    return null;
+  }
+}
 const phoneSchema = z.string().trim().max(20).optional();
 /** EVM (0x + 64 hex) or Tron (64 hex) transaction hash */
 const txHashSchema = z.string().trim().regex(/^(0x)?[0-9a-fA-F]{64}$/);
@@ -65,16 +78,7 @@ export async function createDeposit(form: FormData): Promise<ActionResult<{ redi
     const ref = (manual?.kind === "crypto" ? txHashSchema : refSchema).safeParse(form.get("reference"));
     if (!ref.success) return { ok: false, error: manual?.kind === "crypto" ? "tx_hash" : "reference" };
     const phone = phoneSchema.safeParse(form.get("payerPhone") ?? undefined);
-    let evidencePath: string | null = null;
-    const file = form.get("evidence");
-    if (file instanceof File && file.size > 0 && uploadsEnabled()) {
-      try {
-        evidencePath = await savePrivateImage(file, "evidence");
-      } catch (e) {
-        if (e instanceof UploadError) return { ok: false, error: "upload" };
-        throw e;
-      }
-    }
+    const evidencePath = await saveEvidence(form);
     try {
       await prisma.paymentIntent.create({
         data: {
@@ -100,15 +104,7 @@ export async function submitOrderNatcash(form: FormData): Promise<ActionResult> 
   if (!ref.success) return { ok: false, error: "reference" };
   const order = await prisma.order.findFirst({ where: { id: orderId, userId: user.id, paymentMethod: { in: ["NATCASH", "MANUAL"] }, status: "AWAITING_PAYMENT" } });
   if (!order) return { ok: false, error: "not_found" };
-  let evidencePath: string | null = null;
-  const file = form.get("evidence");
-  if (file instanceof File && file.size > 0 && uploadsEnabled()) {
-    try {
-      evidencePath = await savePrivateImage(file, "evidence");
-    } catch {
-      return { ok: false, error: "upload" };
-    }
-  }
+  const evidencePath = await saveEvidence(form);
   const phone = phoneSchema.safeParse(form.get("payerPhone") ?? undefined);
   try {
     await prisma.$transaction(async (tx) => {
@@ -123,7 +119,8 @@ export async function submitOrderNatcash(form: FormData): Promise<ActionResult> 
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return { ok: false, error: "duplicate_ref" };
-    throw e;
+    console.error("order payment proof failed", e);
+    return { ok: false, error: "error" };
   }
   revalidatePath(`/[locale]/account/orders/${order.id}`, "page");
   return { ok: true };

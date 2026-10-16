@@ -305,7 +305,7 @@ export function DepositForm(p: Props) {
                 spellCheck={false}
                 {...(crypto
                   ? { pattern: "(0x)?[0-9a-fA-F]{64}", maxLength: 66, placeholder: "0x…" }
-                  : { minLength: 4, maxLength: 40, pattern: "[A-Za-z0-9\\-]+", placeholder: to("referencePlaceholder"), inputMode: "text" as const })}
+                  : { minLength: 4, maxLength: 40, placeholder: to("referencePlaceholder"), inputMode: "text" as const })}
                 className={`input h-12 font-mono ${crypto ? "text-sm" : "text-base tracking-wider"}`}
               />
               {crypto ? (

@@ -243,7 +243,8 @@
     "recipientNote": "Mensaje",
     "duplicateRef": "Esta referencia ya fue usada.",
     "waitingDelivery": "Estamos preparando tu pedido. Te avisaremos cuando se entregue.",
-    "shareStatus": "Copiar enlace de seguimiento"
+    "shareStatus": "Copiar enlace de seguimiento",
+    "referenceBad": "La referencia no es válida. Escríbela tal como aparece en el mensaje de NatCash (mínimo 4 caracteres)."
   },
   "account": {
     "dashboard": "Panel",

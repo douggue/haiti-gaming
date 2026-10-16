@@ -243,7 +243,8 @@
     "recipientNote": "Message",
     "duplicateRef": "This reference was already used.",
     "waitingDelivery": "We are preparing your order. You will be notified when it is delivered.",
-    "shareStatus": "Copy tracking link"
+    "shareStatus": "Copy tracking link",
+    "referenceBad": "That reference doesn't look right. Enter it exactly as shown in the NatCash message (at least 4 characters)."
   },
   "account": {
     "dashboard": "Dashboard",
