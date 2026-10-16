@@ -147,7 +147,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
             );
           })}
         </div>
-        {variant?.inStock && variant.lowStock && <LowStock name={t(variant.name, locale)} />}
+        {variant?.inStock && variant.lowStock && <LowStock name={t(variant.name, locale)} seed={variant.id} />}
       </fieldset>
       )}
 
@@ -216,8 +216,15 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
   );
 }
 
+/** Bar length 12–38 %, different per option but the same on every visit (so it doesn't jump on reload). */
+function barWidth(seed: string) {
+  let h = 0;
+  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return 12 + (h % 27);
+}
+
 /** "Stock is low" — never a number: only appears on options under the limit set in Admin → Trust. */
-function LowStock({ name }: { name: string }) {
+function LowStock({ name, seed }: { name: string; seed: string }) {
   const tp = useTranslations("product");
   return (
     <div role="status" className="animate-rise mt-3 flex items-center gap-3 rounded-2xl border border-warning/40 bg-warning-soft px-4 py-3">
@@ -226,7 +233,7 @@ function LowStock({ name }: { name: string }) {
         <b className="block text-sm text-warning">{tp("lowStock")}</b>
         <span className="text-xs text-muted">{tp("lowStockHint", { name })}</span>
         <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
-          <span className="low-bar block h-full w-1/4 rounded-full" />
+          <span className="low-bar block h-full rounded-full" style={{ width: `${barWidth(seed)}%` }} />
         </span>
       </span>
     </div>

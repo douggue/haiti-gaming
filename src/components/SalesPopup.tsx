@@ -7,6 +7,7 @@ import type { FeedSale } from "@/lib/trust";
 
 const COUNT_KEY = "hg_pop_count";
 const OFF_KEY = "hg_pop_off";
+const SEEN_KEY = "hg_pop_seen";
 const SHOW_MS = 3500;
 
 function session(key: string): string | null {
@@ -22,11 +23,23 @@ function setSession(key: string, v: string) {
   } catch {}
 }
 const between = (a: number, b: number) => a + Math.random() * (b - a);
+const saleKey = (s: FeedSale) => `${s.name}|${s.soldAt}`;
+
+/** Fisher–Yates: a real random order (sort with Math.random isn't). */
+function shuffle<T>(list: T[]) {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 /**
  * "Jean P. · 🇭🇹 Pòtoprens — bought 520 Diamonds · today", as a quick notification under the header (3.5 s).
  * Real sales only (site orders + sales staff added from WhatsApp). At most `perVisit` per browser session across pages,
- * first after ~10 s then every 40–60 s, gone for the visit once closed, never with data saver on.
+ * in random order without repeating a sale already shown this visit, first after 4–7 s then every 15–25 s,
+ * gone for the visit once closed, never with data saver on.
  */
 export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; product: { name: string; image: string | null; accent: string | null }; perVisit: number }) {
   const t = useTranslations("trust");
@@ -37,7 +50,9 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
 
   useEffect(() => {
     if (!sales.length || session(OFF_KEY) || document.documentElement.classList.contains("data-saver")) return;
-    order.current = [...sales].sort(() => Math.random() - 0.5);
+    const seen = new Set((session(SEEN_KEY) ?? "").split("\n"));
+    const fresh = shuffle(sales.filter((s) => !seen.has(saleKey(s))));
+    order.current = fresh.length ? fresh : shuffle(sales);
     let timer: ReturnType<typeof setTimeout>;
     let shownHere = 0;
     const next = (delay: number) => {
@@ -49,17 +64,19 @@ export function SalesPopup({ sales, product, perVisit }: { sales: FeedSale[]; pr
         // Right under the header (taller at the top of the page when the announcement bar shows).
         const h = document.querySelector("header")?.getBoundingClientRect().bottom ?? 64;
         setTop(Math.max(8, Math.round(h)) + 8);
-        setCurrent(order.current[shownHere++]);
+        const sale = order.current[shownHere++];
+        setSession(SEEN_KEY, [...(session(SEEN_KEY) ?? "").split("\n").filter(Boolean), saleKey(sale)].slice(-50).join("\n"));
+        setCurrent(sale);
         timer = setTimeout(() => {
           setLeaving(true);
           timer = setTimeout(() => {
             setCurrent(null);
-            next(between(40_000, 60_000));
+            next(between(15_000, 25_000));
           }, 350);
         }, SHOW_MS);
       }, delay);
     };
-    next(between(8_000, 14_000));
+    next(between(4_000, 7_000));
     return () => clearTimeout(timer);
   }, [sales, perVisit]);
 
