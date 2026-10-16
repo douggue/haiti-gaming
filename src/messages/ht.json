@@ -156,7 +156,9 @@
     "amountRange": "Ant {min} ak {max}",
     "amountError": "Antre yon montan ant {min} ak {max}.",
     "lowStock": "Stòk la ap fini",
-    "lowStockHint": "{name}: pran l kounye a pandan l disponib."
+    "lowStockHint": "{name}: pran l kounye a pandan l disponib.",
+    "inStock": "Disponib",
+    "soldOut": "Pa disponib"
   },
   "cart": {
     "title": "Panye ou",

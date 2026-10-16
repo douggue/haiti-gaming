@@ -156,7 +156,9 @@
     "amountRange": "Between {min} and {max}",
     "amountError": "Enter an amount between {min} and {max}.",
     "lowStock": "Stock is running low",
-    "lowStockHint": "{name}: grab it while it’s available."
+    "lowStockHint": "{name}: grab it while it’s available.",
+    "inStock": "Available",
+    "soldOut": "Sold out"
   },
   "cart": {
     "title": "Your cart",

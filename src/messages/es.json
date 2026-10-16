@@ -156,7 +156,9 @@
     "amountRange": "Entre {min} y {max}",
     "amountError": "Ingrese un monto entre {min} y {max}.",
     "lowStock": "Quedan pocas unidades",
-    "lowStockHint": "{name}: aprovéchalo mientras está disponible."
+    "lowStockHint": "{name}: aprovéchalo mientras está disponible.",
+    "inStock": "Disponible",
+    "soldOut": "Agotado"
   },
   "cart": {
     "title": "Tu carrito",

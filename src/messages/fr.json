@@ -156,7 +156,9 @@
     "amountRange": "Entre {min} et {max}",
     "amountError": "Entrez un montant entre {min} et {max}.",
     "lowStock": "Stock presque épuisé",
-    "lowStockHint": "{name} : prenez-le maintenant tant qu’il est disponible."
+    "lowStockHint": "{name} : prenez-le maintenant tant qu’il est disponible.",
+    "inStock": "Disponible",
+    "soldOut": "Épuisé"
   },
   "cart": {
     "title": "Votre panier",

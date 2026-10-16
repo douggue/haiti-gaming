@@ -128,16 +128,21 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                 key={v.id}
                 className={`relative flex cursor-pointer flex-col rounded-xl border-2 p-3 transition-colors ${
                   active ? "border-primary bg-primary-soft" : "border-border bg-surface hover:border-steel"
-                } ${!v.inStock ? "cursor-not-allowed opacity-50" : ""}`}
+                } ${!v.inStock ? "cursor-not-allowed opacity-70" : ""}`}
               >
                 <input type="radio" name="variant" value={v.id} checked={active} disabled={!v.inStock} onChange={() => setVariantId(v.id)} className="sr-only" />
-                <span className="text-sm font-semibold">{t(v.name, locale)}</span>
+                <span className={`pr-4 text-sm font-semibold ${!v.inStock ? "text-muted line-through decoration-danger decoration-2" : ""}`}>{t(v.name, locale)}</span>
                 <span className="mt-1 text-sm">
-                  <Price htg={v.salePriceHtg ?? v.priceHtg} className="font-bold" />
+                  <Price htg={v.salePriceHtg ?? v.priceHtg} className={`font-bold ${!v.inStock ? "text-muted" : ""}`} />
                   {v.salePriceHtg && <Price htg={v.priceHtg} className="ml-1.5 text-xs text-muted line-through" />}
                 </span>
-                {!v.inStock && <span className="mt-1 text-xs text-danger">—</span>}
-                {v.inStock && v.lowStock && <span className="low-dot absolute right-2 top-2 h-2 w-2 rounded-full bg-warning" title={tp("lowStock")} aria-hidden />}
+                {!v.inStock && <span className="mt-1 text-xs font-semibold text-danger">{tp("soldOut")}</span>}
+                {/* Green: available · orange (pulsing): stock is low · red: sold out */}
+                <span
+                  className={`absolute right-2.5 top-2.5 h-2 w-2 rounded-full ${!v.inStock ? "bg-danger" : v.lowStock ? "low-dot bg-warning" : "bg-success"}`}
+                  title={!v.inStock ? tp("soldOut") : v.lowStock ? tp("lowStock") : tp("inStock")}
+                  aria-hidden
+                />
               </label>
             );
           })}
