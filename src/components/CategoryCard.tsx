@@ -13,7 +13,7 @@ const TINTS = [
  * Category card (Admin → Products → categories):
  * - cover: big picture filling the whole card (falls back to a colored gradient)
  * - image: small square picture in the white tile (falls back to the emoji icon)
- * The name and product count sit bottom-left, dark on a soft light fade so they stay readable on any picture.
+ * The name and product count sit bottom-left: white on a dark bottom fade when there is a picture, dark on the plain gradient otherwise.
  */
 export function CategoryCard({
   href, name, count, cover, image, icon, index, sub,
@@ -27,17 +27,17 @@ export function CategoryCard({
       {cover && (
         <>
           <Image src={cover} alt="" fill sizes="(min-width: 1024px) 25vw, 50vw" className="ds-hide object-cover transition-transform duration-500 group-hover:scale-105" />
-          {/* Soft light fade on the left so the name stays readable on any picture */}
-          <span aria-hidden className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,.78)_0%,rgba(255,255,255,.45)_38%,transparent_62%)]" />
+          {/* Dark fade from the bottom so the white name stays readable on any picture, however busy or bright */}
+          <span aria-hidden className="absolute inset-0 bg-[linear-gradient(0deg,rgba(6,11,26,.92)_0%,rgba(6,11,26,.7)_30%,rgba(6,11,26,.15)_58%,transparent_75%)]" />
         </>
       )}
       <span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-white/95 text-2xl shadow-sm sm:h-14 sm:w-14 sm:rounded-2xl sm:text-3xl" aria-hidden>
         {image ? <Image src={image} alt="" fill sizes="56px" className="object-cover" /> : icon || "🎮"}
       </span>
-      <span className="relative min-w-0 max-w-[68%]">
+      <span className={`relative min-w-0 ${cover ? "max-w-full text-white [text-shadow:0_2px_10px_rgba(0,0,0,.7)]" : "max-w-[68%]"}`}>
         <span className="display block text-sm font-bold leading-tight sm:text-xl">{name}</span>
-        <span className="mt-0.5 block text-[11px] font-medium text-[#3b4870] sm:text-sm">{count}</span>
-        {sub && <span className="mt-1 hidden truncate text-xs text-[#3b4870] sm:block">{sub}</span>}
+        <span className={`mt-0.5 block text-[11px] font-medium sm:text-sm ${cover ? "text-white/85" : "text-[#3b4870]"}`}>{count}</span>
+        {sub && <span className={`mt-1 hidden truncate text-xs sm:block ${cover ? "text-white/80" : "text-[#3b4870]"}`}>{sub}</span>}
       </span>
     </Link>
   );
