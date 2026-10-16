@@ -12,6 +12,8 @@ import { ProductArt } from "./ProductArt";
 
 export type StoreProduct = {
   id: string;
+  /** Every option marked out of stock in Admin */
+  soldOut?: boolean;
   slug: string;
   name: string;
   image: string | null;
@@ -378,6 +380,7 @@ function Delivery({ p }: { p: StoreProduct }) {
 
 function Tile({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => void }) {
   const tc = useTranslations("common");
+  const tp = useTranslations("product");
   return (
     <Link href={`/products/${p.slug}`} className="card lift group flex flex-col bg-[linear-gradient(180deg,var(--surface-2),var(--surface))] p-3">
       <div className="relative">
@@ -394,7 +397,11 @@ function Tile({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => v
             <span className="text-muted">{tc("from")} </span>
             <Price htg={p.price} className="font-bold text-text" />
           </p>
-          <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-white transition-colors group-hover:bg-primary-hover">{tc("choose")}</span>
+          {p.soldOut ? (
+            <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-surface-2 px-3 text-sm font-bold text-danger">{tp("soldOut")}</span>
+          ) : (
+            <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-white transition-colors group-hover:bg-primary-hover">{tc("choose")}</span>
+          )}
         </div>
       </div>
     </Link>
@@ -403,6 +410,7 @@ function Tile({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => v
 
 function Row({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => void }) {
   const tc = useTranslations("common");
+  const tp = useTranslations("product");
   return (
     <Link href={`/products/${p.slug}`} className="card lift group flex items-center gap-3 bg-[linear-gradient(90deg,var(--surface-2),var(--surface))] p-2.5 sm:gap-4 sm:p-3">
       <div className="relative w-24 shrink-0 sm:w-36">
@@ -419,7 +427,11 @@ function Row({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => vo
             <Price htg={p.price} className="font-bold text-text" />
             {p.onSale && <span className="badge ml-1.5 bg-danger text-white">−%</span>}
           </p>
-          <span className="inline-flex min-h-9 shrink-0 items-center rounded-xl bg-primary px-3 text-xs font-bold text-white transition-colors group-hover:bg-primary-hover">{tc("choose")}</span>
+          {p.soldOut ? (
+            <span className="inline-flex min-h-9 shrink-0 items-center rounded-xl bg-surface-2 px-3 text-xs font-bold text-danger">{tp("soldOut")}</span>
+          ) : (
+            <span className="inline-flex min-h-9 shrink-0 items-center rounded-xl bg-primary px-3 text-xs font-bold text-white transition-colors group-hover:bg-primary-hover">{tc("choose")}</span>
+          )}
         </div>
       </div>
     </Link>

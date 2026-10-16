@@ -49,6 +49,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
       tags: p.tags,
       price: minPrice(p),
       onSale: p.variants.some((v) => v.salePriceHtg),
+      soldOut: p.variants.length > 0 && p.variants.every((v) => v.soldOut),
       instant: p.fulfillmentType === "CODE_INVENTORY",
       delivery: t(p.deliveryEstimate, locale),
       cat: parent ?? p.category.slug,

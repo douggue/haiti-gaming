@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireStaff } from "@/lib/session";
 import { t } from "@/lib/text";
-import { saveVariant } from "@/actions/admin";
+import { saveVariant, setProductSoldOut } from "@/actions/admin";
 import { ActionForm } from "@/components/admin/ActionButton";
 import { LocalizedInputs } from "@/components/admin/LocalizedInputs";
 import { ProductForm } from "@/components/admin/ProductForm";
@@ -41,7 +41,21 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
           image: product.image, gallery: (product.gallery ?? []) as string[], tags: product.tags,
         }}
       />
-      <h2 className="mb-3 mt-10 text-lg font-semibold">Variants (prices in HTG)</h2>
+      <div className="mb-3 mt-10 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Variants (prices in HTG)</h2>
+        <div className="flex flex-wrap gap-2">
+          <ActionForm action={setProductSoldOut}>
+            <input type="hidden" name="productId" value={product.id} />
+            <input type="hidden" name="soldOut" value="1" />
+            <button className="btn-secondary min-h-9 px-3 text-xs text-danger">Mark all out of stock</button>
+          </ActionForm>
+          <ActionForm action={setProductSoldOut}>
+            <input type="hidden" name="productId" value={product.id} />
+            <input type="hidden" name="soldOut" value="0" />
+            <button className="btn-secondary min-h-9 px-3 text-xs">All back in stock</button>
+          </ActionForm>
+        </div>
+      </div>
       <div className="grid gap-4 xl:grid-cols-2">
         {product.variants.map((v) => (
           <ActionForm key={v.id} action={saveVariant} className="card space-y-3 p-4">
@@ -54,7 +68,10 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
               <label><span className="mb-1 block text-xs text-muted">Order</span><input name="sortOrder" type="number" defaultValue={v.sortOrder} className="input" /></label>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={v.isActive} /> Active</label>
+              <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={v.isActive} /> Active</label>
+                <label className={`flex items-center gap-2 ${v.soldOut ? "font-semibold text-danger" : ""}`}><input type="checkbox" name="soldOut" defaultChecked={v.soldOut} /> Out of stock</label>
+              </span>
               {product.fulfillmentType === "CODE_INVENTORY" && <Link href={`/admin/codes?variant=${v.id}`} className="text-primary">{v._count.codes} codes in stock</Link>}
               <button className="btn-secondary min-h-9 px-3 text-xs">Save</button>
             </div>
@@ -69,7 +86,10 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
             <input name="salePrice" placeholder="Sale (optional)" className="input" inputMode="decimal" />
             <input name="sortOrder" type="number" defaultValue={product.variants.length} className="input" />
           </div>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="isActive" defaultChecked /> Active</label>
+          <div className="flex items-center gap-4 text-sm">
+            <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked /> Active</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="soldOut" /> Out of stock</label>
+          </div>
           <button className="btn-primary min-h-9 px-3 text-xs">Add variant</button>
         </ActionForm>
       </div>

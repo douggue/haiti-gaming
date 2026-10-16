@@ -115,7 +115,7 @@ export default async function ProductPage({ params }: { params: P }) {
                 name: v.name as Record<string, string>,
                 priceHtg: v.priceHtg,
                 salePriceHtg: v.salePriceHtg,
-                inStock: stock ? (stock[v.id] ?? 0) > 0 : true,
+                inStock: !v.soldOut && (stock ? (stock[v.id] ?? 0) > 0 : true),
                 lowStock: low.has(v.id),
               })),
             }}

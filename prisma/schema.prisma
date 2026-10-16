@@ -226,6 +226,8 @@ model ProductVariant {
   salePriceHtg Int?
   sortOrder    Int         @default(0)
   isActive     Boolean     @default(true)
+  /// Marked "out of stock" by staff: stays visible (red dot, struck through) but can't be bought
+  soldOut      Boolean     @default(false)
   /// "Stock is low" message: off | auto (codes left under the limit) | on (manual, until lowStockUntil)
   lowStock     String      @default("off")
   lowStockUntil DateTime?

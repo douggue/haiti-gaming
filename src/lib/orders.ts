@@ -80,7 +80,7 @@ export async function createOrder(input: {
 
   const lines = input.items.map((item) => {
     const v = variants.find((x) => x.id === item.variantId);
-    if (!v) throw new OrderError("unavailable");
+    if (!v || v.soldOut) throw new OrderError("unavailable");
     const fieldValues = validateFields(v.product.fields as FieldDef[], item.fields);
     if (isExchangeProduct(settings.moneyExchange, v.product.category)) {
       // The price is never taken from the browser: recomputed from the amount, the fee table and today's rate.

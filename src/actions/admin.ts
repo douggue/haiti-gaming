@@ -212,6 +212,22 @@ async function syncExchangeVariants() {
   }
 }
 
+/** Every option of a product out of stock (or back in stock) in one tap. */
+export async function setProductSoldOut(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("catalog.manage");
+    const productId = String(form.get("productId"));
+    const soldOut = form.get("soldOut") === "1";
+    const r = await prisma.productVariant.updateMany({ where: { productId }, data: { soldOut } });
+    await audit(staff.id, soldOut ? "product.soldOut" : "product.backInStock", "Product", productId, { variants: r.count });
+    revalidatePath(`/admin/products/${productId}`);
+    revalidatePath("/", "layout");
+    return { ok: true, message: soldOut ? "All options out of stock" : "All options back in stock" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
 export async function saveVariant(form: FormData): Promise<R> {
   try {
     const staff = await assertStaff("catalog.manage");
@@ -228,6 +244,7 @@ export async function saveVariant(form: FormData): Promise<R> {
       salePriceHtg: sale,
       sortOrder: Number(form.get("sortOrder") ?? 0) || 0,
       isActive: form.get("isActive") === "on",
+      soldOut: form.get("soldOut") === "on",
     };
     const v = id ? await prisma.productVariant.update({ where: { id }, data }) : await prisma.productVariant.create({ data: { ...data, productId } });
     await audit(staff.id, id ? "variant.update" : "variant.create", "ProductVariant", v.id, { productId, price, sale });
