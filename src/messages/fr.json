@@ -60,7 +60,9 @@
     "products": "produits",
     "codeReady": "Votre code est prêt",
     "choose": "Choisir",
-    "tabAccount": "Compte"
+    "tabAccount": "Compte",
+    "more": "Plus",
+    "faqShort": "FAQ"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",

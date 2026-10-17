@@ -60,7 +60,9 @@
     "products": "products",
     "codeReady": "Your code is ready",
     "choose": "Choose",
-    "tabAccount": "Account"
+    "tabAccount": "Account",
+    "more": "More",
+    "faqShort": "FAQ"
   },
   "home": {
     "eyebrow": "Made in Haiti, for gamers",

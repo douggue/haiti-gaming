@@ -6,6 +6,7 @@ import { isStaff } from "@/lib/permissions";
 import { getDisplaySettings } from "@/lib/settings";
 import { t as txt } from "@/lib/text";
 import { Logo } from "./Logo";
+import { PriorityNav } from "./NavMore";
 import { BellIcon, SearchIcon, UserIcon } from "./Icons";
 import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } from "./HeaderClient";
 
@@ -20,7 +21,7 @@ export async function Header() {
     { href: "/categories", label: t("categories") },
     { href: "/guides", label: t("guides") },
     { href: "/news", label: t("news") },
-    { href: "/faq", label: t("faq") },
+    { href: "/faq", label: t("faqShort") },
   ];
 
   return (
@@ -29,21 +30,9 @@ export async function Header() {
         <Link href="/" className="shrink-0">
           <Logo src={settings.logoUrl} darkSrc={settings.logoDarkUrl} alt={settings.businessName} />
         </Link>
-        <nav className="ml-4 hidden min-w-0 shrink items-center gap-1 overflow-hidden md:flex" aria-label="Main">
-          {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="shrink-0 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-semibold text-muted hover:bg-surface-2 hover:text-text">
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-        <form action={`/${locale}/store`} className="ml-auto hidden min-w-40 flex-1 2xl:block 2xl:max-w-xs" role="search">
-          <label className="relative block">
-            <span className="sr-only">{t("search")}</span>
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" width={18} height={18} />
-            <input name="q" type="search" placeholder={t("searchPlaceholder")} className="input min-h-10 pl-9" />
-          </label>
-        </form>
-        <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1 2xl:ml-2">
+        {/* As many links as fit; the rest go under "More" instead of being cut off */}
+        <PriorityNav items={nav} moreLabel={t("more")} />
+        <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1 md:ml-0">
           <div className="hidden items-center gap-1.5 md:flex">
             <LocaleSwitch />
             <CurrencySwitch />
@@ -53,7 +42,7 @@ export async function Header() {
             <LocaleSwitch />
             <CurrencySwitch compact />
           </div>
-          <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex 2xl:hidden" aria-label={t("search")}>
+          <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex" aria-label={t("search")}>
             <SearchIcon />
           </Link>
           {user && (
