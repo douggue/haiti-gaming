@@ -6,6 +6,7 @@ import { isStaff } from "@/lib/permissions";
 import { getDisplaySettings } from "@/lib/settings";
 import { t as txt } from "@/lib/text";
 import { Logo } from "./Logo";
+import { Avatar } from "./Avatar";
 import { PriorityNav } from "./NavMore";
 import { BellIcon, SearchIcon, UserIcon } from "./Icons";
 import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } from "./HeaderClient";
@@ -57,9 +58,7 @@ export async function Header() {
           </div>
           {user ? (
             <Link href="/account" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex" aria-label={t("account")}>
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-navy text-xs font-bold text-white">
-                {user.name.slice(0, 1).toUpperCase()}
-              </span>
+              <Avatar name={user.name} image={user.image} size={32} />
             </Link>
           ) : (
             <Link href="/auth/login" className="btn-primary glow-btn hidden min-h-10 md:inline-flex">
@@ -70,7 +69,7 @@ export async function Header() {
           {user && isStaff(user.role) && (
             <a href="/admin" className="btn-secondary hidden min-h-10 lg:inline-flex">{t("admin")}</a>
           )}
-          <MobileMenu nav={nav} signedIn={!!user} name={user?.name} />
+          <MobileMenu nav={nav} signedIn={!!user} name={user?.name} image={user?.image} />
         </div>
       </div>
     </header>

@@ -20,6 +20,8 @@ export type SessionUser = {
   displayCurrency: "HTG" | "USD";
   twoFactorEnabled?: boolean | null;
   emailVerified: boolean;
+  /** Profile photo (from Google sign-in) */
+  image?: string | null;
   /** Only for CUSTOM staff roles */
   permissions?: string[];
 };

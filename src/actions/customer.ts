@@ -88,22 +88,34 @@ const cartLine = z.object({
 });
 
 /** The cart follows the customer across devices. Prices are re-checked on the server at checkout anyway. */
-export async function saveCart(lines: unknown): Promise<R> {
+/** Cart saved on the account, with the time it last changed (so an older device can't bring removed items back). */
+type SavedCart = { lines: z.infer<typeof cartLine>[]; updatedAt: number };
+
+function readSaved(raw: unknown): SavedCart {
+  // Older accounts stored just the list of lines.
+  const obj = Array.isArray(raw) ? { lines: raw, updatedAt: 0 } : ((raw ?? {}) as { lines?: unknown; updatedAt?: unknown });
+  const lines = z.array(cartLine).max(20).safeParse(obj.lines ?? []);
+  return { lines: lines.success ? lines.data : [], updatedAt: Number(obj.updatedAt) || 0 };
+}
+
+export async function saveCart(lines: unknown, updatedAt: number): Promise<R> {
   const user = await assertUser();
   const parsed = z.array(cartLine).max(20).safeParse(lines);
-  if (!parsed.success) return { ok: false, error: "invalid" };
-  await prisma.user.update({ where: { id: user.id }, data: { savedCart: parsed.data } });
+  if (!parsed.success || !Number.isFinite(updatedAt)) return { ok: false, error: "invalid" };
+  const row = await prisma.user.findUnique({ where: { id: user.id }, select: { savedCart: true } });
+  // A device with an older cart never overwrites a newer one.
+  if (readSaved(row?.savedCart).updatedAt > updatedAt) return { ok: false, error: "stale" };
+  await prisma.user.update({ where: { id: user.id }, data: { savedCart: { lines: parsed.data, updatedAt: Math.min(updatedAt, Date.now() + 60_000) } } });
   return { ok: true };
 }
 
-export async function getSavedCart(): Promise<unknown[]> {
+export async function getSavedCart(): Promise<SavedCart> {
   try {
     const user = await assertUser();
     const row = await prisma.user.findUnique({ where: { id: user.id }, select: { savedCart: true } });
-    const parsed = z.array(cartLine).max(20).safeParse(row?.savedCart ?? []);
-    return parsed.success ? parsed.data : [];
+    return readSaved(row?.savedCart);
   } catch {
-    return [];
+    return { lines: [], updatedAt: 0 };
   }
 }
 
@@ -132,7 +144,7 @@ export async function deleteAccount(password: string): Promise<R> {
   await prisma.$transaction([
     prisma.user.update({
       where: { id: user.id },
-      data: { name: "Deleted user", email: `deleted+${user.id}@deleted.invalid`, phone: null, status: "CLOSED", savedCart: [], image: null, referralCode: null, emailVerified: false },
+      data: { name: "Deleted user", email: `deleted+${user.id}@deleted.invalid`, phone: null, status: "CLOSED", savedCart: { lines: [], updatedAt: Date.now() }, image: null, referralCode: null, emailVerified: false },
     }),
     prisma.account.deleteMany({ where: { userId: user.id } }),
     prisma.session.deleteMany({ where: { userId: user.id } }),

@@ -10,6 +10,7 @@ import { setCurrency, saveLocalePreference } from "@/actions/prefs";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "./cart/CartProvider";
 import { BagIcon, BookIcon, CartIcon, CloseIcon, FileIcon, HelpIcon, HomeIcon, LoginIcon, LogoutIcon, MenuIcon, MoonIcon, NewsIcon, StoreIcon, SunIcon, TagIcon, UserIcon, UserPlusIcon, WalletIcon } from "./Icons";
+import { Avatar } from "./Avatar";
 
 /**
  * Keeps light/dark after client-side navigation. Changing language re-renders <html> from the server,
@@ -301,7 +302,7 @@ function MenuLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: boolean; name?: string }) {
+export function MobileMenu({ nav, signedIn, name, image }: { nav: NavItem[]; signedIn: boolean; name?: string; image?: string | null }) {
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -327,7 +328,10 @@ export function MobileMenu({ nav, signedIn, name }: { nav: NavItem[]; signedIn: 
           <button type="button" aria-label={t("close")} className="absolute inset-0 bg-midnight/60" onClick={() => setOpen(false)} />
           <div className="animate-rise absolute inset-y-0 right-0 flex w-[86%] max-w-sm flex-col gap-1 overflow-y-auto bg-surface p-4 shadow-2xl">
             <div className="mb-2 flex items-center justify-between">
-              <span className="font-semibold">{name ?? t("menu")}</span>
+              <span className="flex min-w-0 items-center gap-2.5 font-semibold">
+                {name && <Avatar name={name} image={image} size={36} />}
+                <span className="truncate">{name ?? t("menu")}</span>
+              </span>
               <button type="button" className="btn-ghost min-h-10 px-2.5" onClick={() => setOpen(false)}>
                 <CloseIcon />
                 <span className="sr-only">{t("close")}</span>

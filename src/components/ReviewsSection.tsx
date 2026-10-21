@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { cityFlag } from "@/lib/cities";
 import { t } from "@/lib/text";
+import { Avatar } from "./Avatar";
 
 /** Homepage reviews: approved reviews staff ticked "On homepage" in Admin → Trust. Nothing is shown until there is one. */
 export async function ReviewsSection({ locale }: { locale: string }) {
@@ -38,9 +39,7 @@ export async function ReviewsSection({ locale }: { locale: string }) {
             </div>
             <blockquote className="flex-1 text-[15px] leading-relaxed">“{r.quote}”</blockquote>
             <figcaption className="flex items-center gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary font-extrabold text-white" aria-hidden>
-                {r.name.split(/[\s-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("")}
-              </span>
+              <Avatar name={r.name} size={40} />
               <span className="min-w-0">
                 <b className="block">{r.name}</b>
                 <span className="text-sm text-muted">

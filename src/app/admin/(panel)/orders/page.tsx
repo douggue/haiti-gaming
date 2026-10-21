@@ -5,6 +5,7 @@ import { requireStaff } from "@/lib/session";
 import { formatMoney } from "@/lib/money";
 import { PageTitle, Table } from "@/components/admin/ui";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Avatar } from "@/components/Avatar";
 
 export const metadata = { title: "Orders" };
 const STATUSES: OrderStatus[] = ["AWAITING_PAYMENT", "PAYMENT_REVIEW", "PAID", "PROCESSING", "FULFILLED", "FAILED", "CANCELED", "REFUNDED"];
@@ -18,7 +19,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
     const n = Number(sp.q.replace("#", ""));
     where.OR = [{ user: { email: { contains: sp.q, mode: "insensitive" } } }, ...(Number.isInteger(n) && n > 0 ? [{ number: n }] : [])];
   }
-  const orders = await prisma.order.findMany({ where, orderBy: { createdAt: "desc" }, take: 100, include: { user: { select: { name: true, email: true } }, _count: { select: { items: true } } } });
+  const orders = await prisma.order.findMany({ where, orderBy: { createdAt: "desc" }, take: 100, include: { user: { select: { name: true, email: true, image: true } }, _count: { select: { items: true } } } });
   return (
     <>
       <PageTitle title="Orders" />
@@ -34,7 +35,7 @@ export default async function AdminOrders({ searchParams }: { searchParams: Prom
         {orders.map((o) => (
           <tr key={o.id} className="hover:bg-surface-2">
             <td className="px-4 py-3 font-semibold"><Link href={`/admin/orders/${o.id}`} className="text-primary">#{o.number}</Link></td>
-            <td className="px-4 py-3">{o.user.name}<br /><span className="text-xs text-muted">{o.user.email}</span></td>
+            <td className="px-4 py-3"><span className="flex items-center gap-2"><Avatar name={o.user.name} image={o.user.image} size={28} /><span>{o.user.name}<br /><span className="text-xs text-muted">{o.user.email}</span></span></span></td>
             <td className="px-4 py-3">{o._count.items}</td>
             <td className="px-4 py-3">{formatMoney(o.total, o.currency, "en")}</td>
             <td className="px-4 py-3">{o.paymentMethod}</td>

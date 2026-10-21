@@ -12,6 +12,7 @@ import { RevealCodes } from "@/components/admin/RevealCodes";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PageTitle } from "@/components/admin/ui";
 import { formatPhone, waNumber } from "@/lib/phone";
+import { Avatar } from "@/components/Avatar";
 
 export const metadata = { title: "Order" };
 
@@ -84,7 +85,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
         <div className="space-y-4">
           <section className="card p-5 text-sm">
             <h2 className="mb-2 font-semibold">Customer</h2>
-            <Link href={`/admin/customers/${order.userId}`} className="font-medium text-primary">{order.user.name}</Link>
+            <Link href={`/admin/customers/${order.userId}`} className="inline-flex items-center gap-2 font-medium text-primary"><Avatar name={order.user.name} image={order.user.image} size={28} />{order.user.name}</Link>
             <p className="text-muted">{order.user.email} {order.user.phone && <>· <a href={`https://wa.me/${waNumber(order.user.phone)}`} target="_blank" rel="noopener" className="text-[#1fa855]">{formatPhone(order.user.phone)} ↗</a></>}</p>
             {order.recipientNote && <p className="mt-2"><span className="text-muted">Note:</span> {order.recipientNote}</p>}
             <p className="mt-2 break-all text-xs"><span className="text-muted">Tracking link:</span> {`${siteUrl()}/${order.user.locale}/order-status/${order.id}?t=${order.accessToken}`}</p>
