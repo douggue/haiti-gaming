@@ -679,5 +679,12 @@
     "deliveredToAccount": "Li deja sou kont ou.",
     "privateNote": "Lyen sa a prive: pa pataje l. Kòd la ka itilize yon sèl fwa.",
     "shopToo": "Achte pou ou tou sou Haiti Gaming"
+  },
+  "google": {
+    "continue": "Kontinye ak Google",
+    "or": "oswa",
+    "error": "Koneksyon ak Google pa mache. Eseye ankò, oswa itilize imèl ak modpas.",
+    "securityNote": "Ou konekte ak kont Google ou, kidonk ou pa gen modpas isit la. Sekirite kont ou se Google ki jere l: aktive verifikasyon an 2 etap nan kont Google ou.",
+    "deleteConfirmEmail": "Tape imèl kont ou a pou konfime"
   }
 }

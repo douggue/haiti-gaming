@@ -679,5 +679,12 @@
     "deliveredToAccount": "Ya entregado en tu cuenta.",
     "privateNote": "Este enlace es privado: no lo compartas. El código solo se puede usar una vez.",
     "shopToo": "Compra tú también en Haiti Gaming"
+  },
+  "google": {
+    "continue": "Continuar con Google",
+    "or": "o",
+    "error": "No se pudo iniciar sesión con Google. Inténtalo de nuevo o usa correo y contraseña.",
+    "securityNote": "Inicias sesión con tu cuenta de Google, así que aquí no tienes contraseña. Google protege tu acceso: activa la verificación en dos pasos en tu cuenta de Google.",
+    "deleteConfirmEmail": "Escribe el correo de tu cuenta para confirmar"
   }
 }

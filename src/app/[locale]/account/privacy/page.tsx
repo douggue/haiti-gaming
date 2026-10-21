@@ -1,11 +1,13 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireUser } from "@/lib/session";
+import { prisma } from "@/lib/db";
 import { DeleteAccountForm } from "@/components/PrivacyForms";
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  await requireUser(locale);
+  const user = await requireUser(locale);
+  const hasPassword = (await prisma.account.count({ where: { userId: user.id, providerId: "credential" } })) > 0;
   const t = await getTranslations("privacy");
   return (
     <div className="max-w-xl space-y-6">
@@ -15,7 +17,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         <p className="text-sm text-muted">{t("exportBody")}</p>
         <a href="/api/account/export" className="btn-secondary">{t("exportButton")}</a>
       </section>
-      <DeleteAccountForm />
+      <DeleteAccountForm hasPassword={hasPassword} />
     </div>
   );
 }

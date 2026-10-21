@@ -3,7 +3,8 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { deleteAccount, savePrefs } from "@/actions/customer";
 
-export function DeleteAccountForm() {
+export function DeleteAccountForm({ hasPassword = true }: { hasPassword?: boolean }) {
+  const tg = useTranslations("google");
   const t = useTranslations("privacy");
   const tc = useTranslations("common");
   const [error, setError] = useState("");
@@ -23,7 +24,12 @@ export function DeleteAccountForm() {
     >
       <h2 className="font-semibold text-danger">{t("deleteTitle")}</h2>
       <p className="text-sm text-muted">{t("deleteBody")}</p>
-      <label className="block"><span className="label">{t("deleteConfirm")}</span><input name="password" type="password" required autoComplete="current-password" className="input" /></label>
+      {hasPassword ? (
+        <label className="block"><span className="label">{t("deleteConfirm")}</span><input name="password" type="password" required autoComplete="current-password" className="input" /></label>
+      ) : (
+        // Google accounts have no password: typing the account's email confirms instead.
+        <label className="block"><span className="label">{tg("deleteConfirmEmail")}</span><input name="password" type="email" required autoComplete="off" className="input" /></label>
+      )}
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
       <button className="btn-danger" disabled={pending}>{t("deleteButton")}</button>
     </form>

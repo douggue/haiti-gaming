@@ -679,5 +679,12 @@
     "deliveredToAccount": "Already delivered to your account.",
     "privateNote": "This link is private: don't share it. The code can only be used once.",
     "shopToo": "Shop on Haiti Gaming too"
+  },
+  "google": {
+    "continue": "Continue with Google",
+    "or": "or",
+    "error": "Signing in with Google didn't work. Try again, or use email and password.",
+    "securityNote": "You sign in with your Google account, so there's no password here. Google protects your sign-in: turn on 2-Step Verification in your Google account.",
+    "deleteConfirmEmail": "Type your account email to confirm"
   }
 }

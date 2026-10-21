@@ -29,6 +29,9 @@ const trustedOrigins = [
   ...(process.env.TRUSTED_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
 ];
 
+/** "Continue with Google" is offered only when both Google keys are set in Vercel. */
+export const googleEnabled = () => !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+
 export const auth = betterAuth({
   appName: "Haiti Gaming",
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -64,6 +67,13 @@ export const auth = betterAuth({
       // The link must open on haitigaming.net even if the customer signed up on the .vercel.app address.
       await sendVerificationEmail(user as AuthUser, onSiteDomain(url));
     },
+  },
+  socialProviders: googleEnabled()
+    ? { google: { clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET!, prompt: "select_account" } }
+    : {},
+  account: {
+    // Google with the same (Google-verified) email signs into the existing account instead of making a second one.
+    accountLinking: { enabled: true, trustedProviders: ["google"] },
   },
   user: {
     additionalFields: {
@@ -110,10 +120,14 @@ export const auth = betterAuth({
     session: {
       create: {
         // Suspended or closed accounts are refused at sign-in, not after.
-        before: async (session) => {
-          const u = await prisma.user.findUnique({ where: { id: session.userId }, select: { status: true } });
+        before: async (session, ctx) => {
+          const u = await prisma.user.findUnique({ where: { id: session.userId }, select: { status: true, role: true } });
           if (u && (u.status === "SUSPENDED" || u.status === "CLOSED")) {
             throw APIError.from("FORBIDDEN", { code: "ACCOUNT_BLOCKED", message: "This account is not active." });
+          }
+          // Staff must sign in with password + 2FA code: Google sign-in would skip the code.
+          if (u && u.role !== "CUSTOMER" && (ctx as { path?: string } | null)?.path?.startsWith("/callback/")) {
+            throw APIError.from("FORBIDDEN", { code: "STAFF_PASSWORD_ONLY", message: "Staff accounts sign in with email and password." });
           }
         },
         // Remember the browser for multi-account detection. Never blocks sign-in.

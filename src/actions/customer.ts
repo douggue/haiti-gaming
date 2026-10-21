@@ -116,7 +116,12 @@ export async function getSavedCart(): Promise<unknown[]> {
 export async function deleteAccount(password: string): Promise<R> {
   const user = await assertUser();
   const account = await prisma.account.findFirst({ where: { userId: user.id, providerId: "credential" } });
-  if (!account?.password || !(await verify(account.password, password).catch(() => false))) return { ok: false, error: "wrongPassword" };
+  if (account?.password) {
+    if (!(await verify(account.password, password).catch(() => false))) return { ok: false, error: "wrongPassword" };
+  } else if (password.trim().toLowerCase() !== user.email.toLowerCase()) {
+    // Signed up with Google (no password): the account's email confirms instead.
+    return { ok: false, error: "wrongPassword" };
+  }
   const b = await getBalances(prisma, user.id);
   if (b.HTG.available + b.HTG.held + b.USD.available + b.USD.held > 0) return { ok: false, error: "deleteBalance" };
   const busy =

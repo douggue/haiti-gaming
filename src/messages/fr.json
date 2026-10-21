@@ -679,5 +679,12 @@
     "deliveredToAccount": "Déjà livré sur votre compte.",
     "privateNote": "Ce lien est privé : ne le partagez pas. Le code ne peut être utilisé qu'une fois.",
     "shopToo": "Achetez aussi sur Haiti Gaming"
+  },
+  "google": {
+    "continue": "Continuer avec Google",
+    "or": "ou",
+    "error": "La connexion avec Google a échoué. Réessayez, ou utilisez e-mail et mot de passe.",
+    "securityNote": "Vous vous connectez avec votre compte Google, vous n'avez donc pas de mot de passe ici. La sécurité est gérée par Google : activez la validation en deux étapes dans votre compte Google.",
+    "deleteConfirmEmail": "Tapez l'e-mail de votre compte pour confirmer"
   }
 }
