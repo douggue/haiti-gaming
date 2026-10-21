@@ -1,6 +1,12 @@
 # Universal supplier connector: research and plan
 
-Status: researched on 2026-10-16, build planned next session. Nothing is built yet: products with the delivery type "Supplier API" are still delivered by hand.
+Status: built on 2026-10-21 (Admin → Suppliers). Code: `src/lib/suppliers/` (engine, templates, presets, order flow),
+`src/actions/suppliers.ts`, `src/app/admin/(panel)/suppliers/`, callback `src/app/api/suppliers/callback/[token]`,
+fake supplier for tests `src/app/api/suppliers/mock/[op]` (preset "mock"), tests `tests/supplier-template.test.ts`, `e2e/suppliers.spec.ts`.
+
+How to connect a supplier: Admin → Suppliers → Add (pick its type) → enter its keys → Test → switch it on →
+in Admin → Products set delivery to "Supplier API" and pick the supplier + its product code on each option.
+Presets are starting points from public docs: compare with the supplier's current docs and use the Test buttons first.
 
 ## Suppliers studied (public docs)
 

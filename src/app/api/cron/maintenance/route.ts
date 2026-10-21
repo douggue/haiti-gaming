@@ -5,20 +5,28 @@ import { releaseHold } from "@/lib/wallet";
 import { notify } from "@/lib/notify";
 import { getSettings } from "@/lib/settings";
 import { refundOrCancel } from "@/lib/orders";
+import { OPEN, runSupplierCron } from "@/lib/suppliers/orders";
 
 /**
  * Scheduled maintenance (call every 5–10 minutes with `Authorization: Bearer $CRON_SECRET`, e.g. Vercel Cron or Inngest):
  * - re-checks pending MonCash payments in case a callback was lost
  * - releases held deposits whose hold period ended
  * - expires abandoned payment intents
- * - refunds paid orders that were not delivered within `autoRefundHours` (nothing delivered, no open risk review)
+ * - sends supplier orders and checks the ones still pending (see src/lib/suppliers/orders.ts)
+ * - refunds paid orders that were not delivered within `autoRefundHours` (nothing delivered, no open risk review,
+ *   no supplier order still running)
  */
 export async function GET(req: NextRequest) {
   if (!process.env.CRON_SECRET || req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const now = new Date();
-  const result = { moncashChecked: 0, holdsReleased: 0, expired: 0, autoRefunded: 0 };
+  const result: Record<string, number> = { moncashChecked: 0, holdsReleased: 0, expired: 0, autoRefunded: 0 };
+  try {
+    Object.assign(result, await runSupplierCron());
+  } catch (e) {
+    console.error("Supplier cron failed", e);
+  }
 
   const pending = await prisma.paymentIntent.findMany({
     where: { provider: "MONCASH", status: "PENDING", createdAt: { gte: new Date(now.getTime() - 86_400_000) } },
@@ -61,6 +69,7 @@ export async function GET(req: NextRequest) {
         paidAt: { lt: cutoff },
         items: { none: { status: "DELIVERED" } },
         riskFlags: { none: { status: "OPEN" } },
+        NOT: { items: { some: { supplierOrders: { some: { status: { in: OPEN } } } } } },
       },
       select: { id: true },
       take: 50,

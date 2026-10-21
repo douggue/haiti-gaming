@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const user = await requireStaff();
-  const [settings, reviews, risks, processing, approvals, tickets, newReviews] = await Promise.all([
+  const [settings, reviews, risks, processing, approvals, tickets, newReviews, supplierIssues] = await Promise.all([
     getSettings(),
     prisma.paymentIntent.count({ where: { status: "REVIEW" } }),
     prisma.riskFlag.count({ where: { status: "OPEN" } }),
@@ -16,6 +16,8 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     prisma.pendingApproval.count({ where: { status: "PENDING" } }),
     prisma.supportTicket.count({ where: { status: "OPEN" } }),
     prisma.review.count({ where: { status: "pending" } }),
+    // Supplier orders staff must look at: failed, or no longer checked automatically
+    prisma.supplierOrder.count({ where: { OR: [{ status: "FAILED" }, { status: { in: ["PENDING", "UNKNOWN"] }, nextCheckAt: null }] } }),
   ]);
   const all: { href: string; label: string; group: string; perm: Permission; badge?: number }[] = [
     { href: "/admin", label: "Dashboard", group: "", perm: "dashboard.view" },
@@ -27,6 +29,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     { href: "/admin/support", label: "Support", group: "Operations", perm: "support.manage", badge: tickets },
     { href: "/admin/products", label: "Products", group: "Catalog", perm: "catalog.manage" },
     { href: "/admin/codes", label: "Code inventory", group: "Catalog", perm: "codes.manage" },
+    { href: "/admin/suppliers", label: "Suppliers", group: "Catalog", perm: "settings.manage", badge: supplierIssues },
     { href: "/admin/media", label: "Media", group: "Catalog", perm: "catalog.manage" },
     { href: "/admin/trust", label: "Trust", group: "Catalog", perm: "catalog.manage", badge: newReviews },
     { href: "/admin/customers", label: "Customers", group: "Customers", perm: "customers.view" },

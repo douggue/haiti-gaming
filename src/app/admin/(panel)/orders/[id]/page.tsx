@@ -25,7 +25,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
     where: { id },
     include: {
       user: true,
-      items: { include: { variant: { include: { product: true } }, _count: { select: { codes: true } } } },
+      items: { include: { variant: { include: { product: true } }, _count: { select: { codes: true } }, supplierOrders: { orderBy: { createdAt: "asc" }, include: { supplier: { select: { id: true, name: true } } } } } },
       events: { orderBy: { createdAt: "asc" } },
       payments: { orderBy: { createdAt: "desc" } },
       riskFlags: true,
@@ -58,6 +58,13 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
                   <p key={k} className="text-sm"><span className="text-muted">{AMOUNT_LABELS[k] ?? k}:</span> <span className="font-mono font-semibold">{v}</span></p>
                 ))}
                 {i.deliveryNote && <p className="rounded-lg bg-surface-2 p-3 text-sm">{i.deliveryNote}</p>}
+                {i.supplierOrders.map((so) => (
+                  <p key={so.id} className="rounded-lg bg-surface-2 p-3 text-xs">
+                    Supplier <Link href={`/admin/suppliers/${so.supplier.id}`} className="font-semibold text-primary">{so.supplier.name}</Link> · <code>{so.ref}</code> ·{" "}
+                    <b className={so.status === "FAILED" ? "text-danger" : so.status === "SUCCESS" ? "text-success" : ""}>{so.status}</b>
+                    {so.message && <span className="text-muted"> · {so.message}</span>}
+                  </p>
+                ))}
                 {manage && i.status === "PENDING" && ["PAID", "PROCESSING"].includes(order.status) && (
                   <ActionButton label="Mark delivered…" className="btn-primary min-h-9 px-3 text-xs" prompt="Delivery note shown to the customer (e.g. 'Diamonds sent to ID 12345')" action={deliverItem.bind(null, i.id)} />
                 )}

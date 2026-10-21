@@ -26,6 +26,20 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
   }
   const product = await prisma.product.findUnique({ where: { id }, include: { variants: { orderBy: { sortOrder: "asc" }, include: { _count: { select: { codes: { where: { status: "AVAILABLE" } } } } } } } });
   if (!product) notFound();
+  const suppliers = product.fulfillmentType === "SUPPLIER_API" ? await prisma.supplier.findMany({ select: { id: true, name: true, isEnabled: true }, orderBy: { name: "asc" } }) : [];
+  const supplierFields = (v?: { supplierId: string | null; supplierSku: string | null }) =>
+    product.fulfillmentType !== "SUPPLIER_API" ? null : (
+      <div className="grid grid-cols-2 gap-2">
+        <label>
+          <span className="mb-1 block text-xs text-muted">Supplier</span>
+          <select name="supplierId" defaultValue={v?.supplierId ?? ""} className="input">
+            <option value="">— Deliver by hand —</option>
+            {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}{s.isEnabled ? "" : " (off)"}</option>)}
+          </select>
+        </label>
+        <label><span className="mb-1 block text-xs text-muted">Supplier product code</span><input name="supplierSku" defaultValue={v?.supplierSku ?? ""} className="input font-mono" spellCheck={false} /></label>
+      </div>
+    );
   const money = (n: number | null) => (n == null ? "" : (n / 100).toFixed(2));
   return (
     <>
@@ -67,6 +81,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
               <label><span className="mb-1 block text-xs text-muted">Sale price</span><input name="salePrice" defaultValue={money(v.salePriceHtg)} className="input" inputMode="decimal" /></label>
               <label><span className="mb-1 block text-xs text-muted">Order</span><input name="sortOrder" type="number" defaultValue={v.sortOrder} className="input" /></label>
             </div>
+            {supplierFields(v)}
             <div className="flex items-center justify-between text-sm">
               <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={v.isActive} /> Active</label>
@@ -86,6 +101,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
             <input name="salePrice" placeholder="Sale (optional)" className="input" inputMode="decimal" />
             <input name="sortOrder" type="number" defaultValue={product.variants.length} className="input" />
           </div>
+          {supplierFields()}
           <div className="flex items-center gap-4 text-sm">
             <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked /> Active</label>
             <label className="flex items-center gap-2"><input type="checkbox" name="soldOut" /> Out of stock</label>

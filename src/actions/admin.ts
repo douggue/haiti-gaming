@@ -82,7 +82,11 @@ export async function refundOrder(orderId: string, reason: string): Promise<R> {
   try {
     const staff = await assertStaff("orders.manage");
     if (reason.trim().length < 3) return { ok: false, error: "A reason is required" };
-    const outcome = await refundOrCancel(orderId, staff.id, reason.trim());
+    const outcome = await refundOrCancel(orderId, staff.id, reason.trim()).catch((e) => {
+      if (e instanceof Error && e.message === "supplier_open")
+        throw new Error("A supplier order for this order is still open: check or close it in Admin → Suppliers first, so the customer isn't refunded and delivered.");
+      throw e;
+    });
     await audit(staff.id, `order.${outcome}`, "Order", orderId, { reason });
     revalidatePath(`/admin/orders/${orderId}`);
     return { ok: true, message: outcome === "refunded" ? "Refunded to wallet" : "Order canceled" };
@@ -245,6 +249,10 @@ export async function saveVariant(form: FormData): Promise<R> {
       sortOrder: Number(form.get("sortOrder") ?? 0) || 0,
       isActive: form.get("isActive") === "on",
       soldOut: form.get("soldOut") === "on",
+      // Only sent by the form for "Supplier API" products
+      ...(form.has("supplierId")
+        ? { supplierId: String(form.get("supplierId") || "") || null, supplierSku: String(form.get("supplierSku") ?? "").trim().slice(0, 120) || null }
+        : {}),
     };
     const v = id ? await prisma.productVariant.update({ where: { id }, data }) : await prisma.productVariant.create({ data: { ...data, productId } });
     await audit(staff.id, id ? "variant.update" : "variant.create", "ProductVariant", v.id, { productId, price, sale });

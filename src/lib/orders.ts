@@ -11,6 +11,7 @@ import { t } from "./text";
 import { moncashAvailable } from "./payments/moncash";
 import { maybeRewardReferral } from "./referrals";
 import { amountInRange, isExchangeProduct, quoteAmount } from "./amount";
+import { hasOpenSupplierOrder, queueSupplierLines, sendQueued } from "./suppliers/orders";
 
 export type FieldDef = {
   key: string;
@@ -154,10 +155,11 @@ export async function createOrder(input: {
 }
 
 /**
- * Deliver what can be delivered automatically. Code-inventory items get codes assigned;
- * manual and supplier items wait in the staff queue. Orders with an open risk flag wait for review.
+ * Deliver what can be delivered automatically. Code-inventory items get codes assigned, supplier items
+ * (options linked to a supplier in Admin) are sent to the supplier; manual items wait in the staff queue.
+ * Orders with an open risk flag wait for review.
  */
-export async function fulfillOrder(orderId: string, actorId?: string | null) {
+export async function fulfillOrder(orderId: string, actorId?: string | null): Promise<{ fulfilled: boolean } | null> {
   const openFlags = await prisma.riskFlag.count({ where: { orderId, status: "OPEN" } });
 
   const result = await prisma.$transaction(async (tx) => {
@@ -173,6 +175,7 @@ export async function fulfillOrder(orderId: string, actorId?: string | null) {
       return { fulfilled: false };
     }
 
+    await queueSupplierLines(tx, orderId);
     const items = await tx.orderItem.findMany({ where: { orderId, status: "PENDING" }, include: { variant: { include: { product: true } } } });
     for (const item of items) {
       if (item.variant.product.fulfillmentType !== "CODE_INVENTORY") continue;
@@ -198,10 +201,17 @@ export async function fulfillOrder(orderId: string, actorId?: string | null) {
     }
     if (order.status === "PAID") {
       await tx.order.update({ where: { id: orderId }, data: { status: "PROCESSING" } });
-      await addEvent(tx, orderId, "PROCESSING", "Waiting for manual fulfillment");
+      const toSupplier = await tx.supplierOrder.count({ where: { orderItem: { orderId }, status: "QUEUED" } });
+      await addEvent(tx, orderId, "PROCESSING", toSupplier ? "Sent to the supplier" : "Waiting for manual fulfillment");
     }
     return { fulfilled: false };
   });
+
+  // Supplier lines are sent after the transaction (network calls never hold database locks).
+  if (result && !result.fulfilled) {
+    const delivered = await sendQueued(orderId).catch((e) => (console.error("supplier send failed", orderId, e), []));
+    if (delivered.length) return fulfillOrder(orderId, actorId);
+  }
 
   if (result?.fulfilled) {
     const o = await prisma.order.findUniqueOrThrow({ where: { id: orderId } });
@@ -227,6 +237,8 @@ export async function refundOrCancel(orderId: string, actorId: string | null, re
       return "canceled" as const;
     }
     if (!["PAID", "PROCESSING", "FAILED"].includes(order.status)) throw new OrderError("not_refundable");
+    // A supplier may still deliver: refunding now could give the customer both. Staff closes it first.
+    if (await hasOpenSupplierOrder(orderId, tx)) throw new OrderError("supplier_open");
     // Delivered codes cannot be taken back; only refund when nothing was delivered.
     const delivered = await tx.orderItem.count({ where: { orderId, status: "DELIVERED" } });
     if (delivered > 0) throw new OrderError("partially_delivered");

@@ -232,6 +232,11 @@ model ProductVariant {
   lowStock     String      @default("off")
   lowStockUntil DateTime?
   sku          String?     @unique
+  /// Delivery through a supplier API (products with fulfillment type SUPPLIER_API)
+  supplierId   String?
+  supplier     Supplier?   @relation(fields: [supplierId], references: [id])
+  /// The supplier's product / denomination code for this option
+  supplierSku  String?
   codes        CodeItem[]
   orderItems   OrderItem[]
   createdAt    DateTime    @default(now())
@@ -347,6 +352,7 @@ model OrderItem {
   status       ItemStatus     @default(PENDING)
   deliveryNote String?
   codes        CodeItem[]
+  supplierOrders SupplierOrder[]
 }
 
 /// Append-only order history
@@ -835,4 +841,92 @@ model Review {
   createdAt DateTime @default(now())
 
   @@index([status, onHome])
+}
+
+// ─────────────────────────────── Suppliers (universal API connector) ───────────────────────────────
+
+/// A product supplier reached through its API. How to talk to it (requests, signatures, how to read replies)
+/// lives in `config`, starting from a preset (src/lib/suppliers/presets.ts), editable in Admin → Suppliers.
+model Supplier {
+  id             String          @id @default(cuid())
+  name           String
+  preset         String
+  baseUrl        String
+  /// Operations (token, order, status, balance, codes) and reply mappings, see src/lib/suppliers/types.ts
+  config         Json
+  /// AES-GCM encrypted JSON of the API keys/secrets (never shown again after saving)
+  secrets        String?
+  isEnabled      Boolean         @default(true)
+  /// Secret part of the callback URL the supplier calls when an order changes
+  callbackToken  String          @unique
+  /// Cached login token for suppliers that need one (encrypted)
+  tokenEncrypted String?
+  tokenExpiresAt DateTime?
+  balance        Decimal?        @db.Decimal(18, 4)
+  balanceCurrency String?
+  balanceAt      DateTime?
+  /// Admin dashboard warns when the balance drops under this
+  lowBalance     Decimal?        @db.Decimal(18, 4)
+  variants       ProductVariant[]
+  orders         SupplierOrder[]
+  logs           SupplierLog[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+enum SupplierOrderStatus {
+  /// Created, not sent yet
+  QUEUED
+  /// Request in flight
+  SENDING
+  /// Supplier accepted it and is working on it
+  PENDING
+  /// We don't know if the supplier got it (timeout, error page…): checked with "status", never re-sent blindly
+  UNKNOWN
+  SUCCESS
+  /// Supplier said it failed for good: staff retries, delivers by hand or refunds
+  FAILED
+  /// Staff closed it (delivered by hand, refunded…)
+  CLOSED
+}
+
+/// One supplier order per order line. `ref` is our reference, the same on every status check, so the
+/// supplier can never deliver it twice.
+model SupplierOrder {
+  id              String              @id @default(cuid())
+  supplierId      String
+  supplier        Supplier            @relation(fields: [supplierId], references: [id])
+  orderItemId     String
+  orderItem       OrderItem           @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  ref             String              @unique
+  supplierOrderId String?
+  status          SupplierOrderStatus @default(QUEUED)
+  message         String?
+  checks          Int                 @default(0)
+  nextCheckAt     DateTime?
+  lockedUntil     DateTime?
+  logs            SupplierLog[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([status, nextCheckAt])
+  @@index([orderItemId])
+}
+
+/// Every request to a supplier and its reply, secrets removed, kept for troubleshooting.
+model SupplierLog {
+  id              String         @id @default(cuid())
+  supplierId      String
+  supplier        Supplier       @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  supplierOrderId String?
+  supplierOrder   SupplierOrder? @relation(fields: [supplierOrderId], references: [id], onDelete: SetNull)
+  op              String
+  request         String
+  response        String
+  httpStatus      Int?
+  ms              Int
+  outcome         String
+  createdAt       DateTime       @default(now())
+
+  @@index([supplierId, createdAt])
 }
