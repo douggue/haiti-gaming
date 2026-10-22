@@ -221,6 +221,36 @@ export const PRESETS: Record<string, Preset> = {
     },
   },
 
+  shop2topup: {
+    label: "SHOP2TOPUP (game top-ups, vouchers)",
+    baseUrl: "https://shop2topup.com/api/endpoints/v1",
+    skuHelp: "sub_category_id, or sub_category_id:max price in USD (e.g. 999:0.95) to refuse orders if their price went up",
+    config: {
+      secrets: ["keyId", "keySecret"],
+      refFormat: "uuid",
+      notes:
+        "Docs: shop2topup.com/en/reseller-api/docs. Key from the API Access page of their reseller panel (needs 2FA there); allow all IP addresses, or Vercel's changing addresses get refused. The player fields their games need are listed by GET /catalog/category/:id/requirements: this setup sends player_id and server from the product's playerId / zoneId fields. Give them the callback URL below as the webhook. Check the first voucher order's reply in the log to confirm how codes come back.",
+      order: {
+        method: "POST",
+        path: "/orders/create",
+        headers: { Authorization: "Bearer {{secret.keyId}}.{{secret.keySecret}}" },
+        body: { order_id: "{{ref}}", sub_category_id: "#{{skuParts.0}}", quantity: "#{{quantity}}", requirements: { player_id: "{{fields.playerId}}", server: "{{fields.zoneId}}" }, expected_unit_price: "{{skuParts.1}}" },
+        dropEmpty: true,
+        map: { orderId: "order.order_id", status: "order.status", message: "error.message", codes: "order.vouchers" },
+        statusMap: { completed: "SUCCESS", pending: "PENDING", processing: "PENDING", refunded: "FAILED", partial: "FAILED", failed: "FAILED" },
+      },
+      status: {
+        method: "GET",
+        path: "/orders/{{ref}}",
+        headers: { Authorization: "Bearer {{secret.keyId}}.{{secret.keySecret}}" },
+        map: { orderId: "order.order_id", status: "order.status", message: "error.message", codes: "order.vouchers" },
+        statusMap: { completed: "SUCCESS", pending: "PENDING", processing: "PENDING", refunded: "FAILED", partial: "FAILED", failed: "FAILED" },
+      },
+      balance: { method: "GET", path: "/account", headers: { Authorization: "Bearer {{secret.keyId}}.{{secret.keySecret}}" }, map: { balance: "account.wallet" } },
+      callbackReply: '{"received":true}',
+    },
+  },
+
   mock: {
     label: "Test supplier (fake, for trying the setup)",
     baseUrl: "/api/suppliers/mock",

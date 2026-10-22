@@ -38,6 +38,8 @@ export type Operation = {
   errorPath?: string;
   /** What a 2xx reply without a known status means: SUCCESS (synchronous suppliers) or PENDING ("accepted", check later) */
   okOutcome?: "SUCCESS" | "PENDING";
+  /** Leave out body fields that came out empty (e.g. "server" for games without servers) */
+  dropEmpty?: boolean;
 };
 
 export type Outcome = "SUCCESS" | "PENDING" | "FAILED";
@@ -52,6 +54,8 @@ export type SupplierConfig = {
   /** Some suppliers return codes on a separate call after success */
   codes?: Operation;
   balance?: Operation;
+  /** Our order reference: "hg-…" (default) or a UUID for suppliers that require one */
+  refFormat?: "uuid";
   /** What the callback URL replies, e.g. {"status":"success"} or "success" */
   callbackReply?: string;
   timeoutMs?: number;

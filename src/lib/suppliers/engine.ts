@@ -18,6 +18,13 @@ export function secretsOf(s: { secrets: string | null }): Record<string, string>
 
 const MAX_LOG = 4000;
 
+function dropEmpty(o: Record<string, unknown>) {
+  for (const [k, v] of Object.entries(o)) {
+    if (v === "" || v === null || v === undefined) delete o[k];
+    else if (v && typeof v === "object" && !Array.isArray(v)) dropEmpty(v as Record<string, unknown>);
+  }
+}
+
 function redact(text: string, hide: string[]): string {
   let out = text;
   for (const h of hide) if (h && h.length >= 4) out = out.split(h).join("•••");
@@ -54,7 +61,8 @@ function readOutcome(op: Operation, kind: OpName, http: number, data: unknown): 
   const m = op.map ?? {};
   const message = m.message ? String(readPath(data, m.message) ?? "") || undefined : undefined;
   // We can't be sure the supplier got (or didn't get) the request: never treat as a failure.
-  if (http >= 500 || http === 401 || http === 403 || http === 408 || http === 429) return { outcome: "UNKNOWN", message };
+  // 409 = "this reference already exists": the order may be there, so check instead of calling it failed.
+  if (http >= 500 || http === 401 || http === 403 || http === 408 || http === 409 || http === 429) return { outcome: "UNKNOWN", message };
   if (http >= 400) return { outcome: kind === "order" ? "FAILED" : "UNKNOWN", message };
   if (m.status) {
     const raw = readPath(data, m.status);
@@ -90,6 +98,7 @@ async function callRaw(s: SupplierRow, cfg: SupplierConfig, kind: OpName, extra:
   if (!op) throw new Error(`This supplier has no "${kind}" operation`);
   const ctx: Ctx = { ...baseContext(), ...extra, secret, token };
   const fields = (renderValue(op.body ?? {}, ctx) ?? {}) as Record<string, unknown>;
+  if (op.dropEmpty) dropEmpty(fields);
   ctx.params = fields;
   for (const [k, v] of Object.entries(op.signed ?? {})) fields[k] = render(v, ctx);
   const path = String(render(op.path, ctx));

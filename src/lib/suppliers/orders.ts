@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import type { Prisma, SupplierOrderStatus } from "@prisma/client";
 import { prisma, type Tx } from "../db";
 import { encrypt, hmac } from "../crypto";
@@ -20,15 +21,21 @@ const GIVE_UP_MS = 48 * 3_600_000;
 
 const nextCheck = (checks: number) => new Date(Date.now() + BACKOFF_MIN[Math.min(checks, BACKOFF_MIN.length - 1)] * 60_000);
 
+/** Our reference for a new supplier order: "hg-<line>" or a UUID when the supplier requires one. Saved before sending. */
+function newRef(config: unknown, fallback: string) {
+  return (config as SupplierConfig | null)?.refFormat === "uuid" ? randomUUID() : fallback;
+}
+
 /** Inside fulfillOrder's transaction: one supplier order per supplier line that doesn't have one yet. */
 export async function queueSupplierLines(tx: Tx, orderId: string) {
   const items = await tx.orderItem.findMany({
     where: { orderId, status: "PENDING", supplierOrders: { none: {} }, variant: { supplierId: { not: null }, product: { fulfillmentType: "SUPPLIER_API" } } },
-    select: { id: true, variant: { select: { supplierId: true, supplier: { select: { isEnabled: true } } } } },
+    select: { id: true, variant: { select: { supplierId: true, supplier: { select: { isEnabled: true, config: true } } } } },
   });
   for (const i of items) {
     if (!i.variant.supplierId || !i.variant.supplier?.isEnabled) continue;
-    await tx.supplierOrder.create({ data: { supplierId: i.variant.supplierId, orderItemId: i.id, ref: `hg-${i.id}` } });
+    const ref = newRef(i.variant.supplier.config, `hg-${i.id}`);
+    await tx.supplierOrder.create({ data: { supplierId: i.variant.supplierId, orderItemId: i.id, ref } });
   }
 }
 
@@ -178,14 +185,14 @@ export async function finishOrders(orderIds: string[]) {
 
 /** Staff: send a failed line again with a new reference (the old one stays failed at the supplier). */
 export async function retrySupplierLine(supplierOrderId: string) {
-  const so = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: supplierOrderId }, include: { orderItem: { select: { status: true, orderId: true, supplierOrders: { select: { status: true } } } } } });
+  const so = await prisma.supplierOrder.findUniqueOrThrow({ where: { id: supplierOrderId }, include: { supplier: { select: { config: true } }, orderItem: { select: { status: true, orderId: true, supplierOrders: { select: { status: true } } } } } });
   if (so.status !== "FAILED") throw new Error("Only a failed supplier order can be sent again");
   if (so.orderItem.status !== "PENDING") throw new Error("This line is already delivered");
   if (so.orderItem.supplierOrders.some((x) => OPEN.includes(x.status))) throw new Error("Another attempt for this line is still open");
   const attempt = so.orderItem.supplierOrders.length + 1;
   await prisma.$transaction([
     prisma.supplierOrder.update({ where: { id: so.id }, data: { status: "CLOSED" } }),
-    prisma.supplierOrder.create({ data: { supplierId: so.supplierId, orderItemId: so.orderItemId, ref: `hg-${so.orderItemId}-${attempt}` } }),
+    prisma.supplierOrder.create({ data: { supplierId: so.supplierId, orderItemId: so.orderItemId, ref: newRef(so.supplier.config, `hg-${so.orderItemId}-${attempt}`) } }),
   ]);
   const delivered = await sendQueued(so.orderItem.orderId);
   await finishOrders(delivered);
