@@ -336,8 +336,7 @@
       "REFUND": "Refund",
       "EXCHANGE": "Exchange",
       "ADJUSTMENT": "Adjustment",
-      "HOLD_RELEASE": "Hold released",
-      "TRANSFER": "Transfer"
+      "HOLD_RELEASE": "Hold released"
     },
     "depositStatus": {
       "PENDING": "Waiting",
@@ -376,21 +375,7 @@
     "cryptoSteps1": "Copy the address or scan the QR.",
     "cryptoSteps2": "Send USDT on {network} only.",
     "cryptoSteps3": "Paste the transaction hash and submit. We check it on the blockchain.",
-    "methodAuto": "Automatic",
-    "today": "Today",
-    "yesterday": "Yesterday",
-    "moneyIn": "Money in",
-    "moneyOut": "Money out",
-    "last30": "Last 30 days",
-    "myCodeLabel": "My code to receive money",
-    "copy": "Copy",
-    "copied": "Copied!",
-    "onHold": "on hold",
-    "filter_all": "All",
-    "filter_in": "In",
-    "filter_out": "Out",
-    "transferIn": "From {name}",
-    "transferOut": "To {name}"
+    "methodAuto": "Automatic"
   },
   "auth": {
     "loginTitle": "Sign in",

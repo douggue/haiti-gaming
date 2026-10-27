@@ -336,8 +336,7 @@
       "REFUND": "Ranbousman",
       "EXCHANGE": "Chanj",
       "ADJUSTMENT": "Ajisteman",
-      "HOLD_RELEASE": "Lajan an atant libere",
-      "TRANSFER": "Transfè"
+      "HOLD_RELEASE": "Lajan an atant libere"
     },
     "depositStatus": {
       "PENDING": "An atant",
@@ -376,21 +375,7 @@
     "cryptoSteps1": "Kopye adrès la oswa eskane QR la.",
     "cryptoSteps2": "Voye USDT sou {network} sèlman.",
     "cryptoSteps3": "Kole hash tranzaksyon an epi voye. N ap verifye l sou blockchain lan.",
-    "methodAuto": "Otomatik",
-    "today": "Jodi a",
-    "yesterday": "Yè",
-    "moneyIn": "Kòb ki antre",
-    "moneyOut": "Kòb ki soti",
-    "last30": "30 dènye jou yo",
-    "myCodeLabel": "Kòd mwen pou resevwa kòb",
-    "copy": "Kopye",
-    "copied": "Kopye!",
-    "onHold": "an atant",
-    "filter_all": "Tout",
-    "filter_in": "Antre",
-    "filter_out": "Soti",
-    "transferIn": "Soti nan men {name}",
-    "transferOut": "Voye bay {name}"
+    "methodAuto": "Otomatik"
   },
   "auth": {
     "loginTitle": "Konekte",
