@@ -16,6 +16,10 @@ export type Settings = {
   marketCommissionBps: number;
   /** WhatsApp number of the Market agent (digits); empty = the store's WhatsApp */
   marketWhatsapp: string;
+  /** Market rules per language, one per item. Empty = the standard rules. */
+  marketRules: Record<"ht" | "fr" | "en" | "es", string[]>;
+  /** When the rules last changed in a way everyone must accept again (ISO date, "" = never). */
+  marketRulesUpdatedAt: string;
   /** Physical products can be paid in cash when delivered */
   codEnabled: boolean;
   /** Customers can send gourdes to each other with their transfer code (no fee) */
@@ -203,6 +207,8 @@ export const DEFAULT_SETTINGS: Settings = {
   marketEnabled: true,
   marketCommissionBps: 1000,
   marketWhatsapp: "",
+  marketRules: { ht: [], fr: [], en: [], es: [] },
+  marketRulesUpdatedAt: "",
   transferDailyLimitHtg: 1_000_000,
   googleSiteVerification: "",
   bingSiteVerification: "",

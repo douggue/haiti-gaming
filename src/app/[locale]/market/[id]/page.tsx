@@ -10,6 +10,7 @@ import { siteUrl } from "@/lib/site-url";
 import { formatMoney } from "@/lib/money";
 import { shortName } from "@/lib/trust";
 import { platformOf } from "@/lib/market";
+import { rulesAccepted } from "@/lib/market-rules";
 import { listingDetails, listingImages, sellerStats } from "@/lib/market-data";
 import { BuyButton, ReportButton, ShareButton, ViewCounter } from "@/components/market/MarketClient";
 import { WhatsAppIcon } from "@/components/Icons";
@@ -38,7 +39,8 @@ export default async function ListingPage({ params }: { params: P }) {
   if (!l) notFound();
   const mine = user?.id === l.sellerId;
   if (!PUBLIC.includes(l.status) && !mine) notFound();
-  const rulesAt = user ? (await prisma.user.findUnique({ where: { id: user.id }, select: { marketRulesAt: true } }))?.marketRulesAt : null;
+  const rulesRow = user ? (await prisma.user.findUnique({ where: { id: user.id }, select: { marketRulesAt: true } }))?.marketRulesAt : null;
+  const rulesAt = rulesAccepted(rulesRow, settings);
   const stats = (await sellerStats([l.sellerId])).get(l.sellerId);
   const images = listingImages(l.images);
   const p = platformOf(l.platform);

@@ -6,6 +6,7 @@ import { can } from "@/lib/permissions";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
 import { commissionOf, platformOf } from "@/lib/market";
+import { defaultRules } from "@/lib/market-rules";
 import { listingDetails, listingImages } from "@/lib/market-data";
 import { formatPhone, waNumber } from "@/lib/phone";
 import { resolveReport, reviewListing, reviewVendor, saveMarketSettings, setDealStatus, takeDownListing } from "@/actions/market-admin";
@@ -207,10 +208,22 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
     );
   } else {
     body = (
-      <ActionForm action={saveMarketSettings} className="card max-w-xl space-y-4 p-5">
+      <ActionForm action={saveMarketSettings} className="card max-w-2xl space-y-4 p-5">
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="enabled" defaultChecked={settings.marketEnabled} /> Market is open (menu link, listings, selling)</label>
         <label className="block"><span className="label">Commission kept from the seller (%)</span><input name="commission" defaultValue={settings.marketCommissionBps / 100} className="input" inputMode="decimal" /><span className="mt-1 block text-xs text-muted">Shown to sellers. You can change it per deal when closing it.</span></label>
         <label className="block"><span className="label">Market agent WhatsApp (digits, with 509)</span><input name="whatsapp" defaultValue={settings.marketWhatsapp} placeholder={settings.whatsappNumber} className="input" inputMode="tel" /><span className="mt-1 block text-xs text-muted">Buyers are sent here when they tap “Buy”. Empty = the main support number.</span></label>
+        <fieldset className="space-y-3 border-t border-border pt-4">
+          <legend className="font-semibold">Market rules</legend>
+          <p className="text-xs text-muted">Shown before buying, selling or applying as a vendor. One rule per line (numbered automatically). Empty a language to use the standard rules; a language left empty after you customize shows the Kreyòl ones.</p>
+          {(["ht", "fr", "en", "es"] as const).map((l) => (
+            <label key={l} className="block">
+              <span className="label">{{ ht: "Kreyòl", fr: "Français", en: "English", es: "Español" }[l]}</span>
+              <textarea name={`rules_${l}`} rows={7} defaultValue={(settings.marketRules?.[l]?.length ? settings.marketRules[l] : defaultRules(l)).join("\n")} className="input py-2 text-sm" />
+            </label>
+          ))}
+          <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="reaccept" className="mt-1" /> <span>Ask everyone to accept the rules again <span className="text-muted">(tick this for important changes)</span></span></label>
+          {settings.marketRulesUpdatedAt && <p className="text-xs text-muted">Last time everyone was asked to accept again: {new Date(settings.marketRulesUpdatedAt).toLocaleString("en-US")}</p>}
+        </fieldset>
         <button className="btn-primary">Save</button>
       </ActionForm>
     );

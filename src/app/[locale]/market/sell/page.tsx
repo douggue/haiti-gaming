@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
+import { rulesAccepted } from "@/lib/market-rules";
 import { SellForm, VendorForm } from "@/components/market/MarketClient";
 import { WhatsAppIcon } from "@/components/Icons";
 
@@ -19,7 +20,7 @@ export default async function SellPage({ params }: { params: Promise<{ locale: s
     prisma.user.findUnique({ where: { id: user.id }, select: { marketRulesAt: true } }),
     prisma.marketVendor.findUnique({ where: { userId: user.id }, select: { status: true, staffNote: true, shopName: true } }),
   ]);
-  const rules = !!row?.marketRulesAt;
+  const rules = rulesAccepted(row?.marketRulesAt, settings);
   const agent = (settings.marketWhatsapp || settings.whatsappNumber).replace(/\D/g, "");
   const wa = `https://wa.me/${agent}?text=${encodeURIComponent(t("vendorWaText", { shop: vendor?.shopName ?? "" }))}`;
   // Only approved vendors can list; everyone else applies first.

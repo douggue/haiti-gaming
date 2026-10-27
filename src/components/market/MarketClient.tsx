@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { acceptMarketRules, applyVendor, cancelMyDeal, confirmDeal, countView, createListing, rateSeller, removeMyListing, reportListing, requestDeal } from "@/actions/market";
+import { acceptMarketRules, applyVendor, getMarketRules, cancelMyDeal, confirmDeal, countView, createListing, rateSeller, removeMyListing, reportListing, requestDeal } from "@/actions/market";
 import { PLATFORMS } from "@/lib/market";
 import { CloseIcon, CopyIcon, ShareIcon, WhatsAppIcon } from "../Icons";
 import { PhoneInput } from "../PhoneInput";
@@ -39,13 +39,23 @@ function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () 
 /** The Market rules: shown once; the person ticks the box to go on. */
 export function RulesSheet({ open, onClose, onAccepted }: { open: boolean; onClose: () => void; onAccepted: () => void }) {
   const t = useTranslations("market");
+  const locale = useLocale();
   const [ok, setOk] = useState(false);
+  const [rules, setRules] = useState<string[] | null>(null);
   const [pending, start] = useTransition();
+  // Staff can edit the rules, so they're loaded when the sheet opens.
+  useEffect(() => {
+    if (open && !rules) getMarketRules(locale).then(setRules).catch(() => setRules([]));
+  }, [open, rules, locale]);
   return (
     <Sheet open={open} onClose={onClose} title={t("rulesTitle")}>
-      <ol className="list-decimal space-y-2 pl-5 text-sm">
-        {(["rule1", "rule7", "rule2", "rule3", "rule4", "rule5", "rule6"] as const).map((k) => <li key={k}>{t(k)}</li>)}
-      </ol>
+      {rules === null ? (
+        <p className="py-6 text-center text-sm text-muted">…</p>
+      ) : (
+        <ol className="list-decimal space-y-2 pl-5 text-sm">
+          {rules.map((r, i) => <li key={i} className="whitespace-pre-wrap">{r}</li>)}
+        </ol>
+      )}
       <label className="mt-4 flex items-start gap-2 text-sm font-medium">
         <input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} className="mt-0.5 size-4" />
         {t("rulesAgree")}
@@ -53,7 +63,7 @@ export function RulesSheet({ open, onClose, onAccepted }: { open: boolean; onClo
       <button
         type="button"
         className="btn-primary mt-4 w-full"
-        disabled={!ok || pending}
+        disabled={!ok || pending || rules === null}
         onClick={() =>
           start(async () => {
             const r = await acceptMarketRules();

@@ -7,6 +7,7 @@ import { getSettings, setSetting } from "@/lib/settings";
 import { notify } from "@/lib/notify";
 import { parseAmount } from "@/lib/money";
 import { commissionOf } from "@/lib/market";
+import { defaultRules } from "@/lib/market-rules";
 import type { DealStatus } from "@prisma/client";
 
 type R = { ok: true; message?: string } | { ok: false; error: string };
@@ -120,7 +121,16 @@ export async function saveMarketSettings(form: FormData): Promise<R> {
     await setSetting("marketEnabled", form.get("enabled") === "on");
     await setSetting("marketCommissionBps", Math.round(pct * 100));
     await setSetting("marketWhatsapp", String(form.get("whatsapp") ?? "").replace(/\D/g, "").slice(0, 20));
-    await audit(staff.id, "market.settings", "SiteSetting", null, { pct });
+    // Rules: one per line, per language. Text equal to the standard rules is stored as "standard" (empty).
+    const rules = Object.fromEntries(
+      (["ht", "fr", "en", "es"] as const).map((l) => {
+        const lines = String(form.get(`rules_${l}`) ?? "").split("\n").map((x) => x.trim().slice(0, 400)).filter(Boolean).slice(0, 20);
+        return [l, lines.join("\n") === defaultRules(l).join("\n") ? [] : lines];
+      }),
+    ) as Record<"ht" | "fr" | "en" | "es", string[]>;
+    await setSetting("marketRules", rules);
+    if (form.get("reaccept") === "on") await setSetting("marketRulesUpdatedAt", new Date().toISOString());
+    await audit(staff.id, "market.settings", "SiteSetting", null, { pct, reaccept: form.get("reaccept") === "on" });
     return done("Saved");
   } catch (e) {
     return fail(e);

@@ -9,6 +9,7 @@ import { parseAmount, formatMoney } from "@/lib/money";
 import { savePrivateImage, savePublicImage, uploadsEnabled, UploadError } from "@/lib/storage";
 import { normalizePhone } from "@/lib/phone";
 import { isPlatform, platformOf } from "@/lib/market";
+import { marketRules, rulesAccepted } from "@/lib/market-rules";
 import { mustVerifyEmail } from "@/lib/verify-email";
 import { siteUrl } from "@/lib/site-url";
 import { notify } from "@/lib/notify";
@@ -24,8 +25,13 @@ async function marketUser() {
 }
 
 async function needsRules(userId: string) {
-  const u = await prisma.user.findUnique({ where: { id: userId }, select: { marketRulesAt: true } });
-  return !u?.marketRulesAt;
+  const [u, s] = await Promise.all([prisma.user.findUnique({ where: { id: userId }, select: { marketRulesAt: true } }), getSettings()]);
+  return !rulesAccepted(u?.marketRulesAt, s);
+}
+
+/** The rules to show in the rules sheet (staff can edit them in Admin → Market → Settings). */
+export async function getMarketRules(locale: string): Promise<string[]> {
+  return marketRules(await getSettings(), locale);
 }
 
 export async function acceptMarketRules(): Promise<R> {

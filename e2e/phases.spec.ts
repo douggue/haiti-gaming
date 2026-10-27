@@ -259,3 +259,31 @@ test("Market: vendor applies and is approved, sells, staff approves, buyer reser
   await b.getByRole("button", { name: "Voye" }).click();
   await expect(b.getByText("★★★★★")).toBeVisible();
 });
+
+test("staff edits the Market rules; customers must accept the new ones", async ({ browser }) => {
+  const a = await newPage(browser);
+  await staffLogin(a);
+  await a.goto("/admin/market?tab=settings");
+  const ht = a.locator('textarea[name="rules_ht"]');
+  await expect(ht).toHaveValue(/Chak acha pase nan men yon ajan/);
+  await ht.fill(`Règ tès ${stamp}\nDezyèm règ tès`);
+  await a.locator('input[name="reaccept"]').check();
+  await a.getByRole("button", { name: "Save" }).click();
+  await expect(a.getByText("Saved")).toBeVisible();
+
+  const c = await newPage(browser);
+  await registerCustomer(c, "Lourdes Michel", `regleman.${stamp}@example.com`, pw);
+  await c.goto("/ht/market/sell");
+  const sheet = c.getByRole("dialog", { name: "Règ Market la" });
+  await expect(sheet.getByText(`Règ tès ${stamp}`)).toBeVisible();
+  await expect(sheet.getByText("Dezyèm règ tès")).toBeVisible();
+  await expect(sheet.getByText(/Chak acha pase/)).toHaveCount(0);
+
+  // Emptying the box brings the standard rules back
+  await a.reload();
+  await a.locator('textarea[name="rules_ht"]').fill("");
+  await a.getByRole("button", { name: "Save" }).click();
+  await expect(a.getByText("Saved")).toBeVisible();
+  await a.reload();
+  await expect(a.locator('textarea[name="rules_ht"]')).toHaveValue(/Chak acha pase nan men yon ajan/);
+});
