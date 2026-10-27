@@ -46,7 +46,7 @@ const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
  * Listings filtered in the browser: tapping a game or typing a search changes the list at once, without
  * reloading the page. The address (?p=freefire&q=…) follows along so the view can be shared or reopened.
  */
-export function MarketBrowser({ items, initialPlatform, initialQuery }: { items: MarketItem[]; initialPlatform?: string; initialQuery?: string }) {
+export function MarketBrowser({ items, initialPlatform, initialQuery, soldCount = 0 }: { items: MarketItem[]; initialPlatform?: string; initialQuery?: string; soldCount?: number }) {
   const t = useTranslations("market");
   const [platform, setPlatform] = useState(initialPlatform ?? "");
   const [q, setQ] = useState(initialQuery ?? "");
@@ -111,11 +111,11 @@ export function MarketBrowser({ items, initialPlatform, initialQuery }: { items:
       {shown.length === 0 ? (
         <div className="card p-10 text-center">
           <p className="text-4xl" aria-hidden>🕹️</p>
-          <p className="mt-2 text-muted">{items.length ? t("noMatch") : t("empty")}</p>
+          <p className="mt-2 text-muted">{items.length ? t("noMatch") : soldCount ? t("allSold", { n: soldCount }) : t("empty")}</p>
           {items.length ? (
             <button type="button" className="btn-secondary mt-4" onClick={() => { setPlatform(""); setQ(""); }}>{t("clearFilters")}</button>
           ) : (
-            <Link href="/market/sell" className="btn-primary mt-4">{t("sellFirst")}</Link>
+            <Link href="/market/sell" className="btn-primary mt-4">{soldCount ? `＋ ${t("sell")}` : t("sellFirst")}</Link>
           )}
         </div>
       ) : (

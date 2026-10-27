@@ -5,6 +5,8 @@ import { assertStaff } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { getSettings, setSetting } from "@/lib/settings";
 import { notify } from "@/lib/notify";
+import { decrypt } from "@/lib/crypto";
+import { closeChatsFor } from "@/lib/market-chat-ops";
 import { parseAmount } from "@/lib/money";
 import { commissionOf, PLATFORMS } from "@/lib/market";
 import { defaultRules } from "@/lib/market-rules";
@@ -27,6 +29,20 @@ export async function reviewListing(id: string, approve: boolean, note: string):
     await notify(l.sellerId, approve ? "market_listing_approved" : "market_listing_rejected", { title: l.title, reason: note.trim() }, "/account/market");
     await audit(staff.id, approve ? "market.listing.approve" : "market.listing.reject", "MarketListing", id, { note });
     return done(approve ? "Approved: it's on the Market" : "Rejected");
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Shows the account's login details to the agent (logged each time). */
+export async function revealCredentials(id: string): Promise<R> {
+  try {
+    const staff = await assertStaff("orders.manage");
+    const l = await prisma.marketListing.findUniqueOrThrow({ where: { id }, select: { credentials: true } });
+    if (!l.credentials) return { ok: false, error: "The seller didn't give login details" };
+    const c = JSON.parse(decrypt(l.credentials)) as { login: string; password: string; linked?: string; note?: string };
+    await audit(staff.id, "market.listing.credentials_view", "MarketListing", id);
+    return { ok: true, message: `Login: ${c.login} · Password: ${c.password}${c.linked ? ` · Linked to: ${c.linked}` : ""}${c.note ? ` · Note: ${c.note}` : ""}` };
   } catch (e) {
     return fail(e);
   }
@@ -76,6 +92,8 @@ export async function setDealStatus(id: string, status: DealStatus, form: FormDa
       ...(status === "CANCELED" ? [prisma.marketListing.updateMany({ where: { id: d.listingId, status: "RESERVED" }, data: { status: "ACTIVE" } })] : []),
     ]);
     for (const uid of [d.buyerId, d.sellerId]) await notify(uid, "market_deal_update", { number: d.number, status }, "/account/market");
+    // Deal finished: the chats about this account close (they can ask staff to reopen them).
+    if (status === "COMPLETED") await closeChatsFor(d.listingId);
     await audit(staff.id, `market.deal.${status.toLowerCase()}`, "MarketDeal", id, { note, commission });
     return done(`Deal #${d.number}: ${status}`);
   } catch (e) {

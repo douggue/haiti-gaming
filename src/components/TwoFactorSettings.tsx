@@ -19,7 +19,7 @@ export function TwoFactorSettings({ enabled }: { enabled: boolean }) {
   return (
     <section className="card space-y-3 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold">{t("title")}</h2>
+        <h2 className="flex items-center gap-2 font-semibold"><span className="grid size-9 place-items-center rounded-xl bg-emerald-500/15 text-lg" aria-hidden>🛡️</span>{t("title")}</h2>
         <span className={`badge ${enabled ? "bg-success-soft text-success" : "bg-surface-2 text-muted"}`}>{enabled ? t("on") : t("off")}</span>
       </div>
       <p className="text-sm text-muted">{t("intro")}</p>

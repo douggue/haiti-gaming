@@ -11,8 +11,9 @@ import { ImageField } from "@/components/admin/ImageField";
 import { PlatformIcon } from "@/components/market/PlatformIcon";
 import { listingDetails, listingImages } from "@/lib/market-data";
 import { formatPhone, waNumber } from "@/lib/phone";
-import { resolveReport, reviewListing, reviewVendor, saveMarketSettings, setDealStatus, takeDownListing } from "@/actions/market-admin";
+import { resolveReport, revealCredentials, reviewListing, reviewVendor, saveMarketSettings, setDealStatus, takeDownListing } from "@/actions/market-admin";
 import { ActionButton, ActionForm } from "@/components/admin/ActionButton";
+import { decideReopen } from "@/actions/market-chat";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PageTitle } from "@/components/admin/ui";
 
@@ -126,6 +127,7 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
             {l.staffNote && <p className="text-xs text-muted">Note: {l.staffNote}</p>}
             {catalog && (
               <div className="flex flex-wrap gap-2">
+                {manage && (l.credentials ? <ActionButton label="🔐 Show login details" action={revealCredentials.bind(null, l.id)} /> : <span className="rounded-lg bg-warning-soft px-2.5 py-1.5 text-xs font-semibold text-warning">No login details</span>)}
                 {l.status === "PENDING" && <ActionButton label="Approve" className="btn-primary min-h-9 px-3 text-xs" action={reviewListing.bind(null, l.id, true)} />}
                 {l.status === "PENDING" && <ActionButton label="Reject…" className="btn-danger min-h-9 px-3 text-xs" prompt="Why? (the seller sees this)" action={reviewListing.bind(null, l.id, false)} />}
                 {["ACTIVE", "RESERVED"].includes(l.status) && <ActionButton label="Take down…" className="btn-danger min-h-9 px-3 text-xs" prompt="Reason (the seller sees this)" action={takeDownListing.bind(null, l.id)} />}
@@ -194,7 +196,8 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
   } else if (tab === "chats") {
     const chats = await prisma.marketChat.findMany({
       where: { messages: { some: {} } },
-      orderBy: { lastAt: "desc" },
+      // Agent calls and reopen requests first
+      orderBy: [{ agentCalledAt: { sort: "desc", nulls: "last" } }, { reopenAt: { sort: "desc", nulls: "last" } }, { lastAt: "desc" }],
       take: 100,
       include: {
         listing: { select: { title: true, platform: true } },
@@ -215,8 +218,23 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
               </p>
               <p className="text-xs text-muted">Buyer {c.buyer.name} · Seller {c.seller.marketVendor?.shopName ?? c.seller.name}{c.agreedPrice ? " · offer accepted" : ""}</p>
               <p className="truncate text-muted">{c.messages[0]?.kind === "OFFER" ? "💰 Offer" : c.messages[0]?.body || "📷 Photo"}</p>
-              {c._count.messages > 0 && <span className="inline-block rounded-md bg-warning-soft px-2 py-0.5 text-xs font-semibold text-warning">⚠ {c._count.messages} message(s) with contact details hidden</span>}
+              <span className="flex flex-wrap gap-1.5">
+                {c.agentCalledAt && <span className="rounded-md bg-danger px-2 py-0.5 text-xs font-bold text-white">🛡️ Agent called {c.agentCalledAt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</span>}
+                {c.closedAt && <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold">🔒 Closed</span>}
+                {c._count.messages > 0 && <span className="rounded-md bg-warning-soft px-2 py-0.5 text-xs font-semibold text-warning">⚠ {c._count.messages} message(s) with contact details hidden</span>}
+              </span>
             </Link>
+            {c.reopenAt && (
+              <div className="mx-4 mb-4 space-y-2 rounded-xl border border-warning/40 bg-warning-soft/40 p-3 text-sm">
+                <p><b>Reopen request</b> from {c.reopenById === c.buyerId ? "the buyer" : "the seller"}: {c.reopenReason}</p>
+                {manage && (
+                  <div className="flex gap-2">
+                    <ActionButton label="Reopen chat" className="btn-primary min-h-9 px-3 text-xs" action={decideReopen.bind(null, c.id, true)} />
+                    <ActionButton label="Refuse" className="btn-danger min-h-9 px-3 text-xs" confirm="Refuse to reopen this chat?" action={decideReopen.bind(null, c.id, false)} />
+                  </div>
+                )}
+              </div>
+            )}
           </li>
         ))}
       </ul>

@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
+import { getUser } from "@/lib/session";
 import { pageSeo } from "@/lib/seo";
 import { siteUrl } from "@/lib/site-url";
 import { formatMoney } from "@/lib/money";
@@ -39,6 +40,8 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
     include: { seller: { select: { name: true, marketVendor: { select: { shopName: true, status: true } } } } },
   });
   const stats = await sellerStats(listings.map((l) => l.sellerId));
+  const viewer = await getUser();
+  const myPending = viewer ? await prisma.marketListing.count({ where: { sellerId: viewer.id, status: "PENDING" } }) : 0;
   const [soldCount, vendorCount] = await Promise.all([
     prisma.marketListing.count({ where: { status: "SOLD" } }),
     prisma.marketVendor.count({ where: { status: "APPROVED" } }),
@@ -98,7 +101,14 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
         ))}
       </ul>
 
+      {myPending > 0 && (
+        <Link href="/account/market?tab=listings" className="flex items-center gap-3 rounded-2xl border border-sky-500/40 bg-sky-500/10 p-4 text-sm">
+          <span className="text-2xl" aria-hidden>⏳</span>
+          <span><b className="block">{t("pendingMine", { n: myPending })}</b><span className="text-muted">{t("reviewHint")}</span></span>
+        </Link>
+      )}
       <MarketBrowser
+        soldCount={soldCount}
         initialPlatform={platform}
         initialQuery={q}
         items={listings.map((l) => {

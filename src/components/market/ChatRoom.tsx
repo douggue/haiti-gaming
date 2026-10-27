@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { answerOffer, chatTyping, chatUpdates, makeOffer, sendChatMessage, type ChatMessage } from "@/actions/market-chat";
+import { answerOffer, callAgent, chatTyping, chatUpdates, makeOffer, requestReopen, sendChatMessage, type ChatMessage, type ChatState } from "@/actions/market-chat";
 import { connect } from "@/lib/realtime-client";
 import { formatMoney } from "@/lib/money";
 import { compressImage } from "@/lib/compress-image";
@@ -21,6 +21,8 @@ type Props = {
   firstUnreadId: string | null;
   /** When the other side last had the chat open (for ✓✓ "seen") */
   otherReadAt: string | null;
+  /** Closed / reopen request / agent called / when the other person was last active */
+  state: ChatState;
   /** Pusher settings for instant updates; null = check every few seconds instead */
   realtime?: { key: string; cluster: string; host?: string; port?: number } | null;
 };
@@ -29,7 +31,7 @@ const ImageIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 9" /></svg>
 );
 
-export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted, firstUnreadId, otherReadAt: otherRead0, realtime }: Props) {
+export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted, firstUnreadId, otherReadAt: otherRead0, realtime, state: state0 }: Props) {
   const t = useTranslations("chat");
   const tm = useTranslations("market");
   const locale = useLocale();
@@ -37,6 +39,16 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
   const [agreed, setAgreed] = useState(agreed0);
   const [status, setStatus] = useState(listing.status);
   const [otherRead, setOtherRead] = useState(otherRead0);
+  const [state, setState] = useState(state0);
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  // Online if active in the last 75 s; re-checked every 15 s
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(id);
+  }, []);
+  const online = !!state.otherSeenAt && now - Date.parse(state.otherSeenAt) < 75_000;
   const [divider, setDivider] = useState(firstUnreadId);
   const dividerRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState("");
@@ -73,6 +85,8 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
     setAgreed(r.agreedPrice);
     setStatus(r.listingStatus);
     setOtherRead(r.otherReadAt);
+    setState(r.state);
+    setNow(Date.now());
   }, [chatId, merge]);
 
   // Instant updates through Pusher when it's set up; the timer below stays as a safety net.
@@ -200,6 +214,12 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
     });
 
   const bubble = (m: ChatMessage) => {
+    if (m.kind === "SYSTEM")
+      return (
+        <p className="mx-auto w-fit max-w-[90%] rounded-full bg-surface-2 px-3 py-1 text-center text-[11px] font-semibold text-muted" data-testid="system-line">
+          {t.has(`sys_${m.body}`) ? t(`sys_${m.body}` as "sys_closed") : m.body}
+        </p>
+      );
     if (m.kind === "OFFER") {
             const mine = m.mine;
             return (
@@ -249,7 +269,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
   };
 
   const press = (k: string) => setAmount((a) => (k === "⌫" ? a.slice(0, -1) : (a + k).replace(/^0+/, "").slice(0, 9)));
-  const canOffer = role === "buyer" && status === "ACTIVE";
+  const canOffer = role === "buyer" && status === "ACTIVE" && !state.closed;
 
   // Phones: the chat takes the whole screen and follows the visible area, so the iPhone keyboard never squeezes it.
   const [view, setView] = useState<{ h: number; top: number } | null>(null);
@@ -285,9 +305,31 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-sm font-extrabold text-primary">{initials}</span>
         <div className="min-w-0 flex-1">
           <p className="truncate font-bold leading-tight">{otherName}</p>
-          <p className="truncate text-xs text-white/80">{typing ? t("typing", { name: "" }).trim() : role === "buyer" ? t("youBuy") : t("youSell")}</p>
+          <p className="flex items-center gap-1.5 truncate text-xs text-white/85" data-testid="presence">
+            {typing ? (
+              t("typing", { name: "" }).trim()
+            ) : (
+              <>
+                <span className={`size-2.5 shrink-0 rounded-full ring-2 ring-white/40 ${online ? "bg-emerald-400" : "bg-red-500"}`} aria-hidden />
+                {online ? t("online") : state.otherSeenAt ? t("lastSeen", { time: new Date(state.otherSeenAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) }) : t("offline")}
+              </>
+            )}
+          </p>
         </div>
-        <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold">🛡️ {t("escrow")}</span>
+        <button
+          type="button"
+          disabled={state.agentCalled || pending}
+          onClick={() =>
+            start(async () => {
+              const r = await callAgent(chatId);
+              if (!r.ok) setError(err(r.error));
+              await refresh();
+            })
+          }
+          className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-primary shadow disabled:bg-white/20 disabled:text-white"
+        >
+          🛡️ {state.agentCalled ? t("agentComing") : t("callAgent")}
+        </button>
       </div>
 
       {/* The account being discussed */}
@@ -333,6 +375,15 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
 
       {error && <p className="bg-danger-soft px-4 py-2 text-xs text-danger" role="alert">{error}</p>}
 
+      {state.closed ? (
+        <div className="border-t border-border bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-center" data-testid="chat-closed">
+          <p className="text-sm font-semibold">🔒 {t("closedTitle")}</p>
+          <p className="mt-0.5 text-xs text-muted">{state.reopenPending ? t("reopenPending") : t("closedHint")}</p>
+          {!state.reopenPending && (
+            <button type="button" onClick={() => setReopenOpen(true)} className="btn-secondary mt-2 min-h-10 px-4 text-sm">{t("askReopen")}</button>
+          )}
+        </div>
+      ) : (
       <form
         className="flex items-center gap-2 border-t border-border bg-surface p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         onSubmit={(e) => {
@@ -354,6 +405,31 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
         <input value={text} onChange={(e) => onType(e.target.value)} maxLength={1000} placeholder={t("placeholder")} aria-label={t("placeholder")} enterKeyHint="send" className="input min-h-11 flex-1 rounded-full text-base" />
         <button disabled={!text.trim() || pending} aria-label={t("send")} className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-white shadow disabled:opacity-50"><SendIcon width={18} height={18} /></button>
       </form>
+      )}
+
+      {/* Ask staff to reopen a closed chat */}
+      {reopenOpen && (
+        <div className="absolute inset-0 z-10 flex flex-col justify-end bg-black/40" onClick={() => setReopenOpen(false)}>
+          <form
+            className="space-y-3 rounded-t-3xl bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault();
+              start(async () => {
+                const r = await requestReopen(chatId, reason);
+                if (!r.ok) return setError(err(r.error));
+                setReopenOpen(false);
+                setReason("");
+                await refresh();
+              });
+            }}
+          >
+            <p className="font-bold">{t("askReopen")}</p>
+            <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} minLength={5} maxLength={500} required placeholder={t("reopenPlaceholder")} className="input py-2 text-base" />
+            <button className="btn-primary min-h-12 w-full" disabled={pending || reason.trim().length < 5}>{t("sendRequest")}</button>
+          </form>
+        </div>
+      )}
 
       {/* Offer keypad: a sheet over the chat, always fully visible */}
       {keypad && (

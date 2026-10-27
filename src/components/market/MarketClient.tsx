@@ -331,6 +331,20 @@ export function SellForm({ commissionPct, rulesAccepted }: { commissionPct: numb
         <span className="label">{t("notesLabel")}</span>
         <textarea name="description" rows={4} maxLength={1500} placeholder={t("notesPlaceholder")} className="input py-2" />
       </label>
+      <fieldset className="space-y-3 rounded-2xl border-2 border-amber-400/60 bg-amber-400/10 p-4">
+        <legend className="px-1 text-sm font-bold">🔐 {t("credTitle")}</legend>
+        <p className="text-xs text-muted">{t("credHint")}</p>
+        <label className="block"><span className="label">{t("credLogin")}</span><input name="credLogin" required maxLength={120} autoComplete="off" autoCapitalize="none" spellCheck={false} className="input" /></label>
+        <label className="block"><span className="label">{t("credPassword")}</span><input name="credPassword" type="password" required maxLength={120} autoComplete="new-password" className="input" /></label>
+        <label className="block">
+          <span className="label">{t("credLinked")}</span>
+          <select name="credLinked" className="input" defaultValue="">
+            <option value="">{t("credLinkedNone")}</option>
+            {["Facebook", "Google", "VK", "X / Twitter", "Apple", "Email", "Huawei"].map((v) => <option key={v} value={v}>{v}</option>)}
+          </select>
+        </label>
+        <label className="block"><span className="label">{t("credNote")}</span><input name="credNote" maxLength={300} placeholder={t("credNotePh")} className="input" /></label>
+      </fieldset>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="withEmail" className="size-4" /> {t("withEmail")}</label>
       <div>
         <span className="label">{t("photos")}</span>

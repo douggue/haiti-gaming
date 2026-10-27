@@ -24,6 +24,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       prisma.marketVendor.count({ where: { status: "PENDING" } }),
       prisma.marketDeal.count({ where: { status: { in: ["REQUESTED", "PAID", "DELIVERED", "DISPUTED"] } } }),
       prisma.marketReport.count({ where: { resolved: false } }),
+      prisma.marketChat.count({ where: { OR: [{ agentCalledAt: { not: null } }, { reopenAt: { not: null } }] } }),
     ]).then((n) => n.reduce((a, b) => a + b, 0)),
   ]);
   const all: { href: string; label: string; group: string; perm: Permission; badge?: number }[] = [

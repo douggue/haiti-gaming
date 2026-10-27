@@ -8,6 +8,7 @@ import { getSettings } from "@/lib/settings";
 import { parseAmount, formatMoney } from "@/lib/money";
 import { savePrivateImage, savePublicImage, uploadsEnabled, UploadError } from "@/lib/storage";
 import { normalizePhone } from "@/lib/phone";
+import { encrypt } from "@/lib/crypto";
 import { isPlatform, platformOf } from "@/lib/market";
 import { marketRules, rulesAccepted } from "@/lib/market-rules";
 import { mustVerifyEmail } from "@/lib/verify-email";
@@ -74,6 +75,14 @@ export async function createListing(form: FormData): Promise<R> {
     const details = [0, 1, 2, 3, 4, 5]
       .map((i) => ({ label: String(form.get(`dl${i}`) ?? "").trim().slice(0, 30), value: String(form.get(`dv${i}`) ?? "").trim().slice(0, 60) }))
       .filter((d) => d.label && d.value);
+    // Login details go to the agent only (encrypted); the buyer gets them through the agent after paying.
+    const cred = {
+      login: String(form.get("credLogin") ?? "").trim().slice(0, 120),
+      password: String(form.get("credPassword") ?? "").slice(0, 120),
+      linked: String(form.get("credLinked") ?? "").trim().slice(0, 40),
+      note: String(form.get("credNote") ?? "").trim().slice(0, 300),
+    };
+    if (!cred.login || !cred.password) return { ok: false, error: "credentials" };
     const files = form.getAll("images").filter((f): f is File => f instanceof File && f.size > 0).slice(0, 5);
     if (!files.length) return { ok: false, error: "images" };
     if (!uploadsEnabled()) return { ok: false, error: "upload" };
@@ -97,6 +106,7 @@ export async function createListing(form: FormData): Promise<R> {
         images,
         details: details as Prisma.InputJsonValue,
         withEmail: form.get("withEmail") === "on",
+        credentials: encrypt(JSON.stringify(cred)),
       },
     });
     await audit(user.id, "market.listing.create", "MarketListing", l.id, { platform, price, currency });

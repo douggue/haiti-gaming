@@ -8,6 +8,7 @@ import { parseAmount } from "@/lib/money";
 import { redactContacts } from "@/lib/market-chat";
 import { savePrivateImage, uploadsEnabled, UploadError } from "@/lib/storage";
 import { chatChannel, publish, userChannel } from "@/lib/realtime";
+import { systemLine } from "@/lib/market-chat-ops";
 
 type R<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 /** Known problems come back as a short code; anything unexpected is logged with a reference shown to the customer. */
@@ -90,6 +91,11 @@ async function markSeen(chatId: string, role: "buyer" | "seller", userId: string
   if (before && (!before.readAt || before.lastAt > before.readAt)) await publish(chatChannel(chatId), "read", { role });
 }
 
+/** Online dot: remember when the person was last active (at most one write every 20 s). */
+async function touch(userId: string) {
+  await prisma.user.updateMany({ where: { id: userId, OR: [{ lastSeenAt: null }, { lastSeenAt: { lt: new Date(Date.now() - 20_000) } }] }, data: { lastSeenAt: new Date() } });
+}
+
 /** "Ekri machann nan": opens (or reopens) the buyer's chat with the seller about a listing. */
 export async function openChat(listingId: string): Promise<R<{ id: string }>> {
   try {
@@ -107,7 +113,9 @@ export async function openChat(listingId: string): Promise<R<{ id: string }>> {
 }
 
 /** New messages since `after` (ISO), and marks the chat as read. */
-export async function chatUpdates(chatId: string, after?: string): Promise<R<{ messages: ChatMessage[]; agreedPrice: number | null; listingStatus: string; otherReadAt: string | null }>> {
+export type ChatState = { closed: boolean; reopenPending: boolean; agentCalled: boolean; otherSeenAt: string | null };
+
+export async function chatUpdates(chatId: string, after?: string): Promise<R<{ messages: ChatMessage[]; agreedPrice: number | null; listingStatus: string; otherReadAt: string | null; state: ChatState }>> {
   try {
     const { user, chat, role } = await myChat(chatId);
     const since = after ? new Date(after) : null;
@@ -117,8 +125,17 @@ export async function chatUpdates(chatId: string, after?: string): Promise<R<{ m
       take: 300,
     });
     await markSeen(chat.id, role, user.id, { readAt: role === "buyer" ? chat.buyerReadAt : chat.sellerReadAt, lastAt: chat.lastAt });
+    await touch(user.id);
     const other = role === "buyer" ? chat.sellerReadAt : chat.buyerReadAt;
-    return { ok: true, messages: rows.map((m) => toDto(m, user.id)), agreedPrice: chat.agreedPrice, listingStatus: chat.listing.status, otherReadAt: other?.toISOString() ?? null };
+    const seen = await prisma.user.findUnique({ where: { id: role === "buyer" ? chat.sellerId : chat.buyerId }, select: { lastSeenAt: true } });
+    return {
+      ok: true,
+      messages: rows.map((m) => toDto(m, user.id)),
+      agreedPrice: chat.agreedPrice,
+      listingStatus: chat.listing.status,
+      otherReadAt: other?.toISOString() ?? null,
+      state: { closed: !!chat.closedAt, reopenPending: !!chat.reopenAt, agentCalled: !!chat.agentCalledAt, otherSeenAt: seen?.lastSeenAt?.toISOString() ?? null },
+    };
   } catch (e) {
     return fail(e);
   }
@@ -128,6 +145,7 @@ export async function chatUpdates(chatId: string, after?: string): Promise<R<{ m
 export async function sendChatMessage(chatId: string, form: FormData): Promise<R> {
   try {
     const { user, chat, role } = await myChat(chatId);
+    if (chat.closedAt) return { ok: false, error: "chat_closed" };
     if (tooFast(user.id)) return { ok: false, error: "too_fast" };
     const text = String(form.get("text") ?? "").trim().slice(0, 1000);
     const file = form.get("image");
@@ -160,6 +178,7 @@ export async function makeOffer(chatId: string, amount: string): Promise<R> {
   try {
     const { user, chat, role } = await myChat(chatId);
     if (role !== "buyer") return { ok: false, error: "not_buyer" };
+    if (chat.closedAt) return { ok: false, error: "chat_closed" };
     if (chat.listing.status !== "ACTIVE") return { ok: false, error: "unavailable" };
     const minor = parseAmount(amount);
     if (!minor || minor < 100 || minor > chat.listing.price * 2) return { ok: false, error: "offer_amount" };
@@ -182,6 +201,7 @@ export async function answerOffer(messageId: string, accept: boolean): Promise<R
     const m = await prisma.marketMessage.findUnique({ where: { id: String(messageId).slice(0, 40) }, include: { chat: { include: { listing: { select: { title: true, status: true } } } } } });
     if (!m || m.kind !== "OFFER" || m.chat.sellerId !== user.id) return { ok: false, error: "not_found" };
     if (m.offerStatus !== "PENDING") return { ok: false, error: "answered" };
+    if (m.chat.closedAt) return { ok: false, error: "chat_closed" };
     if (accept && m.chat.listing.status !== "ACTIVE") return { ok: false, error: "unavailable" };
     await prisma.$transaction([
       prisma.marketMessage.update({ where: { id: m.id }, data: { offerStatus: accept ? "ACCEPTED" : "DECLINED" } }),
@@ -214,7 +234,7 @@ export async function staffChatMessage(chatId: string, form: FormData): Promise<
     const chat = await prisma.marketChat.findUniqueOrThrow({ where: { id: chatId }, include: { listing: { select: { title: true } } } });
     await prisma.$transaction([
       prisma.marketMessage.create({ data: { chatId, authorId: staff.id, kind: "TEXT", body: text, fromStaff: true } }),
-      prisma.marketChat.update({ where: { id: chatId }, data: { lastAt: new Date() } }),
+      prisma.marketChat.update({ where: { id: chatId }, data: { lastAt: new Date(), agentCalledAt: null } }),
     ]);
     await ping(chat, [
       { id: chat.buyerId, readAt: chat.buyerReadAt },
@@ -222,6 +242,52 @@ export async function staffChatMessage(chatId: string, form: FormData): Promise<
     ]);
     await audit(staff.id, "market.chat.staff_message", "MarketChat", chatId);
     return { ok: true, message: "Sent" };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
+  }
+}
+
+/** "Rele ajan an": asks a staff member to join the chat (shown in Admin → Market → Chats). */
+export async function callAgent(chatId: string): Promise<R> {
+  try {
+    const { chat, role } = await myChat(chatId);
+    if (chat.agentCalledAt && Date.now() - chat.agentCalledAt.getTime() < 10 * 60_000) return { ok: false, error: "agent_already" };
+    await prisma.marketChat.update({ where: { id: chat.id }, data: { agentCalledAt: new Date() } });
+    await systemLine(chat.id, role === "buyer" ? "agent_called_buyer" : "agent_called_seller");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** After a deal, the chat is closed; buyer or seller can ask staff to reopen it, with a reason. */
+export async function requestReopen(chatId: string, reason: string): Promise<R> {
+  try {
+    const { user, chat } = await myChat(chatId);
+    if (!chat.closedAt) return { ok: false, error: "not_closed" };
+    if (chat.reopenAt) return { ok: false, error: "reopen_pending" };
+    const text = reason.trim().slice(0, 500);
+    if (text.length < 5) return { ok: false, error: "reason" };
+    await prisma.marketChat.update({ where: { id: chat.id }, data: { reopenReason: text, reopenById: user.id, reopenAt: new Date() } });
+    await systemLine(chat.id, "reopen_requested");
+    await audit(user.id, "market.chat.reopen_request", "MarketChat", chat.id, { reason: text });
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Staff: approve (chat open again) or refuse a reopen request. */
+export async function decideReopen(chatId: string, approve: boolean): Promise<{ ok: true; message?: string } | { ok: false; error: string }> {
+  try {
+    const staff = await assertStaff("orders.manage");
+    const chat = await prisma.marketChat.findUniqueOrThrow({ where: { id: chatId }, include: { listing: { select: { title: true } } } });
+    if (!chat.reopenAt) return { ok: false, error: "No request to answer" };
+    await prisma.marketChat.update({ where: { id: chatId }, data: { reopenAt: null, reopenReason: null, reopenById: null, ...(approve ? { closedAt: null } : {}) } });
+    await systemLine(chatId, approve ? "reopened" : "reopen_refused");
+    for (const uid of [chat.buyerId, chat.sellerId]) await notify(uid, approve ? "market_chat_reopened" : "market_chat_reopen_refused", { title: chat.listing.title }, `/account/messages/${chatId}`);
+    await audit(staff.id, approve ? "market.chat.reopen" : "market.chat.reopen_refuse", "MarketChat", chatId);
+    return { ok: true, message: approve ? "Chat reopened" : "Request refused" };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
   }

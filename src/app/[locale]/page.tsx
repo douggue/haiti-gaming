@@ -11,6 +11,7 @@ import { NewsCard } from "@/components/NewsCard";
 import { Link } from "@/i18n/navigation";
 import { getCategories, searchProducts } from "@/lib/catalog";
 import { fullTheme, getDisplaySettings } from "@/lib/settings";
+import { PlatformIcon } from "@/components/market/PlatformIcon";
 import { t } from "@/lib/text";
 import Image from "next/image";
 import { ProductCard } from "@/components/ProductCard";
@@ -238,6 +239,23 @@ export default async function HomePage({ params, searchParams }: { params: Promi
                 {tc("browseCategories")}
               </Link>
             </div>
+            {/* Seller call-out: links to the Market vendor sign-up */}
+            {settings.marketEnabled && (
+              <Link
+                href="/market/sell"
+                className="animate-rise group flex max-w-xl items-center gap-3 rounded-2xl border border-amber-300/40 bg-gradient-to-r from-amber-400/15 via-fuchsia-500/10 to-transparent p-3 pr-4 text-white transition-colors hover:border-amber-300/80"
+                data-testid="seller-callout"
+              >
+                <span className="flex shrink-0 -space-x-2" aria-hidden>
+                  {["freefire", "pubg", "tiktok"].map((k) => <PlatformIcon key={k} platform={k} size={34} className="rounded-xl ring-2 ring-[#0b1430]" />)}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <b className="block text-sm leading-snug sm:text-base">{tc("sellerCallout")}</b>
+                  <span className="text-xs text-amber-200">{tc("sellerCalloutCta")}</span>
+                </span>
+                <ArrowRightIcon width={18} height={18} className="shrink-0 text-amber-300 transition-transform group-hover:translate-x-1" />
+              </Link>
+            )}
             <div className="animate-rise flex flex-wrap items-center gap-3 text-sm text-[#b7c6e4]">
               <PayLogo brand="moncash" height={25} />
               <PayLogo brand="natcash" height={25} />

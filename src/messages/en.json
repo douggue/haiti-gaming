@@ -64,7 +64,9 @@
     "more": "More",
     "faqShort": "FAQ",
     "market": "Market",
-    "messages": "Messages"
+    "messages": "Messages",
+    "sellerCallout": "Got a Free Fire, PUBG or TikTok account you don't use? Turn it into cash 💸",
+    "sellerCalloutCta": "Become a seller on the Market →"
   },
   "home": {
     "eyebrow": "Made in Haiti, for gamers",
@@ -426,7 +428,9 @@
     "sessions": "Active sessions",
     "thisDevice": "This device",
     "revokeOthers": "Sign out other devices",
-    "revoked": "Other devices signed out."
+    "revoked": "Other devices signed out.",
+    "subtitle": "Your password, two-step verification and the devices signed in to your account.",
+    "signOutDevice": "Sign out"
   },
   "notifications": {
     "title": "Notifications",
@@ -451,7 +455,9 @@
     "market_vendor_suspended": "Your vendor account was suspended: {reason}",
     "market_message": "New message about “{title}” on the Market.",
     "market_offer_accepted": "The seller accepted your offer for “{title}”. Tap Buy to continue.",
-    "market_offer_declined": "The seller declined your offer for “{title}”."
+    "market_offer_declined": "The seller declined your offer for “{title}”.",
+    "market_chat_reopened": "Staff reopened the chat about “{title}”.",
+    "market_chat_reopen_refused": "Staff did not reopen the chat about “{title}”."
   },
   "pages": {
     "aboutTitle": "About Haiti Gaming",
@@ -955,7 +961,28 @@
     "statOnSale": "On sale",
     "statSold": "Sold",
     "statVendors": "Vendors",
-    "hot": "Hot"
+    "hot": "Hot",
+    "statActive": "On sale",
+    "statSales": "Sales done",
+    "statEarned": "Earned",
+    "statPurchases": "Purchases",
+    "noPurchases": "You haven't bought an account yet.",
+    "noSales": "No sales yet. Post an account and the agent handles the rest.",
+    "noListings": "You have no listings yet.",
+    "commission": "Commission",
+    "youReceived": "You received",
+    "youWillReceive": "You will receive",
+    "credTitle": "Login details for the agent",
+    "credHint": "Private: only the Haiti Gaming agent sees them, to check the account. The buyer gets access through the agent after paying.",
+    "credLogin": "Login (email, phone or ID)",
+    "credPassword": "Password",
+    "credLinked": "Account linked to",
+    "credLinkedNone": "Not linked / don't know",
+    "credNote": "Other info for the agent (optional)",
+    "credNotePh": "Backup codes, security question…",
+    "err_credentials": "Enter the login and password for the agent.",
+    "allSold": "All {n, plural, one {# account} other {# accounts}} sold! New ones are coming soon.",
+    "pendingMine": "{n, plural, one {Your account is} other {# of your accounts are}} being checked by our team"
   },
   "chat": {
     "title": "Messages",
@@ -1003,6 +1030,28 @@
     "seen": "Seen",
     "typing": "{name} is typing…",
     "escrow": "Protected",
-    "listedAt": "Listed at {price}"
+    "listedAt": "Listed at {price}",
+    "sys_closed": "The deal is finished: this chat is now closed.",
+    "sys_reopened": "Staff reopened this chat.",
+    "sys_reopen_refused": "Staff did not reopen this chat.",
+    "sys_reopen_requested": "A request to reopen this chat was sent to staff.",
+    "sys_agent_called_buyer": "The buyer called a Haiti Gaming agent.",
+    "sys_agent_called_seller": "The seller called a Haiti Gaming agent.",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Offline · last seen {time}",
+    "callAgent": "Call agent",
+    "agentComing": "Agent called",
+    "closedTitle": "This chat is closed",
+    "closedHint": "The deal is finished. Need something? Ask staff to reopen it.",
+    "reopenPending": "Your request was sent. Staff will answer soon.",
+    "askReopen": "Ask to reopen",
+    "reopenPlaceholder": "Why do you need to reopen this chat?",
+    "sendRequest": "Send the request",
+    "err_chat_closed": "This chat is closed.",
+    "err_agent_already": "An agent was already called. They'll join soon.",
+    "err_reopen_pending": "A request is already waiting.",
+    "err_reason": "Write a few words (5 characters or more).",
+    "err_not_closed": "This chat is already open."
   }
 }

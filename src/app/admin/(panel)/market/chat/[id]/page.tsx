@@ -6,7 +6,8 @@ import { can } from "@/lib/permissions";
 import { formatMoney } from "@/lib/money";
 import { platformOf } from "@/lib/market";
 import { formatPhone, waNumber } from "@/lib/phone";
-import { staffChatMessage } from "@/actions/market-chat";
+import { decideReopen, staffChatMessage } from "@/actions/market-chat";
+import { ActionButton } from "@/components/admin/ActionButton";
 import { ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle } from "@/components/admin/ui";
 import { LiveRefresh } from "@/components/LiveRefresh";
@@ -42,10 +43,24 @@ export default async function AdminChat({ params }: { params: Promise<{ id: stri
       />
       <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
         <section className="card space-y-2 p-4">
+          {chat.agentCalledAt && <p className="rounded-xl bg-danger px-3 py-2 text-sm font-bold text-white">🛡️ Someone in this chat called an agent. Your next message clears this.</p>}
+          {chat.reopenAt && (
+            <div className="space-y-2 rounded-xl border border-warning/40 bg-warning-soft/40 p-3 text-sm">
+              <p><b>Reopen request</b> from {chat.reopenById === chat.buyerId ? "the buyer" : "the seller"}: {chat.reopenReason}</p>
+              {can(staff, "orders.manage") && (
+                <div className="flex gap-2">
+                  <ActionButton label="Reopen chat" className="btn-primary min-h-9 px-3 text-xs" action={decideReopen.bind(null, chat.id, true)} />
+                  <ActionButton label="Refuse" className="btn-danger min-h-9 px-3 text-xs" confirm="Refuse to reopen this chat?" action={decideReopen.bind(null, chat.id, false)} />
+                </div>
+              )}
+            </div>
+          )}
+          {chat.closedAt && !chat.reopenAt && <p className="rounded-xl bg-surface-2 px-3 py-2 text-xs">🔒 Closed {chat.closedAt.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })} (deal finished). Buyer and seller can ask to reopen it.</p>}
           {chat.messages.length === 0 && <p className="text-sm text-muted">No messages.</p>}
           {chat.messages.map((m) => (
             <div key={m.id} className={`rounded-xl p-3 text-sm ${m.fromStaff ? "border border-primary/40 bg-primary/10" : m.authorId === chat.buyerId ? "bg-surface-2" : "bg-surface-2/50"}`}>
               <p className="text-xs text-muted"><b>{who(m.authorId, m.fromStaff, m.author?.name)}</b> · {m.createdAt.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}</p>
+              {m.kind === "SYSTEM" && <p className="text-xs italic text-muted">[{m.body}]</p>}
               {m.kind === "OFFER" && <p className="font-semibold">💰 Offer {money(m.offerAmount ?? 0)} · {m.offerStatus}</p>}
               {m.imagePath && (
                 <a href={`/api/market-chat/image/${m.id}`} target="_blank" rel="noopener">
@@ -53,7 +68,7 @@ export default async function AdminChat({ params }: { params: Promise<{ id: stri
                   <img src={`/api/market-chat/image/${m.id}`} alt="" className="mt-1 max-h-48 rounded-lg" />
                 </a>
               )}
-              {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
+              {m.body && m.kind !== "SYSTEM" && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
               {m.original && <p className="mt-1 rounded-lg bg-warning-soft px-2 py-1 text-xs text-warning">⚠ Typed (hidden from the other side): {m.original}</p>}
             </div>
           ))}

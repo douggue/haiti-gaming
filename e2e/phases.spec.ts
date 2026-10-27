@@ -191,6 +191,9 @@ test("Market: vendor applies and is approved, sells, staff approves, buyer reser
   await s.locator('input[name="dv0"]').fill("70");
   await s.locator('input[name="dv1"]').fill("Heroic");
   await s.getByLabel("Nòt pou achtè yo").fill("Kont pwòp, 12 skin ra.");
+  // Login details go to the agent only
+  await s.locator('input[name="credLogin"]').fill("ricardo.ff@example.com");
+  await s.locator('input[name="credPassword"]').fill("Sekre-123");
   await s.locator('input[name="images"]').setInputFiles({ name: "shot.png", mimeType: "image/png", buffer: PNG });
   await s.getByRole("button", { name: "Voye pou tcheke" }).click();
   await s.waitForURL("**/ht/account/market?posted=1");
@@ -252,8 +255,9 @@ test("Market: vendor applies and is approved, sells, staff approves, buyer reser
   expect((await db.marketListing.findUniqueOrThrow({ where: { id: listing.id } })).status).toBe("SOLD");
 
   // Seller sees the net amount; buyer rates
-  await s.goto("/ht/account/market");
-  await expect(s.getByText(/ou resevwa 4[\s  ]?500/)).toBeVisible();
+  await s.goto("/ht/account/market?tab=sales");
+  await expect(s.getByText("Ou resevwa", { exact: true })).toBeVisible();
+  await expect(s.getByText(/^4[\s\u202f\u00a0]?500 HTG$/).first()).toBeVisible();
   await b.goto("/ht/account/market");
   await b.getByRole("radio", { name: "5" }).click();
   await b.getByRole("button", { name: "Voye" }).click();
@@ -408,6 +412,38 @@ test("Market chat: buyer and seller talk, contact details hidden, offer accepted
   await s.reload();
   await expect(s.getByTestId("chat-messages").getByText("🛡️ Ajan Haiti Gaming")).toBeVisible();
   await expect(s.getByText("Bonjou tou de, se mwen k ajan an.")).toBeVisible();
+
+  // Online dot: the seller has the chat open, so the buyer sees them online
+  await b.goto(`/ht/account/messages/${chatId}`);
+  await expect(b.getByTestId("presence")).toContainText("An liy");
+  // Call an agent: it shows in the chat and at the top of Admin → Market → Chats
+  await b.getByRole("button", { name: /Rele ajan/ }).click();
+  await expect(b.getByTestId("chat-messages").getByText("Achtè a rele yon ajan Haiti Gaming.")).toBeVisible();
+  await a.goto("/admin/market?tab=chats");
+  await expect(a.getByText(/Agent called/).first()).toBeVisible();
+
+  // Deal done → chat closed; the buyer asks to reopen; staff approves
+  await a.goto("/admin/market?tab=deals");
+  const dl = a.locator("section.card", { hasText: `Deal #${deal.number}` });
+  for (const [step, status] of [["Buyer paid me", "PAID"], ["Account handed to buyer", "DELIVERED"], ["Seller paid · close", "COMPLETED"]] as const) {
+    await dl.getByText(step).click();
+    await dl.getByRole("button", { name: "Confirm" }).click();
+    await expect.poll(async () => (await db.marketDeal.findUniqueOrThrow({ where: { id: deal.id } })).status).toBe(status);
+    await a.reload();
+  }
+  await b.reload();
+  await expect(b.getByTestId("chat-closed")).toBeVisible();
+  await expect(b.getByLabel("Ekri yon mesaj…")).toHaveCount(0);
+  await b.getByRole("button", { name: "Mande pou relouvri" }).click();
+  await b.getByPlaceholder("Poukisa ou bezwen relouvri konvèsasyon an?").fill("Modpas la pa mache");
+  await b.getByRole("button", { name: "Voye demann lan" }).click();
+  await expect(b.getByText("Demann ou voye. Ekip la ap reponn ou byento.")).toBeVisible();
+  await a.goto("/admin/market?tab=chats");
+  const req = a.locator("li", { hasText: "Modpas la pa mache" });
+  await req.getByRole("button", { name: "Reopen chat" }).click();
+  await expect.poll(async () => (await db.marketChat.findUniqueOrThrow({ where: { id: chatId } })).closedAt).toBeNull();
+  await b.reload();
+  await expect(b.getByLabel("Ekri yon mesaj…")).toBeVisible();
 });
 
 test("Market: switching games and searching filter instantly, without reloading the page", async ({ browser }) => {

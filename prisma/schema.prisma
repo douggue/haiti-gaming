@@ -60,6 +60,8 @@ model User {
   showInFeed       Boolean       @default(true)
   /// Accepted the Market rules (needed to sell or buy on the Market)
   marketRulesAt    DateTime?
+  /// Last activity in a Market chat (online / offline dot)
+  lastSeenAt       DateTime?
   marketListings   MarketListing[]  @relation("MarketSeller")
   marketBuys       MarketDeal[]     @relation("MarketBuyer")
   marketSales      MarketDeal[]     @relation("MarketDealSeller")
@@ -1042,6 +1044,8 @@ model MarketListing {
   details      Json          @default("[]")
   /// The account's original email can be handed over too
   withEmail    Boolean       @default(false)
+  /// Login details handed to the agent (encrypted JSON: login, password, linked, note). Staff only.
+  credentials  String?
   status       ListingStatus @default(PENDING)
   staffNote    String?
   views        Int           @default(0)
@@ -1146,6 +1150,13 @@ model MarketChat {
   lastAt       DateTime        @default(now())
   buyerReadAt  DateTime?
   sellerReadAt DateTime?
+  /// Closed when the deal ends; reopened by staff on request
+  closedAt     DateTime?
+  reopenReason String?
+  reopenById   String?
+  reopenAt     DateTime?
+  /// Someone asked for the agent to join the chat
+  agentCalledAt DateTime?
   messages     MarketMessage[]
   createdAt    DateTime        @default(now())
 

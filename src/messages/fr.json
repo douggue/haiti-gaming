@@ -64,7 +64,9 @@
     "more": "Plus",
     "faqShort": "FAQ",
     "market": "Market",
-    "messages": "Messages"
+    "messages": "Messages",
+    "sellerCallout": "Un compte Free Fire, PUBG ou TikTok qui dort ? Transformez-le en argent 💸",
+    "sellerCalloutCta": "Devenez vendeur sur le Market →"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",
@@ -426,7 +428,9 @@
     "sessions": "Sessions actives",
     "thisDevice": "Cet appareil",
     "revokeOthers": "Déconnecter les autres appareils",
-    "revoked": "Autres appareils déconnectés."
+    "revoked": "Autres appareils déconnectés.",
+    "subtitle": "Votre mot de passe, la vérification en 2 étapes et les appareils connectés à votre compte.",
+    "signOutDevice": "Déconnecter"
   },
   "notifications": {
     "title": "Notifications",
@@ -451,7 +455,9 @@
     "market_vendor_suspended": "Votre compte vendeur a été suspendu : {reason}",
     "market_message": "Nouveau message à propos de « {title} » sur le Market.",
     "market_offer_accepted": "Le vendeur a accepté votre offre pour « {title} ». Touchez Acheter pour continuer.",
-    "market_offer_declined": "Le vendeur a refusé votre offre pour « {title} »."
+    "market_offer_declined": "Le vendeur a refusé votre offre pour « {title} ».",
+    "market_chat_reopened": "L'équipe a rouvert la discussion sur « {title} ».",
+    "market_chat_reopen_refused": "L'équipe n'a pas rouvert la discussion sur « {title} »."
   },
   "pages": {
     "aboutTitle": "À propos de Haiti Gaming",
@@ -955,7 +961,28 @@
     "statOnSale": "En vente",
     "statSold": "Vendus",
     "statVendors": "Vendeurs",
-    "hot": "Populaire"
+    "hot": "Populaire",
+    "statActive": "En vente",
+    "statSales": "Ventes conclues",
+    "statEarned": "Gagné",
+    "statPurchases": "Achats",
+    "noPurchases": "Vous n'avez pas encore acheté de compte.",
+    "noSales": "Pas encore de vente. Publiez un compte, l'agent s'occupe du reste.",
+    "noListings": "Vous n'avez pas encore d'annonce.",
+    "commission": "Commission",
+    "youReceived": "Vous avez reçu",
+    "youWillReceive": "Vous recevrez",
+    "credTitle": "Identifiants pour l'agent",
+    "credHint": "Privé : seul l'agent Haiti Gaming les voit, pour vérifier le compte. L'acheteur obtient l'accès par l'agent après avoir payé.",
+    "credLogin": "Identifiant (email, téléphone ou ID)",
+    "credPassword": "Mot de passe",
+    "credLinked": "Compte lié à",
+    "credLinkedNone": "Non lié / je ne sais pas",
+    "credNote": "Autres infos pour l'agent (facultatif)",
+    "credNotePh": "Codes de secours, question de sécurité…",
+    "err_credentials": "Entrez l'identifiant et le mot de passe pour l'agent.",
+    "allSold": "{n, plural, one {Le compte est vendu} other {Les # comptes sont vendus}} ! De nouveaux arrivent bientôt.",
+    "pendingMine": "{n, plural, one {Votre compte est} other {# de vos comptes sont}} en vérification par notre équipe"
   },
   "chat": {
     "title": "Messages",
@@ -1003,6 +1030,28 @@
     "seen": "Vu",
     "typing": "{name} écrit…",
     "escrow": "Protégé",
-    "listedAt": "Prix affiché : {price}"
+    "listedAt": "Prix affiché : {price}",
+    "sys_closed": "La transaction est terminée : cette discussion est fermée.",
+    "sys_reopened": "L'équipe a rouvert cette discussion.",
+    "sys_reopen_refused": "L'équipe n'a pas rouvert cette discussion.",
+    "sys_reopen_requested": "Une demande de réouverture a été envoyée à l'équipe.",
+    "sys_agent_called_buyer": "L'acheteur a appelé un agent Haiti Gaming.",
+    "sys_agent_called_seller": "Le vendeur a appelé un agent Haiti Gaming.",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "lastSeen": "Hors ligne · vu à {time}",
+    "callAgent": "Appeler l'agent",
+    "agentComing": "Agent appelé",
+    "closedTitle": "Cette discussion est fermée",
+    "closedHint": "La transaction est terminée. Besoin de quelque chose ? Demandez à l'équipe de la rouvrir.",
+    "reopenPending": "Votre demande est envoyée. L'équipe va répondre bientôt.",
+    "askReopen": "Demander la réouverture",
+    "reopenPlaceholder": "Pourquoi faut-il rouvrir cette discussion ?",
+    "sendRequest": "Envoyer la demande",
+    "err_chat_closed": "Cette discussion est fermée.",
+    "err_agent_already": "Un agent a déjà été appelé. Il arrive bientôt.",
+    "err_reopen_pending": "Une demande est déjà en attente.",
+    "err_reason": "Écrivez quelques mots (5 caractères ou plus).",
+    "err_not_closed": "Cette discussion est déjà ouverte."
   }
 }

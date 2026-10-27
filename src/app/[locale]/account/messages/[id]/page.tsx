@@ -35,6 +35,8 @@ export default async function ChatPage({ params }: { params: Promise<{ locale: s
   ]);
   // After saving, so the other side reads the new time when it redraws its ✓✓.
   if (firstUnread) await publish(chatChannel(id), "read", { role });
+  await prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } });
+  const otherSeen = await prisma.user.findUnique({ where: { id: role === "buyer" ? chat.sellerId : chat.buyerId }, select: { lastSeenAt: true } });
   const [settings, me] = await Promise.all([getSettings(), prisma.user.findUnique({ where: { id: user.id }, select: { marketRulesAt: true } })]);
   return (
     <ChatRoom
@@ -46,6 +48,7 @@ export default async function ChatPage({ params }: { params: Promise<{ locale: s
       firstUnreadId={firstUnread?.id ?? null}
       otherReadAt={otherReadAt?.toISOString() ?? null}
       realtime={realtimeConfig()}
+      state={{ closed: !!chat.closedAt, reopenPending: !!chat.reopenAt, agentCalled: !!chat.agentCalledAt, otherSeenAt: otherSeen?.lastSeenAt?.toISOString() ?? null }}
       rulesAccepted={rulesAccepted(me?.marketRulesAt, settings)}
       initial={chat.messages.map((m) => ({
         id: m.id,

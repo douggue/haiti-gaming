@@ -64,7 +64,9 @@
     "more": "Plis",
     "faqShort": "Kesyon",
     "market": "Market",
-    "messages": "Mesaj"
+    "messages": "Mesaj",
+    "sellerCallout": "Ou gen yon kont Free Fire, PUBG oswa TikTok w pa itilize? Fè kòb ak li 💸",
+    "sellerCalloutCta": "Vin vandè sou Market la →"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -426,7 +428,9 @@
     "sessions": "Sesyon ki aktif",
     "thisDevice": "Aparèy sa a",
     "revokeOthers": "Dekonekte lòt aparèy yo",
-    "revoked": "Lòt aparèy yo dekonekte."
+    "revoked": "Lòt aparèy yo dekonekte.",
+    "subtitle": "Modpas ou, verifikasyon an 2 etap ak aparèy ki konekte sou kont ou.",
+    "signOutDevice": "Dekonekte"
   },
   "notifications": {
     "title": "Notifikasyon",
@@ -451,7 +455,9 @@
     "market_vendor_suspended": "Kont vandè w la sispann: {reason}",
     "market_message": "Nouvo mesaj sou “{title}” nan Market la.",
     "market_offer_accepted": "Vandè a aksepte òf ou pou “{title}”. Peze Achte pou kontinye.",
-    "market_offer_declined": "Vandè a refize òf ou pou “{title}”."
+    "market_offer_declined": "Vandè a refize òf ou pou “{title}”.",
+    "market_chat_reopened": "Ekip la relouvri konvèsasyon sou “{title}”.",
+    "market_chat_reopen_refused": "Ekip la pa relouvri konvèsasyon sou “{title}”."
   },
   "pages": {
     "aboutTitle": "Konsènan Haiti Gaming",
@@ -955,7 +961,28 @@
     "statOnSale": "An vant",
     "statSold": "Vann",
     "statVendors": "Vandè",
-    "hot": "Cho"
+    "hot": "Cho",
+    "statActive": "An vant",
+    "statSales": "Vant fini",
+    "statEarned": "Ou touche",
+    "statPurchases": "Acha",
+    "noPurchases": "Ou poko achte yon kont.",
+    "noSales": "Poko gen vant. Mete yon kont, ajan an ap okipe rès la.",
+    "noListings": "Ou poko gen anons.",
+    "commission": "Komisyon",
+    "youReceived": "Ou resevwa",
+    "youWillReceive": "Ou pral resevwa",
+    "credTitle": "Enfo koneksyon pou ajan an",
+    "credHint": "Sekrè: se sèlman ajan Haiti Gaming lan ki wè yo, pou l tcheke kont lan. Achtè a jwenn aksè nan men ajan an apre li fin peye.",
+    "credLogin": "Koneksyon (imèl, telefòn oswa ID)",
+    "credPassword": "Modpas",
+    "credLinked": "Kont lan konekte ak",
+    "credLinkedNone": "Pa konekte / pa konnen",
+    "credNote": "Lòt enfo pou ajan an (si w vle)",
+    "credNotePh": "Kòd sekou, kesyon sekirite…",
+    "err_credentials": "Mete koneksyon an ak modpas la pou ajan an.",
+    "allSold": "Tout {n, plural, one {# kont} other {# kont}} yo vann! Nouvo kont ap vini byento.",
+    "pendingMine": "{n, plural, one {Kont ou a} other {# nan kont ou yo}} ap tcheke pa ekip nou an"
   },
   "chat": {
     "title": "Mesaj",
@@ -1003,6 +1030,28 @@
     "seen": "Wè",
     "typing": "{name} ap ekri…",
     "escrow": "Peman jele",
-    "listedAt": "Pri anons lan: {price}"
+    "listedAt": "Pri anons lan: {price}",
+    "sys_closed": "Tranzaksyon an fini: konvèsasyon sa a fèmen.",
+    "sys_reopened": "Ekip la relouvri konvèsasyon sa a.",
+    "sys_reopen_refused": "Ekip la pa relouvri konvèsasyon sa a.",
+    "sys_reopen_requested": "Yon demann pou relouvri konvèsasyon an voye bay ekip la.",
+    "sys_agent_called_buyer": "Achtè a rele yon ajan Haiti Gaming.",
+    "sys_agent_called_seller": "Vandè a rele yon ajan Haiti Gaming.",
+    "online": "An liy",
+    "offline": "Pa an liy",
+    "lastSeen": "Pa an liy · dènye fwa {time}",
+    "callAgent": "Rele ajan",
+    "agentComing": "Ajan an rele",
+    "closedTitle": "Konvèsasyon sa a fèmen",
+    "closedHint": "Tranzaksyon an fini. Ou bezwen yon bagay? Mande ekip la relouvri l.",
+    "reopenPending": "Demann ou voye. Ekip la ap reponn ou byento.",
+    "askReopen": "Mande pou relouvri",
+    "reopenPlaceholder": "Poukisa ou bezwen relouvri konvèsasyon an?",
+    "sendRequest": "Voye demann lan",
+    "err_chat_closed": "Konvèsasyon sa a fèmen.",
+    "err_agent_already": "Yo deja rele yon ajan. L ap vini byento.",
+    "err_reopen_pending": "Gen yon demann k ap tann deja.",
+    "err_reason": "Ekri kèk mo (5 karaktè oswa plis).",
+    "err_not_closed": "Konvèsasyon an deja louvri."
   }
 }
