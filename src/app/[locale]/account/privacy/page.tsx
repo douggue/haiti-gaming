@@ -2,12 +2,14 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { requireUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { DeleteAccountForm } from "@/components/PrivacyForms";
+import { FeedToggle } from "@/components/FeedToggle";
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireUser(locale);
   const hasPassword = (await prisma.account.count({ where: { userId: user.id, providerId: "credential" } })) > 0;
+  const me = await prisma.user.findUnique({ where: { id: user.id }, select: { showInFeed: true } });
   const t = await getTranslations("privacy");
   return (
     <div className="max-w-xl space-y-6">
@@ -17,6 +19,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         <p className="text-sm text-muted">{t("exportBody")}</p>
         <a href="/api/account/export" className="btn-secondary">{t("exportButton")}</a>
       </section>
+      <FeedToggle on={me?.showInFeed ?? true} />
       <DeleteAccountForm hasPassword={hasPassword} />
     </div>
   );

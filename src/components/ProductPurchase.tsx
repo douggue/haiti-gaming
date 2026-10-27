@@ -169,6 +169,25 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
               <label htmlFor={`field-${f.key}`} className="label">
                 {t(f.label, locale)} {f.required && <span className="text-danger">*</span>}
               </label>
+              {f.type === "select" ? (
+                <div id={`field-${f.key}`} role="radiogroup" aria-label={t(f.label, locale)} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {(f.options ?? []).map((o) => {
+                    const on = fields[f.key] === o.value;
+                    return (
+                      <button
+                        key={o.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        onClick={() => setFields({ ...fields, [f.key]: o.value })}
+                        className={`min-h-12 rounded-xl border-2 px-3 text-sm font-semibold transition-colors ${on ? "border-primary bg-primary-soft text-text" : "border-border bg-surface text-muted hover:border-primary/50"}`}
+                      >
+                        {o.label ? t(o.label, locale) : o.value}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
               <input
                 id={`field-${f.key}`}
                 className="input"
@@ -180,6 +199,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                 value={fields[f.key] ?? ""}
                 onChange={(e) => setFields({ ...fields, [f.key]: e.target.value })}
               />
+              )}
             </div>
           ))}
           {/* Only game top-ups ask for a player ID: the "for someone else" tip makes no sense on an email or phone field. */}

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { t } from "@/lib/text";
-import { alternates } from "@/lib/seo";
+import { contentSeo } from "@/lib/seo";
 import { blocksSchema, safeHref } from "@/lib/pages";
 import { searchProducts } from "@/lib/catalog";
 import { Link } from "@/i18n/navigation";
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const { locale, slug } = await params;
   const p = await load(slug);
   if (!p) return {};
-  return { title: t(p.title, locale), description: t(p.description, locale) || undefined, alternates: alternates(locale, `/p/${slug}`) };
+  return contentSeo(locale, `/p/${slug}`, { title: t(p.title, locale), description: t(p.description, locale) || undefined });
 }
 
 /** Custom pages built in Admin → Pages. Text is rendered as plain text (no HTML from the editor). */

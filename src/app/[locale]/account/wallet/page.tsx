@@ -7,6 +7,7 @@ import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
 import { WalletCard } from "@/components/WalletCard";
 import { StatusBadge } from "@/components/StatusBadge";
+import { getDisplaySettings } from "@/lib/settings";
 
 export default async function WalletPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -33,7 +34,7 @@ export default async function WalletPage({ params }: { params: Promise<{ locale:
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{tw("title")}</h1>
-      <div className="max-w-xl"><WalletCard balances={balances} initial={currency} /></div>
+      <div className="max-w-xl"><WalletCard balances={balances} initial={currency} showUsd={(await getDisplaySettings()).showUsd} /></div>
       <p className="max-w-xl text-sm text-muted">{tw("storeCredit")} {tw("heldHint", { hours: settings.holdHours })}</p>
 
       {pending.length > 0 && (

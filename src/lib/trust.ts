@@ -25,7 +25,7 @@ export async function recentSales(productId: string, exchange: ExchangePricing):
   if (!product?.salesPopup || isExchangeProduct(exchange, product.category)) return [];
   const [orders, manual] = await Promise.all([
     prisma.orderItem.findMany({
-      where: { status: "DELIVERED", variant: { productId }, order: { status: "FULFILLED", fulfilledAt: { gte: since }, user: { showInFeed: true, city: { not: null } } } },
+      where: { status: "DELIVERED", variant: { productId }, order: { status: "FULFILLED", fulfilledAt: { gte: since }, user: { showInFeed: true } } },
       select: { order: { select: { fulfilledAt: true, user: { select: { name: true, city: true } } } } },
       orderBy: { order: { fulfilledAt: "desc" } },
       take: 20,
@@ -33,7 +33,8 @@ export async function recentSales(productId: string, exchange: ExchangePricing):
     prisma.saleFeedItem.findMany({ where: { productId, soldAt: { gte: since } }, orderBy: { soldAt: "desc" }, take: 20 }),
   ]);
   const list: FeedSale[] = [
-    ...orders.map((o) => ({ name: shortName(o.order.user.name), city: o.order.user.city!, flag: cityFlag(o.order.user.city), productId, soldAt: o.order.fulfilledAt!.getTime() })),
+    // First name + initial only ("Jean P."); customers without a city show as "Ayiti".
+    ...orders.map((o) => ({ name: shortName(o.order.user.name), city: o.order.user.city ?? "Ayiti", flag: o.order.user.city ? cityFlag(o.order.user.city) : "🇭🇹", productId, soldAt: o.order.fulfilledAt!.getTime() })),
     ...manual.map((m) => ({ name: m.name, city: m.city, flag: cityFlag(m.city), productId, soldAt: m.soldAt.getTime() })),
   ].filter((x) => x.name);
   return list.sort((a, b) => b.soldAt - a.soldAt).slice(0, 12);

@@ -20,7 +20,7 @@ export async function updateProfile(form: FormData) {
   const city = form.get("city");
   await prisma.user.update({
     where: { id: user.id },
-    data: { ...data.data, phone: normalizePhone(data.data.phone) ?? (data.data.phone || null), city: isCity(city) ? city : null, showInFeed: form.get("showInFeed") === "on" },
+    data: { ...data.data, phone: normalizePhone(data.data.phone) ?? (data.data.phone || null), city: isCity(city) ? city : null },
   });
   revalidatePath("/", "layout");
   return { ok: true as const };
@@ -30,4 +30,12 @@ export async function markNotificationsRead() {
   const user = await assertUser();
   await prisma.notification.updateMany({ where: { userId: user.id, readAt: null }, data: { readAt: new Date() } });
   revalidatePath("/", "layout");
+}
+
+/** Privacy page: show (or not) "Jean P. · city bought…" in the recent purchases popup. On by default. */
+export async function setShowInFeed(on: boolean) {
+  const user = await assertUser();
+  await prisma.user.update({ where: { id: user.id }, data: { showInFeed: on } });
+  revalidatePath("/[locale]/account/privacy", "page");
+  return { ok: true as const };
 }

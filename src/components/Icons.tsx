@@ -41,3 +41,6 @@ export const LogoutIcon = (p: P) => (<svg {...base} {...p}><path d="M9 21H5a2 2 
 export const ShareIcon = (p: P) => (<svg {...base} {...p}><path d="M12 15V3M8 7l4-4 4 4" /><path d="M7 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1" /></svg>);
 export const PlusSquareIcon = (p: P) => (<svg {...base} {...p}><rect x="4" y="4" width="16" height="16" rx="3" /><path d="M12 8v8M8 12h8" /></svg>);
 export const PhoneDownIcon = (p: P) => (<svg {...base} {...p}><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M12 7v7M9 11l3 3 3-3M10.5 18.5h3" /></svg>);
+export const GiftIcon = (p: P) => (<svg {...base} {...p}><rect x="3" y="8" width="18" height="5" rx="1" /><path d="M5 13v7h14v-7M12 8v12M12 8S10.5 3 8 4s-1 4 4 4ZM12 8s1.5-5 4-4 1 4-4 4Z" /></svg>);
+export const LockIcon = (p: P) => (<svg {...base} {...p}><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></svg>);
+export const HeadsetIcon = (p: P) => (<svg {...base} {...p}><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="3" y="14" width="4" height="6" rx="1.5" /><rect x="17" y="14" width="4" height="6" rx="1.5" /><path d="M19 20a3 3 0 0 1-3 2h-2" /></svg>);

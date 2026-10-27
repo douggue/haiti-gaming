@@ -136,3 +136,34 @@ export async function saveManualMethod(form: FormData): Promise<R> {
     return fail(e);
   }
 }
+
+/**
+ * MonCash switch: "auto" = MonCash Business API (customer pays on MonCash's page, checked automatically);
+ * "manual" = like NatCash: the customer sends to your number, enters the reference, staff approves in Payments.
+ * Manual mode is a payment method with the code "moncash" and the MonCash logo, turned on/off with the switch.
+ */
+export async function setMoncashMode(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("settings.manage");
+    const { assertStepUp } = await import("@/lib/session");
+    await assertStepUp();
+    const mode = form.get("mode") === "manual" ? "manual" : "auto";
+    const recipientName = String(form.get("recipientName") ?? "").trim().slice(0, 80);
+    const recipientNumber = String(form.get("recipientNumber") ?? "").trim().slice(0, 60);
+    const existing = await prisma.manualMethod.findUnique({ where: { code: "moncash" } });
+    if (mode === "manual" && (!recipientName || !recipientNumber) && !existing) return { ok: false, error: "Enter the MonCash name and number customers send to" };
+    const name = { ht: "MonCash", fr: "MonCash", en: "MonCash", es: "MonCash" };
+    await prisma.manualMethod.upsert({
+      where: { code: "moncash" },
+      create: { code: "moncash", name, recipientName, recipientNumber, logo: "/brand/moncash.webp", kind: "mobile", currency: "HTG", isEnabled: mode === "manual", sortOrder: -1 },
+      update: { isEnabled: mode === "manual", ...(recipientName ? { recipientName } : {}), ...(recipientNumber ? { recipientNumber } : {}) },
+    });
+    await setSetting("moncashEnabled", mode === "auto");
+    await audit(staff.id, "moncash.mode", "SiteSetting", null, { mode });
+    revalidatePath("/admin/payment-methods");
+    revalidatePath("/", "layout");
+    return { ok: true, message: mode === "manual" ? "MonCash is now manual (staff approves payments)" : "MonCash is now automatic" };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
+  }
+}

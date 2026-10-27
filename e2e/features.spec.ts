@@ -32,7 +32,7 @@ test("content tools: homepage editor, news, redirect, translation, theme", async
   await a.waitForURL(/\/admin\/news\/c/);
 
   // Redirect + translation + theme
-  await a.goto("/admin/seo");
+  await a.goto("/admin/seo?tab=redirects");
   await a.waitForLoadState("networkidle");
   await a.getByLabel("Old path").fill(`/ansyen-${stamp}`);
   await a.getByLabel("New path or URL").fill("/store");

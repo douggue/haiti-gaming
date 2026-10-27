@@ -23,5 +23,25 @@ export async function pageSeo(locale: string, path: string, title?: string, desc
     ...(oTitle ? { title: path === "/" ? { absolute: oTitle } : oTitle } : title ? { title } : {}),
     ...(oDesc || description ? { description: oDesc || description } : {}),
     alternates: alternates(locale, path === "/" ? "" : path),
+    ...(o?.ogImage ? { openGraph: { images: [o.ogImage] } } : {}),
+    ...(o?.noindex ? { robots: { index: false, follow: true } } : {}),
+  };
+}
+
+/**
+ * Content pages (product, category, news, custom page): their own title/description/image, replaced by anything
+ * set for that path in Admin → SEO, plus "hide from Google".
+ */
+export async function contentSeo(locale: string, path: string, d: { title: string; description?: string; image?: string | null; type?: "article" | "website" }): Promise<Metadata> {
+  const o = await prisma.pageSeo.findUnique({ where: { path } }).catch(() => null);
+  const title = (o && t(o.title, locale)) || d.title;
+  const description = (o && t(o.description, locale)) || d.description || undefined;
+  const image = o?.ogImage || d.image || undefined;
+  return {
+    title,
+    description,
+    alternates: alternates(locale, path),
+    openGraph: { title, description, ...(d.type ? { type: d.type } : {}), ...(image ? { images: [image] } : {}) },
+    ...(o?.noindex ? { robots: { index: false, follow: true } } : {}),
   };
 }

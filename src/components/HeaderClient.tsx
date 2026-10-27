@@ -302,7 +302,7 @@ function MenuLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export function MobileMenu({ nav, signedIn, name, image }: { nav: NavItem[]; signedIn: boolean; name?: string; image?: string | null }) {
+export function MobileMenu({ nav, signedIn, name, image, showUsd = false }: { nav: NavItem[]; signedIn: boolean; name?: string; image?: string | null; showUsd?: boolean }) {
   const t = useTranslations("common");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -355,7 +355,7 @@ export function MobileMenu({ nav, signedIn, name, image }: { nav: NavItem[]; sig
             <div className="mt-auto space-y-3 rounded-2xl border border-border bg-surface-2/60 p-3">
               <LanguageFlags className="justify-between" />
               <div className="flex items-center justify-between gap-2">
-                <CurrencySwitch />
+                {showUsd && <CurrencySwitch />}
                 <ThemeToggle withLabel />
               </div>
             </div>

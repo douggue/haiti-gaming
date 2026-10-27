@@ -85,6 +85,7 @@ export default async function SettingsPage() {
           <div className="flex flex-wrap gap-6 text-sm">
             <label className="flex items-center gap-2"><input type="checkbox" name="moncashEnabled" defaultChecked={s.moncashEnabled} /> MonCash enabled</label>
             <label className="flex items-center gap-2"><input type="checkbox" name="natcashEnabled" defaultChecked={s.natcashEnabled} /> NatCash enabled</label>
+            <label className="flex items-center gap-2"><input type="checkbox" name="showUsd" defaultChecked={s.showUsd} /> Let customers see prices in USD (off = gourdes only)</label>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field name="natcashRecipientName" label="NatCash recipient name" value={s.natcashRecipientName} />

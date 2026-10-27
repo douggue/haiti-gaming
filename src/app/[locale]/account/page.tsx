@@ -11,6 +11,7 @@ import { VerifyEmailBanner } from "@/components/VerifyEmailBanner";
 import { emailEnabled } from "@/lib/email";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Avatar } from "@/components/Avatar";
+import { getDisplaySettings } from "@/lib/settings";
 
 export default async function Dashboard({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -47,7 +48,7 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
       </div>
       {!user.emailVerified && emailEnabled() && <VerifyEmailBanner email={user.email} />}
       <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
-        <WalletCard balances={balances} initial={currency} />
+        <WalletCard balances={balances} initial={currency} showUsd={(await getDisplaySettings()).showUsd} />
         <div className="grid grid-cols-3 gap-3 xl:grid-cols-1">
           {stats.map((s) => (
             <div key={s.label} className="card flex flex-col justify-center p-4 xl:flex-row xl:items-center xl:justify-between">

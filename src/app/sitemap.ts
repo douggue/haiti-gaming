@@ -7,12 +7,15 @@ export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
-  const [pages, news, products, categories] = await Promise.all([
+  const [pages, news, products, categories, hidden] = await Promise.all([
     prisma.page.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
     prisma.newsArticle.findMany({ where: { isPublished: true, publishedAt: { lte: new Date() } }, select: { slug: true, updatedAt: true } }),
     prisma.product.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
     prisma.category.findMany({ where: { isVisible: true }, select: { slug: true, updatedAt: true } }),
+    // "Hide from Google" in Admin → SEO
+    prisma.pageSeo.findMany({ where: { noindex: true }, select: { path: true } }),
   ]);
+  const skip = new Set(hidden.map((h) => (h.path === "/" ? "" : h.path)));
   const paths: { path: string; lastModified?: Date }[] = [
     { path: "" }, { path: "/store" }, { path: "/categories" }, { path: "/guides" }, { path: "/faq" },
     { path: "/about" }, { path: "/news" }, { path: "/contact" }, { path: "/terms" }, { path: "/privacy" }, { path: "/refunds" },
@@ -21,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...news.map((n) => ({ path: `/news/${n.slug}`, lastModified: n.updatedAt })),
     ...pages.map((p) => ({ path: `/p/${p.slug}`, lastModified: p.updatedAt })),
   ];
-  return paths.flatMap(({ path, lastModified }) =>
+  return paths.filter((p) => !skip.has(p.path)).flatMap(({ path, lastModified }) =>
     locales.map((l) => ({
       url: `${base}/${l}${path}`,
       lastModified,

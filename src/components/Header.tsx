@@ -36,12 +36,12 @@ export async function Header() {
         <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1 md:ml-0">
           <div className="hidden items-center gap-1.5 md:flex">
             <LocaleSwitch />
-            <CurrencySwitch />
+            {settings.showUsd && <CurrencySwitch />}
             <ThemeToggle />
           </div>
           <div className="flex items-center gap-1.5 md:hidden">
             <LocaleSwitch />
-            <CurrencySwitch compact />
+            {settings.showUsd && <CurrencySwitch compact />}
           </div>
           <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex" aria-label={t("search")}>
             <SearchIcon />
@@ -69,7 +69,7 @@ export async function Header() {
           {user && isStaff(user.role) && (
             <a href="/admin" className="btn-secondary hidden min-h-10 lg:inline-flex">{t("admin")}</a>
           )}
-          <MobileMenu nav={nav} signedIn={!!user} name={user?.name} image={user?.image} />
+          <MobileMenu nav={nav} signedIn={!!user} name={user?.name} image={user?.image} showUsd={settings.showUsd} />
         </div>
       </div>
     </header>

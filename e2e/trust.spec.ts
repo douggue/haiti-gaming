@@ -36,9 +36,8 @@ test("visitor sees the low stock message (no number) and the sale popup", async 
   await expect(page.getByRole("status").filter({ hasText: "Stòk la ap fini" })).toBeVisible();
   const pop = page.locator(".sale-pop");
   await expect(pop).toBeVisible({ timeout: 20_000 });
-  await expect(pop).toContainText("Nadège L.");
-  await expect(pop).toContainText("Santo Domingo");
-  await expect(pop).toContainText("achte");
+  // A real recent sale: "First L. · city bought …" (the WhatsApp sale or any customer's, picked at random)
+  await expect(pop).toContainText(/[A-ZÀ-ÿ][a-zà-ÿ]+ [A-Z]\. · .+achte/);
   await pop.getByRole("button", { name: "Fèmen" }).click();
   await expect(pop).toHaveCount(0);
 });

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { requireStaff } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
-import { saveManualMethod } from "@/actions/site";
+import { saveManualMethod, setMoncashMode } from "@/actions/site";
 import { ActionForm } from "@/components/admin/ActionButton";
 import { LocalizedInputs } from "@/components/admin/LocalizedInputs";
 import { ImageField } from "@/components/admin/ImageField";
@@ -63,17 +63,38 @@ function MethodForm({ m, crypto }: { m?: M; crypto?: boolean }) {
 
 export default async function PaymentMethodsPage() {
   await requireStaff("settings.manage");
-  const [methods, s] = await Promise.all([prisma.manualMethod.findMany({ orderBy: { sortOrder: "asc" } }), getSettings()]);
+  const [all, s] = await Promise.all([prisma.manualMethod.findMany({ orderBy: { sortOrder: "asc" } }), getSettings()]);
+  const moncashManual = all.find((m) => m.code === "moncash");
+  const methods = all.filter((m) => m.code !== "moncash");
+  const manualOn = !!moncashManual?.isEnabled;
   return (
     <>
       <PageTitle title="Payment methods" sub="MonCash (automatic) and NatCash are built in. Add other methods here: a bank, another wallet, or a crypto address. Customers send money, enter the reference, and you approve it in Payments. Saving asks for your authenticator code." />
       <div className="card mb-6 grid gap-2 p-5 text-sm sm:grid-cols-2">
-        <p><b>MonCash</b>: {s.moncashEnabled ? "enabled" : "disabled"} (automatic)</p>
+        <p><b>MonCash</b>: {manualOn ? "manual (staff approves)" : s.moncashEnabled ? "automatic" : "off"}</p>
         <p>
           <b>NatCash</b>: {s.natcashEnabled ? "enabled" : "disabled"} · {s.natcashRecipientName} · {s.natcashRecipientPhone} · QR {s.natcashQrUrl ? "✓" : "none"}{" "}
           <a href="/admin/settings" className="font-semibold text-primary underline">Change number or QR</a>
         </p>
       </div>
+      <ActionForm action={setMoncashMode} className="card mb-6 space-y-3 p-5">
+        <p className="font-semibold">MonCash</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm">
+            <input type="radio" name="mode" value="auto" defaultChecked={!manualOn} className="mt-1" />
+            <span><b>Automatic</b><br /><span className="text-muted">The customer pays on MonCash&apos;s page; the payment is confirmed by itself (needs your MonCash Business keys).</span></span>
+          </label>
+          <label className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm">
+            <input type="radio" name="mode" value="manual" defaultChecked={manualOn} className="mt-1" />
+            <span><b>Manual</b> (like NatCash)<br /><span className="text-muted">The customer sends to your number and enters the reference; you approve it in Payments.</span></span>
+          </label>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label><span className="label">MonCash name (manual)</span><input name="recipientName" defaultValue={moncashManual?.recipientName ?? ""} className="input" /></label>
+          <label><span className="label">MonCash number (manual)</span><input name="recipientNumber" defaultValue={moncashManual?.recipientNumber ?? ""} placeholder="+509 …" className="input" /></label>
+        </div>
+        <button className="btn-primary min-h-10">Save MonCash mode</button>
+      </ActionForm>
       <div className="grid gap-4 xl:grid-cols-2">
         {methods.map((m) => <MethodForm key={m.id} m={m} />)}
         <MethodForm crypto />

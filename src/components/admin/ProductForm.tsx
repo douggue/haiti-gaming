@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { saveProduct } from "@/actions/admin";
 import { LocalizedInputs } from "./LocalizedInputs";
 import { GalleryField, ImageField } from "./ImageField";
+import { FieldsEditor } from "./FieldsEditor";
 
 type P = {
   id: string; slug: string; categoryId: string; accent: string; fulfillmentType: string; isPublished: boolean; isFeatured: boolean; sortOrder: number;
@@ -12,9 +13,6 @@ type P = {
   image: string | null; gallery: string[];
 };
 
-const FIELD_EXAMPLE = `[
-  { "key": "playerId", "label": { "ht": "ID jwè", "fr": "ID joueur", "en": "Player ID", "es": "ID de jugador" }, "type": "number", "required": true }
-]`;
 
 export function ProductForm({ product, categories }: { product?: P; categories: { id: string; name: string }[] }) {
   const router = useRouter();
@@ -69,11 +67,10 @@ export function ProductForm({ product, categories }: { product?: P; categories: 
           <LocalizedInputs prefix="seoDescription" label="SEO description" value={product?.seoDescription} />
         </div>
       </details>
-      <label className="block">
-        <span className="label">Customer fields (JSON)</span>
-        <textarea name="fields" rows={6} defaultValue={product?.fields ?? "[]"} className="input py-2 font-mono text-xs" />
-        <span className="mt-1 block text-xs text-muted">Types: text, email, number, tel. Example: <code className="whitespace-pre-wrap">{FIELD_EXAMPLE}</code></span>
-      </label>
+      <div>
+        <span className="label">What the customer fills in</span>
+        <FieldsEditor name="fields" initial={product?.fields ?? "[]"} />
+      </div>
       <div className="flex flex-wrap items-center gap-5 text-sm">
         <label className="flex items-center gap-2"><input type="checkbox" name="isPublished" defaultChecked={product?.isPublished} /> Published</label>
         <label className="flex items-center gap-2"><input type="checkbox" name="isFeatured" defaultChecked={product?.isFeatured} /> Featured on homepage</label>

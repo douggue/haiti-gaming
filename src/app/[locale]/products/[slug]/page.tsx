@@ -8,7 +8,7 @@ import { getDisplaySettings } from "@/lib/settings";
 import { isExchangeProduct } from "@/lib/amount";
 import { getUser } from "@/lib/session";
 import { t } from "@/lib/text";
-import { alternates } from "@/lib/seo";
+import { contentSeo } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductGallery } from "@/components/ProductGallery";
@@ -28,9 +28,11 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const { locale, slug } = await params;
   const p = await load(slug);
   if (!p) return {};
-  const title = t(p.seoTitle, locale) || t(p.name, locale);
-  const description = t(p.seoDescription, locale) || t(p.description, locale).slice(0, 160);
-  return { title, description, alternates: alternates(locale, `/products/${slug}`), openGraph: { title, description, ...(p.image ? { images: [p.image] } : {}) } };
+  return contentSeo(locale, `/products/${slug}`, {
+    title: t(p.seoTitle, locale) || t(p.name, locale),
+    description: t(p.seoDescription, locale) || t(p.description, locale).slice(0, 160),
+    image: p.image,
+  });
 }
 
 export default async function ProductPage({ params }: { params: P }) {

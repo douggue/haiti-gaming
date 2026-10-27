@@ -130,10 +130,40 @@ export async function savePageSeo(form: FormData): Promise<R> {
   try {
     const staff = await assertStaff("seo.manage");
     const path = String(form.get("path"));
+    if (!/^\/[a-z0-9/_-]*$/i.test(path) || path.length > 200) return { ok: false, error: "Invalid path" };
     const title = localized(form, "title", 70);
     const description = localized(form, "description", 170);
-    await prisma.pageSeo.upsert({ where: { path }, create: { path, title, description }, update: { title, description } });
+    const ogRaw = String(form.get("ogImage") ?? "").trim();
+    if (ogRaw && !/^(https:\/\/|\/)/.test(ogRaw)) return { ok: false, error: "Share image: a link starting with https:// or /" };
+    const ogImage = ogRaw.slice(0, 500) || null;
+    const noindex = form.get("noindex") === "on";
+    await prisma.pageSeo.upsert({ where: { path }, create: { path, title, description, ogImage, noindex }, update: { title, description, ogImage, noindex } });
     await audit(staff.id, "seo.page.save", "PageSeo", path);
+    revalidatePath("/", "layout");
+    return { ok: true, message: "Saved" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Search engines: Search Console / Bing verification codes and extra robots.txt rules. */
+export async function saveSeoSettings(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("seo.manage");
+    // People often paste the whole <meta …> tag: keep only the code.
+    const code = (v: FormDataEntryValue | null) => {
+      const raw = String(v ?? "").trim();
+      return (/content="([^"]+)"/.exec(raw)?.[1] ?? raw).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 100);
+    };
+    const robots = String(form.get("robotsDisallow") ?? "")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => /^\/[^\s]*$/.test(l))
+      .slice(0, 50);
+    await setSetting("googleSiteVerification", code(form.get("google")));
+    await setSetting("bingSiteVerification", code(form.get("bing")));
+    await setSetting("robotsDisallow", robots);
+    await audit(staff.id, "seo.settings", "SiteSetting", null, { robots: robots.length });
     revalidatePath("/", "layout");
     return { ok: true, message: "Saved" };
   } catch (e) {

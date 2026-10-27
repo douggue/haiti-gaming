@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { formatDate, t } from "@/lib/text";
-import { alternates } from "@/lib/seo";
+import { contentSeo } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 
 type P = Promise<{ locale: string; slug: string }>;
@@ -14,9 +14,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const { locale, slug } = await params;
   const a = await load(slug);
   if (!a) return {};
-  const title = t(a.title, locale);
-  const description = t(a.excerpt, locale);
-  return { title, description, alternates: alternates(locale, `/news/${slug}`), openGraph: { type: "article", title, description, ...(a.image ? { images: [a.image] } : {}) } };
+  return contentSeo(locale, `/news/${slug}`, { title: t(a.title, locale), description: t(a.excerpt, locale), image: a.image, type: "article" });
 }
 
 export default async function ArticlePage({ params }: { params: P }) {

@@ -4,6 +4,14 @@ import { prisma } from "./db";
 import { DEFAULT_EXCHANGE, type ExchangePricing } from "./amount";
 
 export type Settings = {
+  /** Google Search Console "HTML tag" verification code (content="…" part) */
+  googleSiteVerification: string;
+  /** Bing Webmaster Tools verification code */
+  bingSiteVerification: string;
+  /** Extra paths robots.txt asks search engines to skip, one per line */
+  robotsDisallow: string[];
+  /** Let customers switch prices to USD (header toggle). Off = everything in gourdes (HTG). */
+  showUsd: boolean;
   /** Recent sales popup on the products ticked in Admin → Trust */
   salesPopupEnabled: boolean;
   /** Popups per visit (2–3 feels natural; max 5) */
@@ -177,6 +185,10 @@ export const DEFAULT_SETTINGS: Settings = {
   requireEmailVerification: true,
   maxAccountsPerDevice: 3,
   moneyExchange: DEFAULT_EXCHANGE,
+  showUsd: false,
+  googleSiteVerification: "",
+  bingSiteVerification: "",
+  robotsDisallow: [],
 };
 
 export async function getSettings(): Promise<Settings> {

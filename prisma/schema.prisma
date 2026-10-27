@@ -699,10 +699,15 @@ model RedirectRule {
 }
 
 /// Title/description overrides for fixed pages ("/", "/store", "/guides", …)
+/// SEO overrides by path: fixed pages ("/store") and content ("/products/<slug>", "/categories/<slug>", "/news/<slug>", "/p/<slug>")
 model PageSeo {
   path        String   @id
   title       Json     @default("{}")
   description Json     @default("{}")
+  /// Image shown when the link is shared (WhatsApp, Facebook…)
+  ogImage     String?
+  /// Hide from Google (noindex) and leave out of sitemap.xml
+  noindex     Boolean  @default(false)
   updatedAt   DateTime @updatedAt
 }
 

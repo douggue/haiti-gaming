@@ -67,7 +67,7 @@ async function FeedTab({ settings, sellable, pname }: { settings: Awaited<Return
   ]);
   const rows = [
     ...site.map((o) => {
-      const reason = !o.user.showInFeed ? "Customer turned it off" : !o.user.city ? "No city on the account" : "";
+      const reason = !o.user.showInFeed ? "Customer turned it off" : "";
       return { key: o.id, name: shortName(o.user.name), city: o.user.city, product: o.items[0]?.variant.productId ?? null, at: o.fulfilledAt!, source: "Site", reason, del: null as string | null };
     }),
     ...manual.map((m) => ({ key: m.id, name: m.name, city: m.city, product: m.productId, at: m.soldAt, source: "WhatsApp", reason: m.soldAt < since ? "Older than 7 days" : "", del: m.id })),

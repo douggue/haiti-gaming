@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { searchProducts } from "@/lib/catalog";
 import { t } from "@/lib/text";
-import { alternates } from "@/lib/seo";
+import { contentSeo } from "@/lib/seo";
 import { ProductCard } from "@/components/ProductCard";
 import { Link } from "@/i18n/navigation";
 import { CategoryIcon } from "@/components/CategoryIcon";
@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const { locale, slug } = await params;
   const c = await prisma.category.findUnique({ where: { slug } });
   if (!c) return {};
-  return { title: t(c.name, locale), alternates: alternates(locale, `/categories/${slug}`), ...(c.image ? { openGraph: { images: [c.image] } } : {}) };
+  return contentSeo(locale, `/categories/${slug}`, { title: t(c.name, locale), description: t(c.description, locale).slice(0, 160) || undefined, image: c.cover || c.image });
 }
 
 export default async function CategoryPage({ params }: { params: P }) {

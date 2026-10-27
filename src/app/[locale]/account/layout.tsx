@@ -11,16 +11,17 @@ export default async function AccountLayout({ children, params }: { children: Re
   await requireUser(locale, `/${locale}/account`);
   const [ta, tc, tn] = await Promise.all([getTranslations("account"), getTranslations("common"), getTranslations("notifications")]);
   const settings = await getSettings();
+  // Most used first: on phones the row scrolls sideways, so Support stays in view.
   const items = [
-    { href: "/account", label: ta("dashboard") },
-    { href: "/account/orders", label: tc("orders") },
-    { href: "/account/wallet", label: tc("wallet") },
-    { href: "/account/notifications", label: tn("title") },
-    { href: "/account/support", label: ta("support") },
-    ...(settings.referralEnabled ? [{ href: "/account/referrals", label: ta("referrals") }] : []),
-    { href: "/account/profile", label: ta("profile") },
-    { href: "/account/security", label: ta("security") },
-    { href: "/account/privacy", label: ta("privacy") },
+    { href: "/account", label: ta("dashboard"), icon: "home" },
+    { href: "/account/orders", label: tc("orders"), icon: "orders" },
+    { href: "/account/wallet", label: tc("wallet"), icon: "wallet" },
+    { href: "/account/support", label: ta("support"), icon: "support" },
+    { href: "/account/notifications", label: tn("title"), icon: "bell" },
+    ...(settings.referralEnabled ? [{ href: "/account/referrals", label: ta("referrals"), icon: "gift" }] : []),
+    { href: "/account/profile", label: ta("profile"), icon: "user" },
+    { href: "/account/security", label: ta("security"), icon: "shield" },
+    { href: "/account/privacy", label: ta("privacy"), icon: "lock" },
   ];
   return (
     <div className="container-page grid grid-cols-[minmax(0,1fr)] gap-6 py-6 sm:py-10 lg:grid-cols-[220px_minmax(0,1fr)]">

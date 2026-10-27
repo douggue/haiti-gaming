@@ -28,7 +28,10 @@ test("money exchange: every product in the exchange category gets the rate, fee 
   await a.locator('input[name="name_ht"]').fill("Meru");
   const opt = await a.locator('select[name="categoryId"] option', { hasText: catName }).getAttribute("value");
   await a.locator('select[name="categoryId"]').selectOption(opt!);
-  await a.locator('textarea[name="fields"]').fill(JSON.stringify([{ key: "meru", label: { ht: "Imèl, nimewo oswa merutag" }, type: "text", required: true }]));
+  // Customer fields editor: one text field "meru"
+  await a.getByRole("button", { name: "+ Add a field" }).click();
+  await a.getByLabel("Label (Kreyòl)").fill("Imèl, nimewo oswa merutag");
+  await a.getByLabel("Code (used by suppliers, e.g. playerId)").fill("meru");
   await a.getByLabel("Published").check();
   await a.getByRole("button", { name: "Save product" }).click();
   await a.waitForURL(/\/admin\/products\/c/);

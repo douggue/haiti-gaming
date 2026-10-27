@@ -141,10 +141,11 @@ const fieldDefSchema = z.array(
   z.object({
     key: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_]{0,30}$/),
     label: z.record(z.string().max(60)),
-    type: z.enum(["text", "email", "number", "tel"]),
+    type: z.enum(["text", "email", "number", "tel", "select"]),
     required: z.boolean(),
     placeholder: z.string().max(60).optional(),
-  }),
+    options: z.array(z.object({ value: z.string().trim().min(1).max(40), label: z.record(z.string().max(40)).optional() })).max(12).optional(),
+  }).refine((f) => f.type !== "select" || (f.options?.length ?? 0) >= 2, { message: "A choice field needs at least 2 options" }),
 ).max(8);
 
 export async function saveProduct(form: FormData): Promise<R & { id?: string }> {
@@ -434,6 +435,7 @@ export async function saveSettings(form: FormData): Promise<R> {
       natcashRecipientPhone: str("natcashRecipientPhone"),
       moncashEnabled: form.get("moncashEnabled") === "on",
       natcashEnabled: form.get("natcashEnabled") === "on",
+      showUsd: form.get("showUsd") === "on",
       whatsappNumber: str("whatsappNumber").replace(/\D/g, ""),
       supportHours: str("supportHours"),
       businessName: str("businessName") || DEFAULT_SETTINGS.businessName,

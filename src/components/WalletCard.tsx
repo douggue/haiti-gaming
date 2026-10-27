@@ -7,7 +7,7 @@ import { PlusIcon, StoreIcon, SwapIcon, WalletIcon } from "./Icons";
 
 type B = { available: number; held: number };
 
-export function WalletCard({ balances, initial }: { balances: { HTG: B; USD: B }; initial: "HTG" | "USD" }) {
+export function WalletCard({ balances, initial, showUsd = true }: { balances: { HTG: B; USD: B }; initial: "HTG" | "USD"; showUsd?: boolean }) {
   const ta = useTranslations("account");
   const tc = useTranslations("common");
   const locale = useLocale();
@@ -18,6 +18,8 @@ export function WalletCard({ balances, initial }: { balances: { HTG: B; USD: B }
       <div className="ds-hide pointer-events-none absolute -right-16 -top-20 h-60 w-60 rounded-full bg-[#46d8ff]/45 blur-3xl" aria-hidden />
       <div className="relative flex items-center justify-between">
         <span className="flex items-center gap-2 text-sm font-semibold text-[#cfe0ff]"><WalletIcon width={18} height={18} /> {tc("wallet")}</span>
+        {/* Gourdes-only store: the USD side only shows for customers who actually hold dollars */}
+        {(showUsd || balances.USD.available + balances.USD.held > 0) && (
         <div className="inline-flex rounded-full bg-white/10 p-1 text-xs font-bold" role="tablist" aria-label={tc("currency")}>
           {(["HTG", "USD"] as const).map((c) => (
             <button key={c} type="button" role="tab" aria-selected={cur === c} onClick={() => setCur(c)} className={`min-h-8 rounded-full px-3 py-1 ${cur === c ? "bg-white text-[#0d2a78]" : "text-white/85"}`}>
@@ -25,6 +27,7 @@ export function WalletCard({ balances, initial }: { balances: { HTG: B; USD: B }
             </button>
           ))}
         </div>
+        )}
       </div>
       <p className="relative mt-6 text-xs font-bold uppercase tracking-widest text-[#cfe0ff]">{ta("available")} · {cur}</p>
       <p className="relative text-4xl font-extrabold tracking-tight sm:text-5xl">{formatMoney(b.available, cur, locale)}</p>

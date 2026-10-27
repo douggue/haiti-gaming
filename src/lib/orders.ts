@@ -16,9 +16,11 @@ import { hasOpenSupplierOrder, queueSupplierLines, sendQueued } from "./supplier
 export type FieldDef = {
   key: string;
   label: Record<string, string>;
-  type: "text" | "email" | "number" | "tel";
+  /** "select": the customer taps one of `options` (e.g. platform iPhone / Android) */
+  type: "text" | "email" | "number" | "tel" | "select";
   required: boolean;
   placeholder?: string;
+  options?: { value: string; label?: Record<string, string> }[];
 };
 
 export const cartItemSchema = z.object({
@@ -44,6 +46,7 @@ function validateFields(defs: FieldDef[], values: Record<string, string>) {
     if (d.required && !v) throw new OrderError("missing_field");
     if (v && d.type === "email" && !z.string().email().safeParse(v).success) throw new OrderError("invalid_field");
     if (v && d.type === "number" && !/^\d+$/.test(v)) throw new OrderError("invalid_field");
+    if (v && d.type === "select" && !(d.options ?? []).some((o) => o.value === v)) throw new OrderError("invalid_field");
     if (v) clean[d.key] = v;
   }
   return clean; // unknown keys are dropped (data minimization)
