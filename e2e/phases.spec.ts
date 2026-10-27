@@ -19,6 +19,7 @@ test.afterAll(async () => {
   await db.$disconnect();
 });
 
+const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "base64");
 const verify = (email: string) => db.user.update({ where: { email }, data: { emailVerified: true } });
 
 async function depositMoncash(p: Page, amount: string) {
@@ -143,7 +144,7 @@ test("accessory with city delivery, paid cash on delivery", async ({ browser }) 
   await expect(a.getByText("FULFILLED").first()).toBeVisible();
 });
 
-test("Market: sell, staff approves, buyer reserves, agent closes the deal with commission", async ({ browser }) => {
+test("Market: vendor applies and is approved, sells, staff approves, buyer reserves, agent closes the deal with commission", async ({ browser }) => {
   // Seller posts an account
   const s = await newPage(browser);
   const sellerEmail = `vandè.${stamp}@example.com`.replace("è", "e");
@@ -156,13 +157,41 @@ test("Market: sell, staff approves, buyer reserves, agent closes the deal with c
   await s.getByLabel("Mwen li règ yo e mwen aksepte yo.").check();
   await s.getByRole("button", { name: "Aksepte epi kontinye" }).click();
   await expect(s.getByRole("dialog")).toHaveCount(0);
+
+  // Not a vendor yet: the page asks for an application, and listing is refused
+  await s.getByLabel("Non boutik ou (achtè yo wè l)").fill(`Ricardo Shop ${stamp}`);
+  await s.getByLabel("Non konplè (jan l ye sou pyès ou)").fill("Ricardo Augustin");
+  await s.locator("#vendor-phone").fill("37223344");
+  await s.getByLabel("Vil", { exact: true }).fill("Cap-Haïtien");
+  await s.getByText("🔥 Free Fire").click();
+  await s.getByLabel("Konbyen kont pa mwa?").selectOption("3-10");
+  await s.locator("#photo-idPhoto").setInputFiles({ name: "id.png", mimeType: "image/png", buffer: PNG });
+  await expect(s.getByText("✓ Foto pyès idantite w")).toBeVisible();
+  await s.getByLabel(/Kont m ap vann yo se pa m/).check();
+  await s.getByRole("button", { name: "Voye demann mwen" }).click();
+  await expect(s.getByTestId("vendor-pending")).toBeVisible();
+
+  const a = await newPage(browser);
+  await staffLogin(a);
+  await a.goto("/admin/market");
+  const app = a.locator(".card", { hasText: `Ricardo Shop ${stamp}` });
+  await expect(app.getByRole("link", { name: /WhatsApp/ })).toHaveAttribute("href", /wa\.me\/50937223344/);
+  const idPhoto = await a.request.get((await app.getByRole("link", { name: "ID photo ↗" }).getAttribute("href"))!);
+  expect(idPhoto.status()).toBe(200);
+  // The ID photo is staff-only
+  expect((await s.request.get((await app.getByRole("link", { name: "ID photo ↗" }).getAttribute("href"))!)).status()).toBe(403);
+  await app.getByRole("button", { name: "Approve" }).click();
+  await expect(app.getByText(/can now list accounts/)).toBeVisible();
+
+  await s.reload();
+  await s.waitForLoadState("networkidle");
   const title = `Kont Free Fire nivo 70 ${stamp}`;
   await s.getByLabel("Tit").fill(title);
   await s.getByLabel("Pri").fill("5000");
   await s.locator('input[name="dv0"]').fill("70");
   await s.locator('input[name="dv1"]').fill("Heroic");
   await s.getByLabel("Nòt pou achtè yo").fill("Kont pwòp, 12 skin ra.");
-  await s.locator('input[name="images"]').setInputFiles({ name: "shot.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "base64") });
+  await s.locator('input[name="images"]').setInputFiles({ name: "shot.png", mimeType: "image/png", buffer: PNG });
   await s.getByRole("button", { name: "Voye pou tcheke" }).click();
   await s.waitForURL("**/ht/account/market?posted=1");
   await expect(s.getByText(title)).toBeVisible();
@@ -173,12 +202,11 @@ test("Market: sell, staff approves, buyer reserves, agent closes the deal with c
   const v = await newPage(browser);
   expect((await v.goto(`/ht/market/${listing.id}`))!.status()).toBe(404);
 
-  const a = await newPage(browser);
-  await staffLogin(a);
-  await a.goto("/admin/market");
+  await a.goto("/admin/market?tab=review");
   const card = a.locator(".card", { hasText: title });
   await card.getByRole("button", { name: "Approve" }).click();
-  await expect(card.getByText("Approved: it's on the Market")).toBeVisible();
+  // Once approved it leaves the review list
+  await expect.poll(async () => (await db.marketListing.findUniqueOrThrow({ where: { id: listing.id } })).status).toBe("ACTIVE");
 
   // Anyone can see it; the buyer reserves it and is sent to the agent on WhatsApp
   await v.goto(`/ht/market?p=freefire`);

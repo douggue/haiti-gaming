@@ -2,9 +2,12 @@
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { acceptMarketRules, cancelMyDeal, confirmDeal, countView, createListing, rateSeller, removeMyListing, reportListing, requestDeal } from "@/actions/market";
+import { acceptMarketRules, applyVendor, cancelMyDeal, confirmDeal, countView, createListing, rateSeller, removeMyListing, reportListing, requestDeal } from "@/actions/market";
 import { PLATFORMS } from "@/lib/market";
 import { CloseIcon, CopyIcon, ShareIcon, WhatsAppIcon } from "../Icons";
+import { PhoneInput } from "../PhoneInput";
+import { PhotoPicker } from "../PhotoPicker";
+import { compressImage } from "@/lib/compress-image";
 
 /** Bottom sheet on phones, centered dialog on larger screens. */
 function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
@@ -41,7 +44,7 @@ export function RulesSheet({ open, onClose, onAccepted }: { open: boolean; onClo
   return (
     <Sheet open={open} onClose={onClose} title={t("rulesTitle")}>
       <ol className="list-decimal space-y-2 pl-5 text-sm">
-        {(["rule1", "rule2", "rule3", "rule4", "rule5", "rule6"] as const).map((k) => <li key={k}>{t(k)}</li>)}
+        {(["rule1", "rule7", "rule2", "rule3", "rule4", "rule5", "rule6"] as const).map((k) => <li key={k}>{t(k)}</li>)}
       </ol>
       <label className="mt-4 flex items-start gap-2 text-sm font-medium">
         <input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} className="mt-0.5 size-4" />
@@ -294,9 +297,16 @@ export function SellForm({ commissionPct, rulesAccepted }: { commissionPct: numb
           multiple
           required
           className="block w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-surface-2 file:px-4 file:py-2 file:font-semibold"
-          onChange={(e) => {
+          onChange={async (e) => {
+            const input = e.currentTarget;
+            const picked = Array.from(input.files ?? []).slice(0, 5);
             previews.forEach((u) => URL.revokeObjectURL(u));
-            setPreviews(Array.from(e.target.files ?? []).slice(0, 5).map((f) => URL.createObjectURL(f)));
+            // Phone photos are shrunk before sending (big iPhone pictures would be refused).
+            const small = await Promise.all(picked.map((f) => compressImage(f).catch(() => f)));
+            const dt = new DataTransfer();
+            small.forEach((f) => dt.items.add(f));
+            input.files = dt.files;
+            setPreviews(small.map((f) => URL.createObjectURL(f)));
           }}
         />
         <p className="mt-1 text-xs text-muted">{t("photosHint")}</p>
@@ -377,5 +387,64 @@ export function RateSeller({ dealId }: { dealId: string }) {
         {t("rateSend")}
       </button>
     </div>
+  );
+}
+
+/** Vendor enrollment: staff contacts the applicant on WhatsApp, then approves or rejects. */
+export function VendorForm({ rulesAccepted, again }: { rulesAccepted: boolean; again?: boolean }) {
+  const t = useTranslations("market");
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [rules, setRules] = useState(!rulesAccepted);
+  const [pending, start] = useTransition();
+  return (
+    <form
+      className="card space-y-4 p-5"
+      action={(fd) =>
+        start(async () => {
+          setError("");
+          const r = await applyVendor(fd);
+          if (r.ok) router.refresh();
+          else if (r.error === "rules") setRules(true);
+          else setError(errText(t, r.error));
+        })
+      }
+    >
+      <h2 className="text-lg font-bold">{again ? t("vendorAgain") : t("vendorTitle")}</h2>
+      <p className="text-sm text-muted">{t("vendorIntro")}</p>
+      <label className="block"><span className="label">{t("shopName")}</span><input name="shopName" required minLength={3} maxLength={40} placeholder={t("shopNamePh")} className="input" /></label>
+      <label className="block"><span className="label">{t("legalName")}</span><input name="legalName" required minLength={3} maxLength={80} autoComplete="name" className="input" /><span className="mt-1 block text-xs text-muted">{t("legalNameHint")}</span></label>
+      <div><label htmlFor="vendor-phone" className="label">{t("vendorWhatsapp")}</label><PhoneInput id="vendor-phone" name="whatsapp" required /></div>
+      <label className="block"><span className="label">{t("city")}</span><input name="city" required maxLength={60} autoComplete="address-level2" className="input" /></label>
+      <fieldset>
+        <legend className="label">{t("vendorPlatforms")}</legend>
+        <div className="flex flex-wrap gap-2">
+          {PLATFORMS.map((p) => (
+            <label key={p.key} className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-sm font-medium has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-white">
+              <input type="checkbox" name="platforms" value={p.key} className="sr-only" />
+              {p.icon} {p.key === "other" ? t("otherPlatform") : p.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <label className="block">
+        <span className="label">{t("volume")}</span>
+        <select name="volume" required defaultValue="" className="input">
+          <option value="" disabled>{t("choose")}</option>
+          <option value="1-2">{t("volume1")}</option>
+          <option value="3-10">{t("volume2")}</option>
+          <option value="10+">{t("volume3")}</option>
+        </select>
+      </label>
+      <label className="block"><span className="label">{t("about")}</span><textarea name="about" rows={3} maxLength={1000} placeholder={t("aboutPh")} className="input py-2" /></label>
+      <div>
+        <span className="label">{t("idPhoto")}</span>
+        <PhotoPicker name="idPhoto" label={t("idPhoto")} hint={t("idPhotoHint")} />
+      </div>
+      <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="agree" required className="mt-0.5 size-4" /> {t("vendorAgree")}</label>
+      {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
+      <button className="btn-primary min-h-12 w-full" disabled={pending}>{pending ? t("sending") : t("vendorSubmit")}</button>
+      <RulesSheet open={rules} onClose={() => router.push("/market")} onAccepted={() => setRules(false)} />
+    </form>
   );
 }

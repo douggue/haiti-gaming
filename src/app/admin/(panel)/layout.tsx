@@ -18,9 +18,10 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     prisma.review.count({ where: { status: "pending" } }),
     // Supplier orders staff must look at: failed, or no longer checked automatically
     prisma.supplierOrder.count({ where: { OR: [{ status: "FAILED" }, { status: { in: ["PENDING", "UNKNOWN"] }, nextCheckAt: null }] } }),
-    // Market: listings to check, deals in progress, open reports
+    // Market: vendors and listings to check, deals in progress, open reports
     Promise.all([
       prisma.marketListing.count({ where: { status: "PENDING" } }),
+      prisma.marketVendor.count({ where: { status: "PENDING" } }),
       prisma.marketDeal.count({ where: { status: { in: ["REQUESTED", "PAID", "DELIVERED", "DISPUTED"] } } }),
       prisma.marketReport.count({ where: { resolved: false } }),
     ]).then((n) => n.reduce((a, b) => a + b, 0)),

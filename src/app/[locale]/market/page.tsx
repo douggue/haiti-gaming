@@ -33,7 +33,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
     where: { status: { in: ["ACTIVE", "RESERVED"] }, ...(platform ? { platform } : {}), ...(q ? { title: { contains: q, mode: "insensitive" } } : {}) },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     take: 60,
-    include: { seller: { select: { name: true, emailVerified: true } } },
+    include: { seller: { select: { name: true, marketVendor: { select: { shopName: true, status: true } } } } },
   });
   const stats = await sellerStats(listings.map((l) => l.sellerId));
   const base = siteUrl();
@@ -104,7 +104,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
                     </p>
                   )}
                   <p className="text-xs text-muted">
-                    {shortName(l.seller.name)}{l.seller.emailVerified && <span className="text-primary" title={t("verified")}> ✓</span>}
+                    {l.seller.marketVendor?.shopName ?? shortName(l.seller.name)}{l.seller.marketVendor?.status === "APPROVED" && <span className="text-primary" title={t("verified")}> ✓</span>}
                     {s?.rating ? ` · ★ ${s.rating.toFixed(1)}` : ""} · {t("views", { n: l.views })}
                   </p>
                   <div className="mt-auto flex items-center justify-between gap-2 pt-2">

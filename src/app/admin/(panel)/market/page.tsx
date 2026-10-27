@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/money";
 import { commissionOf, platformOf } from "@/lib/market";
 import { listingDetails, listingImages } from "@/lib/market-data";
 import { formatPhone, waNumber } from "@/lib/phone";
-import { resolveReport, reviewListing, saveMarketSettings, setDealStatus, takeDownListing } from "@/actions/market-admin";
+import { resolveReport, reviewListing, reviewVendor, saveMarketSettings, setDealStatus, takeDownListing } from "@/actions/market-admin";
 import { ActionButton, ActionForm } from "@/components/admin/ActionButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { PageTitle } from "@/components/admin/ui";
@@ -16,6 +16,7 @@ import { PageTitle } from "@/components/admin/ui";
 export const metadata = { title: "Market" };
 
 const TABS = [
+  ["vendors", "Vendors"],
   ["review", "To review"],
   ["deals", "Deals"],
   ["listings", "Listings"],
@@ -45,14 +46,50 @@ function Contact({ who, label }: { who: Person; label: string }) {
 
 export default async function AdminMarket({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const staff = await requireStaff("orders.view");
-  const tab = (await searchParams).tab ?? "review";
+  const tab = (await searchParams).tab ?? "vendors";
   const settings = await getSettings();
   const manage = can(staff, "orders.manage");
   const catalog = can(staff, "catalog.manage");
   const person = { select: { name: true, phone: true, email: true } } as const;
 
   let body: React.ReactNode = null;
-  if (tab === "review" || tab === "listings") {
+  if (tab === "vendors") {
+    const vendors = await prisma.marketVendor.findMany({
+      orderBy: [{ status: "asc" }, { createdAt: "asc" }],
+      take: 200,
+      include: { user: { select: { email: true, name: true, createdAt: true, _count: { select: { orders: true } } } } },
+    });
+    const STATUS_ORDER = ["PENDING", "APPROVED", "SUSPENDED", "REJECTED"];
+    vendors.sort((a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status));
+    body = vendors.length === 0 ? <p className="card p-8 text-center text-muted">No vendor applications yet.</p> : (
+      <ul className="space-y-3">
+        {vendors.map((v) => {
+          const msg = `Bonjou ${v.legalName}, se Haiti Gaming Market. Nou resevwa demann ou pou vin vandè (${v.shopName}). Nou gen kèk kesyon anvan nou aktive kont vandè w la.`;
+          return (
+            <li key={v.id} className="card space-y-2 p-4 text-sm">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold">{v.shopName} <span className="font-normal text-muted">· {v.legalName}</span></p>
+                  <p className="text-xs text-muted">{v.user.email} · {v.city} · customer since {v.user.createdAt.toLocaleDateString("en-US")} · {v.user._count.orders} order(s) · applied {v.createdAt.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}</p>
+                </div>
+                <StatusBadge status={v.status} label={v.status} />
+              </div>
+              <p className="text-xs">Sells: {v.platforms.map((p) => `${platformOf(p).icon} ${platformOf(p).label}`).join(", ")} · about {v.volume} account(s) a month</p>
+              {v.about && <p className="whitespace-pre-wrap rounded-lg bg-surface-2 p-3">{v.about}</p>}
+              {v.staffNote && <p className="text-xs text-muted">Note: {v.staffNote}</p>}
+              <div className="flex flex-wrap items-center gap-2">
+                <a href={`https://wa.me/${waNumber(v.whatsapp)}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener" className="btn-primary min-h-9 !bg-[#1fa855] px-3 text-xs">WhatsApp {formatPhone(v.whatsapp)}</a>
+                {v.idPhotoPath && catalog && <a href={`/api/admin/market-vendor/${v.id}`} target="_blank" rel="noopener" className="btn-secondary min-h-9 px-3 text-xs">ID photo ↗</a>}
+                {catalog && v.status !== "APPROVED" && <ActionButton label="Approve" className="btn-primary min-h-9 px-3 text-xs" confirm={`Let ${v.shopName} list accounts?`} action={reviewVendor.bind(null, v.id, "APPROVED")} />}
+                {catalog && v.status === "PENDING" && <ActionButton label="Reject…" className="btn-danger min-h-9 px-3 text-xs" prompt="Why? (the applicant sees this and can apply again)" action={reviewVendor.bind(null, v.id, "REJECTED")} />}
+                {catalog && v.status === "APPROVED" && <ActionButton label="Suspend…" className="btn-danger min-h-9 px-3 text-xs" prompt="Why? (their listings are taken down)" action={reviewVendor.bind(null, v.id, "SUSPENDED")} />}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  } else if (tab === "review" || tab === "listings") {
     const listings = await prisma.marketListing.findMany({
       where: tab === "review" ? { status: "PENDING" } : { status: { not: "PENDING" } },
       orderBy: { createdAt: tab === "review" ? "asc" : "desc" },

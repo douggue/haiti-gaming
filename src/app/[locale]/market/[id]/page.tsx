@@ -34,7 +34,7 @@ export default async function ListingPage({ params }: { params: P }) {
   const settings = await getSettings();
   if (!settings.marketEnabled) notFound();
   const [user, t, fmt] = await Promise.all([getUser(), getTranslations("market"), getFormatter()]);
-  const l = await prisma.marketListing.findUnique({ where: { id }, include: { seller: { select: { name: true, emailVerified: true, createdAt: true } } } });
+  const l = await prisma.marketListing.findUnique({ where: { id }, include: { seller: { select: { name: true, createdAt: true, marketVendor: { select: { shopName: true, status: true } } } } } });
   if (!l) notFound();
   const mine = user?.id === l.sellerId;
   if (!PUBLIC.includes(l.status) && !mine) notFound();
@@ -93,9 +93,9 @@ export default async function ListingPage({ params }: { params: P }) {
             <h1 className="text-2xl font-extrabold tracking-tight">{l.title}</h1>
             <p className="text-3xl font-extrabold">{formatMoney(l.price, l.currency, locale)}</p>
             <div className="flex items-center gap-3 rounded-2xl bg-surface-2 p-3 text-sm">
-              <span className="grid size-10 place-items-center rounded-full bg-primary text-white font-bold">{shortName(l.seller.name).slice(0, 1)}</span>
+              <span className="grid size-10 place-items-center rounded-full bg-primary text-white font-bold">{(l.seller.marketVendor?.shopName ?? shortName(l.seller.name)).slice(0, 1).toUpperCase()}</span>
               <span>
-                <b className="block">{shortName(l.seller.name)} {l.seller.emailVerified && <span className="text-xs font-semibold text-primary">✓ {t("verified")}</span>}</b>
+                <b className="block">{l.seller.marketVendor?.shopName ?? shortName(l.seller.name)} {l.seller.marketVendor?.status === "APPROVED" && <span className="text-xs font-semibold text-primary">✓ {t("verified")}</span>}</b>
                 <span className="text-muted">{t("sellerStats", { sold: stats?.sold ?? 0 })}{stats?.rating ? ` · ★ ${stats.rating.toFixed(1)} (${stats.ratings})` : ""}</span>
               </span>
             </div>

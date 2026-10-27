@@ -82,6 +82,25 @@ export async function setDealStatus(id: string, status: DealStatus, form: FormDa
   }
 }
 
+/** Vendor applications: approve (can list), reject (can apply again) or suspend (listings taken down). */
+export async function reviewVendor(id: string, decision: "APPROVED" | "REJECTED" | "SUSPENDED", note: string): Promise<R> {
+  try {
+    const staff = await assertStaff("catalog.manage");
+    const reason = note.trim().slice(0, 300);
+    if (decision !== "APPROVED" && reason.length < 3) return { ok: false, error: "Write the reason (the applicant sees it)" };
+    const v = await prisma.marketVendor.update({ where: { id }, data: { status: decision, staffNote: reason || null, reviewedAt: new Date(), reviewedById: staff.id } });
+    if (decision === "SUSPENDED") {
+      await prisma.marketListing.updateMany({ where: { sellerId: v.userId, status: { in: ["PENDING", "ACTIVE"] } }, data: { status: "REMOVED", staffNote: "Vendor suspended" } });
+    }
+    const type = decision === "APPROVED" ? "market_vendor_approved" : decision === "REJECTED" ? "market_vendor_rejected" : "market_vendor_suspended";
+    await notify(v.userId, type, { shop: v.shopName, reason }, decision === "APPROVED" ? "/market/sell" : "/market/sell");
+    await audit(staff.id, `market.vendor.${decision.toLowerCase()}`, "MarketVendor", id, { note: reason });
+    return done(decision === "APPROVED" ? `${v.shopName} can now list accounts` : decision === "REJECTED" ? "Rejected" : "Suspended, listings taken down");
+  } catch (e) {
+    return fail(e);
+  }
+}
+
 export async function resolveReport(id: string): Promise<R> {
   try {
     const staff = await assertStaff("catalog.manage");

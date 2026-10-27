@@ -64,6 +64,7 @@ model User {
   marketBuys       MarketDeal[]     @relation("MarketBuyer")
   marketSales      MarketDeal[]     @relation("MarketDealSeller")
   marketReports    MarketReport[]
+  marketVendor     MarketVendor?
   /// Code other customers send money to ("HG-7K4Q2M"), made on first use
   transferCode     String?       @unique
   transfersSent     Transfer[]   @relation("TransferFrom")
@@ -1089,4 +1090,40 @@ model MarketReport {
   createdAt  DateTime      @default(now())
 
   @@index([resolved])
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+/// A customer's request to sell on the Market. Only approved vendors can post accounts.
+model MarketVendor {
+  id           String       @id @default(cuid())
+  userId       String       @unique
+  user         User         @relation(fields: [userId], references: [id])
+  /// Shop name shown on listings
+  shopName     String
+  /// Full name as on the ID document
+  legalName    String
+  whatsapp     String
+  city         String
+  /// Platforms they plan to sell (keys from src/lib/market.ts)
+  platforms    String[]
+  /// Rough number of accounts they expect to sell per month
+  volume       String
+  about        String       @default("")
+  /// Private file path: photo of an ID document (staff only)
+  idPhotoPath  String?
+  status       VendorStatus @default(PENDING)
+  /// Reason shown to the applicant when rejected or suspended
+  staffNote    String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([status])
 }

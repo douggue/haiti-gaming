@@ -6,7 +6,8 @@ import { assertUser } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { getSettings } from "@/lib/settings";
 import { parseAmount, formatMoney } from "@/lib/money";
-import { savePublicImage, uploadsEnabled, UploadError } from "@/lib/storage";
+import { savePrivateImage, savePublicImage, uploadsEnabled, UploadError } from "@/lib/storage";
+import { normalizePhone } from "@/lib/phone";
 import { isPlatform, platformOf } from "@/lib/market";
 import { mustVerifyEmail } from "@/lib/verify-email";
 import { siteUrl } from "@/lib/site-url";
@@ -44,6 +45,8 @@ export async function createListing(form: FormData): Promise<R> {
     const { user } = await marketUser();
     if (await needsRules(user.id)) return { ok: false, error: "rules" };
     if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
+    const vendor = await prisma.marketVendor.findUnique({ where: { userId: user.id }, select: { status: true } });
+    if (vendor?.status !== "APPROVED") return { ok: false, error: "vendor" };
     const pending = await prisma.marketListing.count({ where: { sellerId: user.id, status: "PENDING" } });
     if (pending >= 5) return { ok: false, error: "too_many" };
     const platform = String(form.get("platform"));
@@ -84,6 +87,53 @@ export async function createListing(form: FormData): Promise<R> {
     await audit(user.id, "market.listing.create", "MarketListing", l.id, { platform, price, currency });
     revalidatePath("/[locale]/account/market", "page");
     return { ok: true, id: l.id };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+const VOLUMES = ["1-2", "3-10", "10+"];
+
+/**
+ * Vendor enrollment: anyone can buy, but only approved vendors can list accounts.
+ * Staff contacts the applicant on WhatsApp, then approves or rejects. A rejected applicant can apply again.
+ */
+export async function applyVendor(form: FormData): Promise<R> {
+  try {
+    const { user } = await marketUser();
+    if (await needsRules(user.id)) return { ok: false, error: "rules" };
+    if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
+    const existing = await prisma.marketVendor.findUnique({ where: { userId: user.id } });
+    if (existing?.status === "PENDING" || existing?.status === "APPROVED") return { ok: false, error: "already" };
+    if (existing?.status === "SUSPENDED") return { ok: false, error: "suspended" };
+    const shopName = String(form.get("shopName") ?? "").trim().slice(0, 40);
+    const legalName = String(form.get("legalName") ?? "").trim().slice(0, 80);
+    const city = String(form.get("city") ?? "").trim().slice(0, 60);
+    const whatsapp = normalizePhone(String(form.get("whatsapp") ?? ""));
+    const platforms = [...new Set(form.getAll("platforms").map(String).filter(isPlatform))];
+    const volume = String(form.get("volume") ?? "");
+    if (shopName.length < 3) return { ok: false, error: "shop" };
+    if (legalName.length < 3) return { ok: false, error: "legal" };
+    if (!whatsapp) return { ok: false, error: "phone" };
+    if (city.length < 2) return { ok: false, error: "city" };
+    if (!platforms.length) return { ok: false, error: "platform" };
+    if (!VOLUMES.includes(volume)) return { ok: false, error: "volume" };
+    if (form.get("agree") !== "on") return { ok: false, error: "agree" };
+    const file = form.get("idPhoto");
+    if (!(file instanceof File) || file.size === 0) return { ok: false, error: "id_photo" };
+    if (!uploadsEnabled()) return { ok: false, error: "upload" };
+    let idPhotoPath: string;
+    try {
+      idPhotoPath = await savePrivateImage(file, "vendors");
+    } catch (e) {
+      if (e instanceof UploadError) return { ok: false, error: "upload" };
+      throw e;
+    }
+    const data = { shopName, legalName, whatsapp, city, platforms, volume, about: String(form.get("about") ?? "").trim().slice(0, 1000), idPhotoPath, status: "PENDING" as const, staffNote: null, reviewedAt: null, reviewedById: null };
+    const v = await prisma.marketVendor.upsert({ where: { userId: user.id }, create: { userId: user.id, ...data }, update: data });
+    await audit(user.id, "market.vendor.apply", "MarketVendor", v.id, { shopName, platforms });
+    revalidatePath("/[locale]/market/sell", "page");
+    return { ok: true, id: v.id };
   } catch (e) {
     return fail(e);
   }
