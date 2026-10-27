@@ -376,7 +376,8 @@
     "cryptoSteps1": "Copy the address or scan the QR.",
     "cryptoSteps2": "Send USDT on {network} only.",
     "cryptoSteps3": "Paste the transaction hash and submit. We check it on the blockchain.",
-    "methodAuto": "Automatic"
+    "methodAuto": "Automatic",
+    "storeCreditHtg": "Wallet balance is store credit in gourdes: spend it on Haiti Gaming or send it to another customer. It cannot be withdrawn."
   },
   "auth": {
     "loginTitle": "Sign in",

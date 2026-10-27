@@ -7,6 +7,7 @@ import { ExchangeForm } from "@/components/ExchangeForm";
 import { VerifyGate } from "@/components/VerifyGate";
 import { mustVerifyEmail } from "@/lib/verify-email";
 import { Link } from "@/i18n/navigation";
+import { notFound } from "next/navigation";
 
 export default async function ExchangePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -14,6 +15,7 @@ export default async function ExchangePage({ params }: { params: Promise<{ local
   const user = await requireUser(locale);
   if (await mustVerifyEmail(user.id)) return <VerifyGate email={user.email} />;
   const [tw, tc, b, s] = await Promise.all([getTranslations("wallet"), getTranslations("common"), getBalances(prisma, user.id), getSettings()]);
+  if (!s.showUsd && b.USD.available + b.USD.held === 0) notFound();
   return (
     <div className="max-w-xl space-y-6">
       <div>

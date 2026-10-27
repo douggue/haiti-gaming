@@ -376,7 +376,8 @@
     "cryptoSteps1": "Copiez l'adresse ou scannez le QR.",
     "cryptoSteps2": "Envoyez de l'USDT sur {network} uniquement.",
     "cryptoSteps3": "Collez le hash de la transaction et envoyez. Nous le vérifions sur la blockchain.",
-    "methodAuto": "Automatique"
+    "methodAuto": "Automatique",
+    "storeCreditHtg": "Le solde du portefeuille est un crédit boutique en gourdes : dépensez-le sur Haiti Gaming ou envoyez-le à un autre client. Il ne peut pas être retiré."
   },
   "auth": {
     "loginTitle": "Se connecter",

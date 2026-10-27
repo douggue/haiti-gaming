@@ -11,15 +11,16 @@ export function WalletCard({ balances, initial, showUsd = true }: { balances: { 
   const ta = useTranslations("account");
   const tc = useTranslations("common");
   const locale = useLocale();
-  const [cur, setCur] = useState<"HTG" | "USD">(initial);
+  // Gourdes-only store: the USD side only exists for customers who actually hold dollars
+  const usdVisible = showUsd || balances.USD.available + balances.USD.held > 0;
+  const [cur, setCur] = useState<"HTG" | "USD">(usdVisible ? initial : "HTG");
   const b = balances[cur];
   return (
     <div className="relative overflow-hidden rounded-3xl bg-[linear-gradient(140deg,#3b7dff_0%,#1f56d8_45%,#0d2a78_100%)] p-6 text-white shadow-[0_26px_50px_-24px_var(--glow)] sm:p-7">
       <div className="ds-hide pointer-events-none absolute -right-16 -top-20 h-60 w-60 rounded-full bg-[#46d8ff]/45 blur-3xl" aria-hidden />
       <div className="relative flex items-center justify-between">
         <span className="flex items-center gap-2 text-sm font-semibold text-[#cfe0ff]"><WalletIcon width={18} height={18} /> {tc("wallet")}</span>
-        {/* Gourdes-only store: the USD side only shows for customers who actually hold dollars */}
-        {(showUsd || balances.USD.available + balances.USD.held > 0) && (
+        {usdVisible && (
         <div className="inline-flex rounded-full bg-white/10 p-1 text-xs font-bold" role="tablist" aria-label={tc("currency")}>
           {(["HTG", "USD"] as const).map((c) => (
             <button key={c} type="button" role="tab" aria-selected={cur === c} onClick={() => setCur(c)} className={`min-h-8 rounded-full px-3 py-1 ${cur === c ? "bg-white text-[#0d2a78]" : "text-white/85"}`}>

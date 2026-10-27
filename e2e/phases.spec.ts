@@ -62,6 +62,10 @@ test("a customer sends gourdes to another with their code", async ({ browser }) 
 
   await to.reload();
   await expect(to.getByText(/Soti nan men Frantz C\./)).toBeVisible();
+  // Gourdes-only store (USD off): no dollars anywhere in the wallet, and no exchange page
+  await from.goto("/ht/account/wallet");
+  await expect(from.locator("main")).not.toContainText("USD");
+  expect((await from.goto("/ht/account/wallet/exchange"))!.status()).toBe(404);
   const n = await db.notification.count({ where: { user: { email: toEmail }, type: "transfer_received" } });
   expect(n).toBe(1);
 });

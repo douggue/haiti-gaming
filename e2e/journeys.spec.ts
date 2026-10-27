@@ -1,3 +1,4 @@
+import { PrismaClient } from "@prisma/client";
 import { test, expect, type Page } from "@playwright/test";
 import { staffLogin } from "./helpers";
 
@@ -108,6 +109,9 @@ test("customer pays a manual top-up from the wallet, admin delivers it", async (
 });
 
 test("customer exchanges HTG to USD", async ({ page }) => {
+  // Exchange exists only when USD is turned on (Admin → Settings); gourdes-only stores hide it
+  const db = new PrismaClient();
+  await db.siteSetting.upsert({ where: { key: "showUsd" }, create: { key: "showUsd", value: true }, update: { value: true } });
   await page.goto("/en/auth/login");
   await page.getByLabel("Email").fill(customer.email);
   await page.getByLabel("Password").fill(customer.password);
@@ -119,4 +123,6 @@ test("customer exchanges HTG to USD", async ({ page }) => {
   await expect(page.getByText("You receive")).toBeVisible();
   await page.getByRole("button", { name: "Confirm exchange" }).click();
   await expect(page.getByText("Exchange complete.")).toBeVisible();
+  await db.siteSetting.update({ where: { key: "showUsd" }, data: { value: false } });
+  await db.$disconnect();
 });

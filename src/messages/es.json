@@ -376,7 +376,8 @@
     "cryptoSteps1": "Copie la dirección o escanee el QR.",
     "cryptoSteps2": "Envíe USDT solo en {network}.",
     "cryptoSteps3": "Pegue el hash de la transacción y envíe. Lo verificamos en la blockchain.",
-    "methodAuto": "Automático"
+    "methodAuto": "Automático",
+    "storeCreditHtg": "El saldo del monedero es crédito de la tienda en gourdes: gástalo en Haiti Gaming o envíalo a otro cliente. No se puede retirar."
   },
   "auth": {
     "loginTitle": "Iniciar sesión",

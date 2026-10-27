@@ -15,14 +15,14 @@ type Manual = { id: string; name: string; instructions: string; logo: string | n
 
 type Zone = { id: string; name: string; feeHtg: number; eta: string | null };
 
-export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualMethods = [], zones = [], codEnabled = false }: { balances: { HTG: number; USD: number }; moncashEnabled: boolean; natcashEnabled: boolean; manualMethods?: Manual[]; zones?: Zone[]; codEnabled?: boolean }) {
+export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualMethods = [], zones = [], codEnabled = false, usdWallet = true }: { balances: { HTG: number; USD: number }; moncashEnabled: boolean; natcashEnabled: boolean; manualMethods?: Manual[]; zones?: Zone[]; codEnabled?: boolean; usdWallet?: boolean }) {
   const tc = useTranslations("checkout");
   const tcart = useTranslations("cart");
   const locale = useLocale();
   const router = useRouter();
   const store = useStore();
   const [method, setMethod] = useState<Method>(moncashEnabled ? "MONCASH" : "WALLET");
-  const [walletCurrency, setWalletCurrency] = useState<"HTG" | "USD">(store.currency);
+  const [walletCurrency, setWalletCurrency] = useState<"HTG" | "USD">(usdWallet ? store.currency : "HTG");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
   // Physical products (accessories): where to deliver
@@ -79,7 +79,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
     {
       id: "WALLET",
       title: tc("wallet"),
-      hint: `${tc("walletBalance", { balance: fmt(balances.HTG, "HTG") })} · ${fmt(balances.USD, "USD")}`,
+      hint: usdWallet ? `${tc("walletBalance", { balance: fmt(balances.HTG, "HTG") })} · ${fmt(balances.USD, "USD")}` : tc("walletBalance", { balance: fmt(balances.HTG, "HTG") }),
       enabled: true,
       badge: <span className="rounded-md bg-navy px-2 py-1 text-[11px] font-extrabold text-white">HG</span>,
     },
@@ -122,8 +122,8 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
 
         {method === "WALLET" ? (
           <div>
-            <span className="label">{tc("payIn")}</span>
-            <div className="inline-flex rounded-xl border border-border bg-surface p-1">
+            {usdWallet && <span className="label">{tc("payIn")}</span>}
+            <div className={`inline-flex rounded-xl border border-border bg-surface p-1 ${usdWallet ? "" : "hidden"}`}>
               {(["HTG", "USD"] as const).map((c) => (
                 <button key={c} type="button" onClick={() => setWalletCurrency(c)} className={`rounded-lg px-4 py-2 text-sm font-semibold ${walletCurrency === c ? "bg-primary text-white" : ""}`}>
                   {c}

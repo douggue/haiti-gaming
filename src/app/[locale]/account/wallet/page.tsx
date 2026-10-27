@@ -35,7 +35,7 @@ export default async function WalletPage({ params }: { params: Promise<{ locale:
     <div className="space-y-6">
       <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{tw("title")}</h1>
       <div className="max-w-xl"><WalletCard balances={balances} initial={currency} showUsd={(await getDisplaySettings()).showUsd} /></div>
-      <p className="max-w-xl text-sm text-muted">{tw("storeCredit")} {tw("heldHint", { hours: settings.holdHours })}</p>
+      <p className="max-w-xl text-sm text-muted">{settings.showUsd || balances.USD.available + balances.USD.held > 0 ? tw("storeCredit") : tw("storeCreditHtg")} {tw("heldHint", { hours: settings.holdHours })}</p>
 
       {pending.length > 0 && (
         <section className="card p-5">

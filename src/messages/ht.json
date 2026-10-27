@@ -376,7 +376,8 @@
     "cryptoSteps1": "Kopye adrès la oswa eskane QR la.",
     "cryptoSteps2": "Voye USDT sou {network} sèlman.",
     "cryptoSteps3": "Kole hash tranzaksyon an epi voye. N ap verifye l sou blockchain lan.",
-    "methodAuto": "Otomatik"
+    "methodAuto": "Otomatik",
+    "storeCreditHtg": "Lajan nan bous la se kredi boutik an goud: depanse l sou Haiti Gaming oswa voye l bay yon lòt kliyan. Ou pa ka retire l."
   },
   "auth": {
     "loginTitle": "Konekte",

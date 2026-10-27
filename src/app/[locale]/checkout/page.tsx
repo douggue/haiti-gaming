@@ -36,6 +36,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
         manualMethods={manualMethods}
         zones={zones}
         codEnabled={settings.codEnabled}
+        usdWallet={settings.showUsd || balances.USD.available > 0}
       />
     </div>
   );
