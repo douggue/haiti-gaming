@@ -336,7 +336,8 @@
       "REFUND": "Ranbousman",
       "EXCHANGE": "Chanj",
       "ADJUSTMENT": "Ajisteman",
-      "HOLD_RELEASE": "Lajan an atant libere"
+      "HOLD_RELEASE": "Lajan an atant libere",
+      "TRANSFER": "Transfè"
     },
     "depositStatus": {
       "PENDING": "An atant",

@@ -1,4 +1,11 @@
 "use server";
+import IntlMessageFormat from "intl-messageformat";
+import { parse, type MessageFormatElement } from "@formatjs/icu-messageformat-parser";
+import enBase from "@/messages/en.json";
+import htBase from "@/messages/ht.json";
+import frBase from "@/messages/fr.json";
+import esBase from "@/messages/es.json";
+const BASE = { en: enBase, ht: htBase, fr: frBase, es: esBase };
 import { revalidatePath, revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
@@ -173,12 +180,52 @@ export async function saveSeoSettings(form: FormData): Promise<R> {
 
 // ───────────── Translations ─────────────
 
+/**
+ * A changed text must keep the same {placeholders} as the original and stay valid
+ * (plural/select forms), or the page would show broken text.
+ */
+function checkMessage(locale: string, key: string, value: string): string | null {
+  const base = key.split(".").reduce<unknown>((o, k) => (o && typeof o === "object" ? (o as Record<string, unknown>)[k] : undefined), BASE[locale as (typeof LOCALES)[number]]);
+  const original = typeof base === "string" ? base : "";
+  // Placeholder names from the real message parser (handles plural/select options correctly)
+  const names = (text: string) => {
+    const out = new Set<string>();
+    const walk = (els: MessageFormatElement[]) => {
+      for (const el of els) {
+        if ("value" in el && typeof el.value === "string" && el.type !== 0) out.add(el.value);
+        if ("options" in el) for (const o of Object.values(el.options)) walk(o.value);
+        if ("children" in el) walk(el.children);
+      }
+    };
+    try {
+      walk(parse(text));
+    } catch {}
+    return out;
+  };
+  const want = names(original);
+  const got = names(value);
+  const missing = [...want].filter((n) => !got.has(n));
+  const extra = [...got].filter((n) => !want.has(n));
+  if (missing.length) return `Keep ${missing.map((n) => `{${n}}`).join(", ")} in the text`;
+  if (extra.length) return `Unknown ${extra.map((n) => `{${n}}`).join(", ")}: use only ${[...want].map((n) => `{${n}}`).join(", ") || "no placeholders"}`;
+  try {
+    new IntlMessageFormat(value, locale === "ht" ? "fr" : locale);
+  } catch {
+    return "The text has a broken { } part. Check the braces.";
+  }
+  return null;
+}
+
 export async function saveTranslation(locale: string, key: string, value: string): Promise<R> {
   try {
     const staff = await assertStaff("content.manage");
     if (!(LOCALES as readonly string[]).includes(locale)) return { ok: false, error: "Unknown language" };
     if (!/^[a-zA-Z0-9_.]+$/.test(key)) return { ok: false, error: "Invalid key" };
     const v = value.trim().slice(0, 2000);
+    if (v) {
+      const problem = checkMessage(locale, key, v);
+      if (problem) return { ok: false, error: problem };
+    }
     if (v) await prisma.translationOverride.upsert({ where: { locale_key: { locale, key } }, create: { locale, key, value: v }, update: { value: v } });
     else await prisma.translationOverride.deleteMany({ where: { locale, key } });
     await audit(staff.id, v ? "translation.save" : "translation.reset", "TranslationOverride", `${locale}:${key}`);

@@ -336,7 +336,8 @@
       "REFUND": "Refund",
       "EXCHANGE": "Exchange",
       "ADJUSTMENT": "Adjustment",
-      "HOLD_RELEASE": "Hold released"
+      "HOLD_RELEASE": "Hold released",
+      "TRANSFER": "Transfer"
     },
     "depositStatus": {
       "PENDING": "Waiting",

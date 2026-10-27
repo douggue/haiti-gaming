@@ -41,7 +41,7 @@ test("content tools: homepage editor, news, redirect, translation, theme", async
 
   await a.goto("/admin/translations");
   await a.waitForLoadState("networkidle");
-  await a.getByPlaceholder(/Search text or key/).fill("common.shopNow");
+  await a.getByPlaceholder(/Search a word/).fill("common.shopNow");
   const box = a.locator(".card", { hasText: "common.shopNow" }).locator("textarea").first();
   await box.fill("Achte la a");
   await box.blur();
@@ -77,11 +77,23 @@ test("content tools: homepage editor, news, redirect, translation, theme", async
   await expect(a.getByText("Theme published")).toBeVisible();
   await a.goto("/admin/translations");
   await a.waitForLoadState("networkidle");
-  await a.getByPlaceholder(/Search text or key/).fill("common.shopNow");
+  await a.getByPlaceholder(/Search a word/).fill("common.shopNow");
   const box2 = a.locator(".card", { hasText: "common.shopNow" }).locator("textarea").first();
   await box2.fill("");
   await box2.blur();
   await expect(a.locator(".card", { hasText: "common.shopNow" }).getByText("Default")).toBeVisible();
+
+  // A text that loses its {placeholders} is refused (the page would break)
+  await a.getByPlaceholder(/Search a word/).fill("transfer.sent");
+  const box3 = a.locator(".card", { hasText: "transfer.sent" }).locator("textarea").first();
+  await box3.fill("Kòb la ale");
+  await box3.blur();
+  await expect(a.locator(".card", { hasText: "transfer.sent" }).getByText(/Keep \{amount\}, \{name\}/)).toBeVisible();
+  // Groups: picking "Market" lists only Market texts
+  await a.getByPlaceholder(/Search a word/).fill("");
+  await a.getByRole("button", { name: /^Market \d+$/ }).click();
+  await expect(a.getByText("market.buyNow")).toBeVisible();
+  await expect(a.getByText("common.shopNow")).toHaveCount(0);
 });
 
 test("customer: support ticket, preferences, saved cart, 2FA, data export", async ({ browser }) => {
