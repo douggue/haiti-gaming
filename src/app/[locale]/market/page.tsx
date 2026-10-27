@@ -38,31 +38,59 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
     include: { seller: { select: { name: true, marketVendor: { select: { shopName: true, status: true } } } } },
   });
   const stats = await sellerStats(listings.map((l) => l.sellerId));
+  const [soldCount, vendorCount] = await Promise.all([
+    prisma.marketListing.count({ where: { status: "SOLD" } }),
+    prisma.marketVendor.count({ where: { status: "APPROVED" } }),
+  ]);
   const base = siteUrl();
 
   return (
     <div className="container-page space-y-6 py-6 sm:py-10">
-      <section className="card overflow-hidden p-5 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="max-w-xl">
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">{t("eyebrow")}</p>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{t("title")}</h1>
-            <p className="mt-2 text-muted">{t("subtitle")}</p>
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1640] via-[#1d2a8a] to-[#6d28d9] p-5 text-white shadow-xl sm:p-8">
+        {/* Decoration: blurred glows and floating game icons */}
+        <span aria-hidden className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-fuchsia-500/40 blur-3xl" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-20 -left-10 size-56 rounded-full bg-sky-400/30 blur-3xl" />
+        <span aria-hidden className="pointer-events-none absolute right-4 top-4 hidden select-none gap-2 text-4xl opacity-80 sm:flex">
+          <span className="animate-bounce [animation-duration:2.4s]">🔥</span>
+          <span className="animate-bounce [animation-delay:300ms] [animation-duration:2.8s]">⚽</span>
+          <span className="animate-bounce [animation-delay:600ms] [animation-duration:2.6s]">🎵</span>
+        </span>
+        <div className="relative max-w-xl">
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-widest">
+            <span className="size-1.5 animate-pulse rounded-full bg-emerald-400" /> {t("eyebrow")}
+          </p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">
+            {t("heroTitle1")} <span className="bg-gradient-to-r from-amber-300 to-pink-400 bg-clip-text text-transparent">{t("heroTitle2")}</span>
+          </h1>
+          <p className="mt-2 text-sm text-white/85 sm:text-base">{t("subtitle")}</p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <a href="#listings" className="btn-primary min-h-12 !bg-white px-5 !text-[#1d2a8a] shadow-lg">🛒 {t("browseCta")}</a>
+            <Link href="/market/sell" className="btn-primary min-h-12 !bg-amber-400 px-5 !text-black shadow-lg">＋ {t("sell")}</Link>
           </div>
-          <div className="flex flex-col items-start gap-2 sm:items-end">
-            <Link href="/market/sell" className="btn-primary min-h-12">＋ {t("sell")}</Link>
-            <RulesLink />
-          </div>
+          <div className="mt-3"><span className="[&_button]:text-white/90 [&_button]:underline"><RulesLink /></span></div>
         </div>
-        <ul className="mt-5 grid gap-2 sm:grid-cols-3">
-          {(["trustEscrow", "trustChecked", "trustSupport"] as const).map((k, i) => (
-            <li key={k} className="flex items-start gap-2 rounded-2xl bg-surface-2 p-3 text-sm">
-              <span aria-hidden className="text-lg">{["🔒", "✅", "💬"][i]}</span>
-              <span><b className="block">{t(k)}</b><span className="text-muted">{t(`${k}Hint`)}</span></span>
-            </li>
+        <dl className="relative mt-6 grid grid-cols-3 gap-2 text-center">
+          {[
+            [listings.length, t("statOnSale")],
+            [soldCount, t("statSold")],
+            [vendorCount, t("statVendors")],
+          ].map(([n, label]) => (
+            <div key={String(label)} className="rounded-2xl bg-white/10 px-2 py-3 backdrop-blur">
+              <dt className="text-[11px] text-white/75">{label}</dt>
+              <dd className="text-2xl font-black">{n}</dd>
+            </div>
           ))}
-        </ul>
+        </dl>
       </section>
+
+      <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:grid sm:grid-cols-3">
+        {(["trustEscrow", "trustChecked", "trustSupport"] as const).map((k, i) => (
+          <li key={k} className="flex min-w-[15rem] items-start gap-3 rounded-2xl border border-border bg-surface p-3 text-sm sm:min-w-0">
+            <span aria-hidden className={`grid size-10 shrink-0 place-items-center rounded-xl text-lg ${["bg-emerald-500/15", "bg-sky-500/15", "bg-violet-500/15"][i]}`}>{["🔒", "✅", "💬"][i]}</span>
+            <span><b className="block">{t(k)}</b><span className="text-xs text-muted">{t(`${k}Hint`)}</span></span>
+          </li>
+        ))}
+      </ul>
 
       <MarketBrowser
         initialPlatform={platform}

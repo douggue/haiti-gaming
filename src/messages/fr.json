@@ -946,7 +946,16 @@
     "optional": "facultatif",
     "buyAt": "Acheter à {price} (paiement bloqué)",
     "noMatch": "Aucun compte ne correspond. Essayez un autre jeu ou mot.",
-    "clearFilters": "Effacer les filtres"
+    "clearFilters": "Effacer les filtres",
+    "buyShort": "Acheter",
+    "buyAtShort": "Acheter · {price}",
+    "heroTitle1": "Achetez & vendez",
+    "heroTitle2": "des comptes de jeux",
+    "browseCta": "Voir les comptes",
+    "statOnSale": "En vente",
+    "statSold": "Vendus",
+    "statVendors": "Vendeurs",
+    "hot": "Populaire"
   },
   "chat": {
     "title": "Messages",
@@ -992,6 +1001,8 @@
     "newMessages": "Nouveaux messages",
     "sent": "Envoyé",
     "seen": "Vu",
-    "typing": "{name} écrit…"
+    "typing": "{name} écrit…",
+    "escrow": "Protégé",
+    "listedAt": "Prix affiché : {price}"
   }
 }

@@ -251,23 +251,64 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
   const press = (k: string) => setAmount((a) => (k === "⌫" ? a.slice(0, -1) : (a + k).replace(/^0+/, "").slice(0, 9)));
   const canOffer = role === "buyer" && status === "ACTIVE";
 
-  return (
-    <div className="flex h-[calc(100dvh-17rem-env(safe-area-inset-bottom))] min-h-[24rem] flex-col overflow-hidden rounded-3xl border border-border bg-surface md:h-[calc(100dvh-13rem)]">
-      {/* Header: who, which account, price */}
-      <div className="flex items-center gap-3 border-b border-border p-3">
-        <Link href="/account/messages" className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-2" aria-label={t("back")}>←</Link>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {listing.image && <img src={listing.image} alt="" className="size-10 shrink-0 rounded-xl object-cover" />}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold">{otherName}</p>
-          <Link href={`/market/${listing.id}`} className="block truncate text-xs text-muted">
-            {listing.title} · {agreed ? <><s>{money(listing.price)}</s> <b className="text-success">{money(agreed)}</b></> : money(listing.price)}
-          </Link>
-        </div>
-      </div>
-      <p className="border-b border-border bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-300">🔒 {t("safety")}</p>
+  // Phones: the chat takes the whole screen and follows the visible area, so the iPhone keyboard never squeezes it.
+  const [view, setView] = useState<{ h: number; top: number } | null>(null);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const fit = () => setView({ h: Math.round(vv ? vv.height : window.innerHeight), top: Math.round(vv ? vv.offsetTop : 0) });
+    fit();
+    vv?.addEventListener("resize", fit);
+    vv?.addEventListener("scroll", fit);
+    window.addEventListener("resize", fit);
+    return () => {
+      vv?.removeEventListener("resize", fit);
+      vv?.removeEventListener("scroll", fit);
+      window.removeEventListener("resize", fit);
+    };
+  }, []);
+  useEffect(() => {
+    list.current?.scrollTo({ top: list.current.scrollHeight });
+  }, [view?.h]);
 
-      <div ref={list} className="flex-1 space-y-2 overflow-y-auto p-3" data-testid="chat-messages">
+  const quick = [0.95, 0.9, 0.8].map((f) => Math.round((listing.price * f) / 100));
+  const initials = otherName.replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+
+  return (
+    <div
+      className="fixed inset-x-0 z-[60] flex flex-col overflow-hidden bg-bg md:static md:z-auto md:h-[calc(100dvh-13rem)] md:min-h-[32rem] md:rounded-3xl md:border md:border-border md:bg-surface"
+      style={view ? ({ top: view.top, height: view.h } as React.CSSProperties) : { top: 0, height: "100dvh" }}
+      data-testid="chat-room"
+    >
+      {/* Header: back, who, online/typing */}
+      <div className="flex items-center gap-3 bg-gradient-to-r from-primary to-indigo-600 px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] text-white md:pt-2.5">
+        <Link href="/account/messages" className="grid size-10 shrink-0 place-items-center rounded-full bg-white/15 text-lg" aria-label={t("back")}>←</Link>
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-sm font-extrabold text-primary">{initials}</span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-bold leading-tight">{otherName}</p>
+          <p className="truncate text-xs text-white/80">{typing ? t("typing", { name: "" }).trim() : role === "buyer" ? t("youBuy") : t("youSell")}</p>
+        </div>
+        <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold">🛡️ {t("escrow")}</span>
+      </div>
+
+      {/* The account being discussed */}
+      <div className="flex items-center gap-3 border-b border-border bg-surface px-3 py-2">
+        <Link href={`/market/${listing.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {listing.image && <img src={listing.image} alt="" className="size-11 shrink-0 rounded-xl object-cover" />}
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold">{listing.title}</span>
+            <span className="text-sm">{agreed ? <><s className="text-muted">{money(listing.price)}</s> <b className="text-success">{money(agreed)}</b></> : <b>{money(listing.price)}</b>}</span>
+          </span>
+        </Link>
+        {role === "buyer" && status === "ACTIVE" && (
+          <div className="w-36 shrink-0 [&_button]:min-h-10 [&_button]:px-2 [&_button]:text-xs">
+            <BuyButton listingId={listing.id} locale={locale} signedIn rulesAccepted={rulesAccepted} label={agreed ? tm("buyAtShort", { price: money(agreed) }) : tm("buyShort")} />
+          </div>
+        )}
+      </div>
+
+      <div ref={list} className="relative flex-1 space-y-2 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_1px_1px,rgb(127_127_127/0.12)_1px,transparent_0)] bg-[length:18px_18px] p-3" data-testid="chat-messages">
+        <p className="mx-auto w-fit max-w-[92%] rounded-xl bg-amber-400/15 px-3 py-2 text-center text-[11px] text-amber-700 dark:text-amber-300">🔒 {t("safety")}</p>
         {messages.length === 0 && <p className="py-10 text-center text-sm text-muted">{t("empty")}</p>}
         {messages.map((m) => {
           const line =
@@ -281,38 +322,19 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
           return <div key={m.id}>{line}{bubble(m)}</div>;
         })}
         {typing && (
-          <p className="flex items-center gap-1.5 px-1 text-xs text-muted" data-testid="typing" aria-live="polite">
-            <span className="inline-flex gap-0.5"><span className="size-1.5 animate-bounce rounded-full bg-muted" /><span className="size-1.5 animate-bounce rounded-full bg-muted [animation-delay:150ms]" /><span className="size-1.5 animate-bounce rounded-full bg-muted [animation-delay:300ms]" /></span>
-            {t("typing", { name: otherName })}
-          </p>
+          <div className="flex justify-start" data-testid="typing" aria-live="polite">
+            <p className="flex items-center gap-2 rounded-2xl rounded-bl-md bg-surface-2 px-3 py-2 text-xs text-muted">
+              <span className="inline-flex gap-1"><span className="size-1.5 animate-bounce rounded-full bg-muted" /><span className="size-1.5 animate-bounce rounded-full bg-muted [animation-delay:150ms]" /><span className="size-1.5 animate-bounce rounded-full bg-muted [animation-delay:300ms]" /></span>
+              {t("typing", { name: otherName })}
+            </p>
+          </div>
         )}
       </div>
 
-      {role === "buyer" && ["ACTIVE"].includes(status) && (
-        <div className="border-t border-border p-2">
-          <BuyButton listingId={listing.id} locale={locale} signedIn rulesAccepted={rulesAccepted} label={agreed ? tm("buyAt", { price: money(agreed) }) : undefined} />
-        </div>
-      )}
       {error && <p className="bg-danger-soft px-4 py-2 text-xs text-danger" role="alert">{error}</p>}
 
-      {keypad && (
-        <div className="border-t border-amber-300/60 bg-amber-400/10 p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-semibold">💰 {t("enterOffer")}</p>
-            <button type="button" onClick={() => setKeypad(false)} className="grid size-9 place-items-center rounded-full bg-surface-2" aria-label={t("close")}><CloseIcon width={16} height={16} /></button>
-          </div>
-          <p className="mb-2 rounded-2xl border border-amber-300 bg-surface py-3 text-center text-2xl font-extrabold" data-testid="offer-amount">{amount ? money(Number(amount) * 100) : money(0)}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "00", "⌫"].map((k) => (
-              <button key={k} type="button" onClick={() => press(k)} aria-label={k === "⌫" ? t("erase") : k} className={`min-h-12 rounded-xl text-lg font-bold shadow-sm ${k === "⌫" ? "bg-surface-2" : "bg-surface"}`}>{k}</button>
-            ))}
-          </div>
-          <button type="button" disabled={!amount || pending} onClick={offer} className="btn-primary mt-2 min-h-12 w-full !bg-amber-400 !text-black">{t("sendOffer")}</button>
-        </div>
-      )}
-
       <form
-        className="flex items-center gap-2 border-t border-border p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+        className="flex items-center gap-2 border-t border-border bg-surface p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]"
         onSubmit={(e) => {
           e.preventDefault();
           if (!text.trim()) return;
@@ -322,15 +344,43 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
         }}
       >
         {canOffer && (
-          <button type="button" onClick={() => setKeypad((k) => !k)} aria-label={t("makeOffer")} className="grid size-11 shrink-0 place-items-center rounded-full bg-amber-400 text-lg font-bold text-black">$</button>
+          <button type="button" onClick={() => setKeypad(true)} aria-label={t("makeOffer")} className="grid size-11 shrink-0 place-items-center rounded-full bg-amber-400 text-lg font-extrabold text-black shadow">$</button>
         )}
         <button type="button" disabled={uploading || pending} onClick={() => fileRef.current?.click()} aria-label={t("photo")} className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 text-primary">
           {uploading ? <span className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" /> : <ImageIcon />}
         </button>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => sendPhoto(e.target.files?.[0])} data-testid="chat-photo" />
-        <input value={text} onChange={(e) => onType(e.target.value)} maxLength={1000} placeholder={t("placeholder")} aria-label={t("placeholder")} className="input min-h-11 flex-1 rounded-full" />
-        <button disabled={!text.trim() || pending} aria-label={t("send")} className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-white disabled:opacity-50"><SendIcon width={18} height={18} /></button>
+        {/* 16px text: iPhone doesn't zoom the page when the field is tapped */}
+        <input value={text} onChange={(e) => onType(e.target.value)} maxLength={1000} placeholder={t("placeholder")} aria-label={t("placeholder")} enterKeyHint="send" className="input min-h-11 flex-1 rounded-full text-base" />
+        <button disabled={!text.trim() || pending} aria-label={t("send")} className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-white shadow disabled:opacity-50"><SendIcon width={18} height={18} /></button>
       </form>
+
+      {/* Offer keypad: a sheet over the chat, always fully visible */}
+      {keypad && (
+        <div className="absolute inset-0 z-10 flex flex-col justify-end bg-black/40" onClick={() => setKeypad(false)}>
+          <div className="max-h-full overflow-y-auto rounded-t-3xl bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl" onClick={(e) => e.stopPropagation()} data-testid="offer-sheet">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-bold">💰 {t("enterOffer")}</p>
+              <button type="button" onClick={() => setKeypad(false)} className="grid size-9 place-items-center rounded-full bg-surface-2" aria-label={t("close")}><CloseIcon width={16} height={16} /></button>
+            </div>
+            <p className="rounded-2xl border-2 border-amber-400 bg-amber-400/10 py-3 text-center text-3xl font-extrabold tabular-nums" data-testid="offer-amount">{money((Number(amount) || 0) * 100)}</p>
+            <p className="mt-1 text-center text-xs text-muted">{t("listedAt", { price: money(listing.price) })}</p>
+            <div className="mt-3 flex gap-2">
+              {quick.map((v, i) => (
+                <button key={i} type="button" onClick={() => setAmount(String(v))} className="flex-1 rounded-xl border border-border px-2 py-2 text-xs font-semibold hover:border-amber-400">
+                  −{[5, 10, 20][i]}% · {money(v * 100)}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9", "00", "0", "⌫"].map((k) => (
+                <button key={k} type="button" onClick={() => press(k)} aria-label={k === "⌫" ? t("erase") : k} className={`h-12 rounded-xl text-xl font-bold active:scale-95 ${k === "⌫" ? "bg-surface-2" : "border border-border bg-bg"}`}>{k}</button>
+              ))}
+            </div>
+            <button type="button" disabled={!amount || pending} onClick={offer} className="btn-primary mt-3 min-h-12 w-full !bg-amber-400 text-base !text-black">{t("sendOffer")}</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

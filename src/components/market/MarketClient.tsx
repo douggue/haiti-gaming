@@ -90,7 +90,7 @@ export function RulesLink() {
 }
 
 /** Share a listing: WhatsApp, copy the link, or the phone's own share menu. */
-export function ShareButton({ url, text, compact }: { url: string; text: string; compact?: boolean }) {
+export function ShareButton({ url, text, compact, iconOnly }: { url: string; text: string; compact?: boolean; iconOnly?: boolean }) {
   const t = useTranslations("market");
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -99,7 +99,7 @@ export function ShareButton({ url, text, compact }: { url: string; text: string;
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className={compact ? "btn-secondary min-h-9 px-3 text-xs" : "btn-secondary min-h-11"} aria-label={t("share")}>
-        <ShareIcon width={16} height={16} /> {t("share")}
+        <ShareIcon width={16} height={16} /> {!iconOnly && t("share")}
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t("shareTitle")}>
         <div className="grid gap-2">

@@ -946,7 +946,16 @@
     "optional": "optional",
     "buyAt": "Buy now at {price} (frozen payment)",
     "noMatch": "No account matches. Try another game or word.",
-    "clearFilters": "Clear filters"
+    "clearFilters": "Clear filters",
+    "buyShort": "Buy",
+    "buyAtShort": "Buy · {price}",
+    "heroTitle1": "Buy & sell",
+    "heroTitle2": "game accounts",
+    "browseCta": "See accounts",
+    "statOnSale": "On sale",
+    "statSold": "Sold",
+    "statVendors": "Vendors",
+    "hot": "Hot"
   },
   "chat": {
     "title": "Messages",
@@ -992,6 +1001,8 @@
     "newMessages": "New messages",
     "sent": "Sent",
     "seen": "Seen",
-    "typing": "{name} is typing…"
+    "typing": "{name} is typing…",
+    "escrow": "Protected",
+    "listedAt": "Listed at {price}"
   }
 }

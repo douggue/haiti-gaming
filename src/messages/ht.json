@@ -946,7 +946,16 @@
     "optional": "si w vle",
     "buyAt": "Achte a {price} (peman jele)",
     "noMatch": "Pa gen kont ki koresponn. Eseye yon lòt jwèt oswa yon lòt mo.",
-    "clearFilters": "Efase filt yo"
+    "clearFilters": "Efase filt yo",
+    "buyShort": "Achte",
+    "buyAtShort": "Achte · {price}",
+    "heroTitle1": "Achte & vann",
+    "heroTitle2": "kont jwèt",
+    "browseCta": "Gade kont yo",
+    "statOnSale": "An vant",
+    "statSold": "Vann",
+    "statVendors": "Vandè",
+    "hot": "Cho"
   },
   "chat": {
     "title": "Mesaj",
@@ -992,6 +1001,8 @@
     "newMessages": "Nouvo mesaj",
     "sent": "Voye",
     "seen": "Wè",
-    "typing": "{name} ap ekri…"
+    "typing": "{name} ap ekri…",
+    "escrow": "Peman jele",
+    "listedAt": "Pri anons lan: {price}"
   }
 }

@@ -1,14 +1,14 @@
 /** Market platforms (client-safe). Icons are emoji so they work everywhere without image files. */
 export const PLATFORMS = [
-  { key: "freefire", label: "Free Fire", icon: "🔥" },
-  { key: "pubg", label: "PUBG Mobile", icon: "🎯" },
-  { key: "codm", label: "Call of Duty Mobile", icon: "🪖" },
-  { key: "efootball", label: "eFootball", icon: "⚽" },
-  { key: "tiktok", label: "TikTok", icon: "🎵" },
-  { key: "instagram", label: "Instagram", icon: "📸" },
-  { key: "facebook", label: "Facebook", icon: "👍" },
-  { key: "youtube", label: "YouTube", icon: "▶️" },
-  { key: "other", label: "Other", icon: "🎮" },
+  { key: "freefire", label: "Free Fire", icon: "🔥", color: "from-orange-500 to-red-600" },
+  { key: "pubg", label: "PUBG Mobile", icon: "🎯", color: "from-amber-400 to-yellow-700" },
+  { key: "codm", label: "Call of Duty Mobile", icon: "🪖", color: "from-emerald-600 to-zinc-900" },
+  { key: "efootball", label: "eFootball", icon: "⚽", color: "from-sky-500 to-blue-800" },
+  { key: "tiktok", label: "TikTok", icon: "🎵", color: "from-fuchsia-500 to-cyan-500" },
+  { key: "instagram", label: "Instagram", icon: "📸", color: "from-pink-500 via-rose-500 to-amber-400" },
+  { key: "facebook", label: "Facebook", icon: "👍", color: "from-blue-500 to-indigo-800" },
+  { key: "youtube", label: "YouTube", icon: "▶️", color: "from-red-500 to-rose-800" },
+  { key: "other", label: "Other", icon: "🎮", color: "from-violet-500 to-indigo-700" },
 ] as const;
 
 export type PlatformKey = (typeof PLATFORMS)[number]["key"];

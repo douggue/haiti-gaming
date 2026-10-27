@@ -389,7 +389,7 @@ test("Market chat: buyer and seller talk, contact details hidden, offer accepted
   // Buyer sees it (refreshes by itself) and buys at the agreed price
   await expect(msgs.getByText("✓ Aksepte")).toBeVisible({ timeout: 10_000 });
   await b.route("https://wa.me/**", (r) => r.fulfill({ status: 200, body: "wa" }));
-  await b.getByRole("button", { name: /Achte a 4[\s  ]?000 HTG/ }).click();
+  await b.getByRole("button", { name: /Achte · 4[\s  ]?000 HTG/ }).click();
   await b.getByLabel("Mwen li règ yo e mwen aksepte yo.").check();
   await b.getByRole("button", { name: "Aksepte epi kontinye" }).click();
   await b.waitForURL(/wa\.me/);

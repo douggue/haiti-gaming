@@ -459,3 +459,7 @@ html[data-can-install] .install-link { display: inline-flex; }
   .install-pop { animation: none; }
 }
 body[data-chat] .wa-float { display: none; }
+/* Full-screen chat on phones: the page behind it must not scroll */
+@media (max-width: 767px) {
+  body[data-chat] { overflow: hidden; }
+}
