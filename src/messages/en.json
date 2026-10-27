@@ -296,7 +296,8 @@
     "referrals": "Invite friends",
     "privacy": "Privacy",
     "transfer": "Send money",
-    "market": "Market"
+    "market": "Market",
+    "messages": "Messages"
   },
   "wallet": {
     "title": "Wallet",
@@ -446,7 +447,10 @@
     "market_deal_update": "Market deal #{number}: {status, select, REQUESTED {a buyer wants the account} PAID {paid to the agent} DELIVERED {account handed over} COMPLETED {completed} CANCELED {canceled} DISPUTED {the agent is looking into a problem} other {updated}}.",
     "market_vendor_approved": "You're now a Market vendor ({shop}). You can list your accounts.",
     "market_vendor_rejected": "Your vendor application was not accepted: {reason}",
-    "market_vendor_suspended": "Your vendor account was suspended: {reason}"
+    "market_vendor_suspended": "Your vendor account was suspended: {reason}",
+    "market_message": "New message about “{title}” on the Market.",
+    "market_offer_accepted": "The seller accepted your offer for “{title}”. Tap Buy to continue.",
+    "market_offer_declined": "The seller declined your offer for “{title}”."
   },
   "pages": {
     "aboutTitle": "About Haiti Gaming",
@@ -938,6 +942,48 @@
     "err_agree": "Tick the box to accept.",
     "err_id_photo": "Add a photo of your ID.",
     "rule7": "Only vendors approved by our team can sell. Anyone can buy.",
-    "optional": "optional"
+    "optional": "optional",
+    "buyAt": "Buy now at {price} (frozen payment)"
+  },
+  "chat": {
+    "title": "Messages",
+    "subtitle": "Your chats about Market accounts.",
+    "none": "No conversations yet.",
+    "browse": "Browse the Market",
+    "youBuy": "You're buying",
+    "youSell": "You're selling",
+    "unread": "New",
+    "photo": "Photo",
+    "back": "Back",
+    "safety": "Never pay the seller directly. Pay only the Haiti Gaming agent. Phone numbers, emails and links are hidden.",
+    "empty": "Say hello and ask your questions about the account.",
+    "yourOffer": "Your offer",
+    "theirOffer": "Offer from the buyer",
+    "accept": "Accept",
+    "decline": "Decline",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "waiting": "Waiting for the seller",
+    "agent": "Haiti Gaming agent",
+    "hidden": "contact details hidden",
+    "enterOffer": "Enter your offer",
+    "close": "Close",
+    "erase": "Erase",
+    "sendOffer": "Send the offer",
+    "makeOffer": "Make an offer",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "writeSeller": "Write to the seller",
+    "err_error": "Something went wrong. Please try again.",
+    "err_not_found": "Conversation not found.",
+    "err_too_fast": "Too many messages. Wait a moment.",
+    "err_empty": "Write something first.",
+    "err_upload": "The photo could not be sent.",
+    "err_not_buyer": "Only the buyer can make an offer.",
+    "err_unavailable": "This account is no longer available.",
+    "err_offer_amount": "Enter a valid amount.",
+    "err_answered": "This offer was already answered.",
+    "err_own": "That's your own listing.",
+    "err_closed": "The Market is closed right now."
   }
 }

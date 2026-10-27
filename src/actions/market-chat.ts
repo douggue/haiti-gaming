@@ -1,0 +1,190 @@
+"use server";
+import { prisma } from "@/lib/db";
+import { assertStaff, assertUser } from "@/lib/session";
+import { audit } from "@/lib/audit";
+import { getSettings } from "@/lib/settings";
+import { notify } from "@/lib/notify";
+import { parseAmount } from "@/lib/money";
+import { redactContacts } from "@/lib/market-chat";
+import { savePrivateImage, uploadsEnabled, UploadError } from "@/lib/storage";
+
+type R<T = object> = ({ ok: true } & T) | { ok: false; error: string };
+const fail = (e: unknown): { ok: false; error: string } => ({ ok: false, error: e instanceof Error && /^[a-z_]+$/.test(e.message) ? e.message : "error" });
+
+export type ChatMessage = {
+  id: string;
+  kind: "TEXT" | "IMAGE" | "OFFER" | "SYSTEM";
+  body: string;
+  image: string | null;
+  offerAmount: number | null;
+  offerStatus: string | null;
+  mine: boolean;
+  fromStaff: boolean;
+  hidden: boolean;
+  at: string;
+};
+
+// One sender can't flood a chat: 20 messages a minute (per server).
+const hits = new Map<string, number[]>();
+function tooFast(userId: string) {
+  const now = Date.now();
+  const recent = (hits.get(userId) ?? []).filter((t) => now - t < 60_000);
+  hits.set(userId, [...recent, now]);
+  if (hits.size > 5000) hits.clear();
+  return recent.length >= 20;
+}
+
+/** The chat, if the signed-in person is its buyer or seller. */
+async function myChat(chatId: string) {
+  const user = await assertUser();
+  const chat = await prisma.marketChat.findUnique({ where: { id: String(chatId).slice(0, 40) }, include: { listing: { select: { id: true, title: true, status: true, currency: true, price: true } } } });
+  if (!chat || (chat.buyerId !== user.id && chat.sellerId !== user.id)) throw new Error("not_found");
+  return { user, chat, role: chat.buyerId === user.id ? ("buyer" as const) : ("seller" as const) };
+}
+
+function toDto(m: { id: string; kind: string; body: string; imagePath: string | null; offerAmount: number | null; offerStatus: string | null; authorId: string | null; fromStaff: boolean; original: string | null; createdAt: Date }, me: string): ChatMessage {
+  return {
+    id: m.id,
+    kind: m.kind as ChatMessage["kind"],
+    body: m.body,
+    image: m.imagePath ? `/api/market-chat/image/${m.id}` : null,
+    offerAmount: m.offerAmount,
+    offerStatus: m.offerStatus,
+    mine: m.authorId === me && !m.fromStaff,
+    fromStaff: m.fromStaff,
+    hidden: !!m.original,
+    at: m.createdAt.toISOString(),
+  };
+}
+
+/** Tell the other side about a new message, at most once every 10 minutes per chat. */
+async function ping(chat: { id: string; buyerId: string; sellerId: string; listing: { title: string } }, to: string[], lastAt: Date) {
+  if (Date.now() - lastAt.getTime() < 10 * 60_000) return;
+  for (const uid of to) await notify(uid, "market_message", { title: chat.listing.title }, `/account/messages/${chat.id}`);
+}
+
+/** "Ekri machann nan": opens (or reopens) the buyer's chat with the seller about a listing. */
+export async function openChat(listingId: string): Promise<R<{ id: string }>> {
+  try {
+    const user = await assertUser();
+    const s = await getSettings();
+    if (!s.marketEnabled) return { ok: false, error: "closed" };
+    const l = await prisma.marketListing.findUnique({ where: { id: String(listingId).slice(0, 40) }, select: { id: true, sellerId: true, status: true } });
+    if (!l || !["ACTIVE", "RESERVED"].includes(l.status)) return { ok: false, error: "unavailable" };
+    if (l.sellerId === user.id) return { ok: false, error: "own" };
+    const chat = await prisma.marketChat.upsert({ where: { listingId_buyerId: { listingId: l.id, buyerId: user.id } }, create: { listingId: l.id, buyerId: user.id, sellerId: l.sellerId }, update: {} });
+    return { ok: true, id: chat.id };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** New messages since `after` (ISO), and marks the chat as read. */
+export async function chatUpdates(chatId: string, after?: string): Promise<R<{ messages: ChatMessage[]; agreedPrice: number | null; listingStatus: string }>> {
+  try {
+    const { user, chat, role } = await myChat(chatId);
+    const since = after ? new Date(after) : null;
+    const rows = await prisma.marketMessage.findMany({
+      where: { chatId: chat.id, ...(since && !isNaN(+since) ? { OR: [{ createdAt: { gt: since } }, { kind: "OFFER" }] } : {}) },
+      orderBy: { createdAt: "asc" },
+      take: 300,
+    });
+    await prisma.marketChat.update({ where: { id: chat.id }, data: role === "buyer" ? { buyerReadAt: new Date() } : { sellerReadAt: new Date() } });
+    return { ok: true, messages: rows.map((m) => toDto(m, user.id)), agreedPrice: chat.agreedPrice, listingStatus: chat.listing.status };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Text and/or one photo. Phone numbers, emails and links are hidden (staff still sees the original). */
+export async function sendChatMessage(chatId: string, form: FormData): Promise<R> {
+  try {
+    const { user, chat, role } = await myChat(chatId);
+    if (tooFast(user.id)) return { ok: false, error: "too_fast" };
+    const text = String(form.get("text") ?? "").trim().slice(0, 1000);
+    const file = form.get("image");
+    const hasFile = file instanceof File && file.size > 0;
+    if (!text && !hasFile) return { ok: false, error: "empty" };
+    let imagePath: string | null = null;
+    if (hasFile) {
+      if (!uploadsEnabled()) return { ok: false, error: "upload" };
+      try {
+        imagePath = await savePrivateImage(file, "market-chat");
+      } catch (e) {
+        if (e instanceof UploadError) return { ok: false, error: "upload" };
+        throw e;
+      }
+    }
+    const r = redactContacts(text);
+    const prev = chat.lastAt;
+    await prisma.$transaction([
+      prisma.marketMessage.create({ data: { chatId: chat.id, authorId: user.id, kind: imagePath ? "IMAGE" : "TEXT", body: r.body, original: r.hidden ? text : null, imagePath } }),
+      prisma.marketChat.update({ where: { id: chat.id }, data: { lastAt: new Date(), ...(role === "buyer" ? { buyerReadAt: new Date() } : { sellerReadAt: new Date() }) } }),
+    ]);
+    await ping(chat, [role === "buyer" ? chat.sellerId : chat.buyerId], prev);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Buyer proposes a price (listing currency). A new offer replaces an unanswered one. */
+export async function makeOffer(chatId: string, amount: string): Promise<R> {
+  try {
+    const { user, chat, role } = await myChat(chatId);
+    if (role !== "buyer") return { ok: false, error: "not_buyer" };
+    if (chat.listing.status !== "ACTIVE") return { ok: false, error: "unavailable" };
+    const minor = parseAmount(amount);
+    if (!minor || minor < 100 || minor > chat.listing.price * 2) return { ok: false, error: "offer_amount" };
+    const prev = chat.lastAt;
+    await prisma.$transaction([
+      prisma.marketMessage.updateMany({ where: { chatId: chat.id, kind: "OFFER", offerStatus: "PENDING" }, data: { offerStatus: "DECLINED" } }),
+      prisma.marketMessage.create({ data: { chatId: chat.id, authorId: user.id, kind: "OFFER", offerAmount: minor, offerStatus: "PENDING" } }),
+      prisma.marketChat.update({ where: { id: chat.id }, data: { lastAt: new Date(), buyerReadAt: new Date() } }),
+    ]);
+    await ping(chat, [chat.sellerId], prev);
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Seller accepts or declines. An accepted offer becomes the price when the buyer taps Buy. */
+export async function answerOffer(messageId: string, accept: boolean): Promise<R> {
+  try {
+    const user = await assertUser();
+    const m = await prisma.marketMessage.findUnique({ where: { id: String(messageId).slice(0, 40) }, include: { chat: { include: { listing: { select: { title: true, status: true } } } } } });
+    if (!m || m.kind !== "OFFER" || m.chat.sellerId !== user.id) return { ok: false, error: "not_found" };
+    if (m.offerStatus !== "PENDING") return { ok: false, error: "answered" };
+    if (accept && m.chat.listing.status !== "ACTIVE") return { ok: false, error: "unavailable" };
+    await prisma.$transaction([
+      prisma.marketMessage.update({ where: { id: m.id }, data: { offerStatus: accept ? "ACCEPTED" : "DECLINED" } }),
+      ...(accept ? [prisma.marketChat.update({ where: { id: m.chatId }, data: { agreedPrice: m.offerAmount } })] : []),
+      prisma.marketChat.update({ where: { id: m.chatId }, data: { lastAt: new Date(), sellerReadAt: new Date() } }),
+    ]);
+    await notify(m.chat.buyerId, accept ? "market_offer_accepted" : "market_offer_declined", { title: m.chat.listing.title }, `/account/messages/${m.chatId}`);
+    await audit(user.id, accept ? "market.offer.accept" : "market.offer.decline", "MarketMessage", m.id, { amount: m.offerAmount });
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Staff writes in a chat as the Haiti Gaming agent. */
+export async function staffChatMessage(chatId: string, form: FormData): Promise<{ ok: true; message?: string } | { ok: false; error: string }> {
+  try {
+    const staff = await assertStaff("orders.manage");
+    const text = String(form.get("text") ?? "").trim().slice(0, 1000);
+    if (!text) return { ok: false, error: "Write a message" };
+    const chat = await prisma.marketChat.findUniqueOrThrow({ where: { id: chatId }, include: { listing: { select: { title: true } } } });
+    await prisma.$transaction([
+      prisma.marketMessage.create({ data: { chatId, authorId: staff.id, kind: "TEXT", body: text, fromStaff: true } }),
+      prisma.marketChat.update({ where: { id: chatId }, data: { lastAt: new Date() } }),
+    ]);
+    await ping(chat, [chat.buyerId, chat.sellerId], new Date(0));
+    await audit(staff.id, "market.chat.staff_message", "MarketChat", chatId);
+    return { ok: true, message: "Sent" };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Unexpected error" };
+  }
+}

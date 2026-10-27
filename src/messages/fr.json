@@ -296,7 +296,8 @@
     "referrals": "Parrainage",
     "privacy": "Confidentialité",
     "transfer": "Envoyer",
-    "market": "Market"
+    "market": "Market",
+    "messages": "Messages"
   },
   "wallet": {
     "title": "Portefeuille",
@@ -446,7 +447,10 @@
     "market_deal_update": "Transaction Market n°{number} : {status, select, REQUESTED {un acheteur veut le compte} PAID {payée à l'agent} DELIVERED {compte remis} COMPLETED {terminée} CANCELED {annulée} DISPUTED {l'agent examine un problème} other {mise à jour}}.",
     "market_vendor_approved": "Vous êtes maintenant vendeur sur le Market ({shop}). Vous pouvez publier vos comptes.",
     "market_vendor_rejected": "Votre demande de vendeur n'a pas été acceptée : {reason}",
-    "market_vendor_suspended": "Votre compte vendeur a été suspendu : {reason}"
+    "market_vendor_suspended": "Votre compte vendeur a été suspendu : {reason}",
+    "market_message": "Nouveau message à propos de « {title} » sur le Market.",
+    "market_offer_accepted": "Le vendeur a accepté votre offre pour « {title} ». Touchez Acheter pour continuer.",
+    "market_offer_declined": "Le vendeur a refusé votre offre pour « {title} »."
   },
   "pages": {
     "aboutTitle": "À propos de Haiti Gaming",
@@ -938,6 +942,48 @@
     "err_agree": "Cochez la case pour accepter.",
     "err_id_photo": "Ajoutez une photo de votre pièce d'identité.",
     "rule7": "Seuls les vendeurs approuvés par notre équipe peuvent vendre. Tout le monde peut acheter.",
-    "optional": "facultatif"
+    "optional": "facultatif",
+    "buyAt": "Acheter à {price} (paiement bloqué)"
+  },
+  "chat": {
+    "title": "Messages",
+    "subtitle": "Vos discussions sur les comptes du Market.",
+    "none": "Aucune conversation pour l'instant.",
+    "browse": "Parcourir le Market",
+    "youBuy": "Vous achetez",
+    "youSell": "Vous vendez",
+    "unread": "Nouveau",
+    "photo": "Photo",
+    "back": "Retour",
+    "safety": "Ne payez jamais le vendeur directement. Payez uniquement l'agent Haiti Gaming. Numéros, emails et liens sont masqués.",
+    "empty": "Dites bonjour et posez vos questions sur le compte.",
+    "yourOffer": "Votre offre",
+    "theirOffer": "Offre de l'acheteur",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "accepted": "Acceptée",
+    "declined": "Refusée",
+    "waiting": "En attente du vendeur",
+    "agent": "Agent Haiti Gaming",
+    "hidden": "coordonnées masquées",
+    "enterOffer": "Entrez votre offre",
+    "close": "Fermer",
+    "erase": "Effacer",
+    "sendOffer": "Envoyer l'offre",
+    "makeOffer": "Faire une offre",
+    "placeholder": "Écrire un message…",
+    "send": "Envoyer",
+    "writeSeller": "Écrire au vendeur",
+    "err_error": "Une erreur s'est produite. Réessayez.",
+    "err_not_found": "Conversation introuvable.",
+    "err_too_fast": "Trop de messages. Patientez un instant.",
+    "err_empty": "Écrivez quelque chose d'abord.",
+    "err_upload": "La photo n'a pas pu être envoyée.",
+    "err_not_buyer": "Seul l'acheteur peut faire une offre.",
+    "err_unavailable": "Ce compte n'est plus disponible.",
+    "err_offer_amount": "Entrez un montant valide.",
+    "err_answered": "Cette offre a déjà reçu une réponse.",
+    "err_own": "C'est votre propre annonce.",
+    "err_closed": "Le Market est fermé pour le moment."
   }
 }

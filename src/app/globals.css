@@ -458,3 +458,4 @@ html[data-can-install] .install-link { display: inline-flex; }
 @media (prefers-reduced-motion: reduce) {
   .install-pop { animation: none; }
 }
+body[data-chat] .wa-float { display: none; }

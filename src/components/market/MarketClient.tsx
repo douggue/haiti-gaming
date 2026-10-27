@@ -2,6 +2,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
+import { openChat } from "@/actions/market-chat";
 import { acceptMarketRules, applyVendor, getMarketRules, cancelMyDeal, confirmDeal, countView, createListing, rateSeller, removeMyListing, reportListing, requestDeal } from "@/actions/market";
 import { PLATFORMS } from "@/lib/market";
 import { CloseIcon, CopyIcon, ShareIcon, WhatsAppIcon } from "../Icons";
@@ -132,7 +133,7 @@ export function ShareButton({ url, text, compact }: { url: string; text: string;
 const errText = (t: ReturnType<typeof useTranslations<"market">>, e: string) => (t.has(`err_${e}`) ? t(`err_${e}` as "err_error") : t("err_error"));
 
 /** "Buy now (frozen payment)": reserves the account and opens WhatsApp with the agent. */
-export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabledLabel }: { listingId: string; locale: string; signedIn: boolean; rulesAccepted: boolean; disabledLabel?: string }) {
+export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabledLabel, label }: { listingId: string; locale: string; signedIn: boolean; rulesAccepted: boolean; disabledLabel?: string; label?: string }) {
   const t = useTranslations("market");
   const router = useRouter();
   const [rules, setRules] = useState(false);
@@ -156,7 +157,7 @@ export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabled
   return (
     <div className="space-y-2">
       <button type="button" className="btn-primary min-h-12 w-full" disabled={pending} onClick={() => (accepted ? buy() : setRules(true))}>
-        🔒 {pending ? t("opening") : t("buyNow")}
+        🔒 {pending ? t("opening") : (label ?? t("buyNow"))}
       </button>
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
       <RulesSheet
@@ -169,6 +170,34 @@ export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabled
         }}
       />
     </div>
+  );
+}
+
+/** "Ekri machann nan": opens the chat with the seller about this account. */
+export function ChatButton({ listingId, signedIn }: { listingId: string; signedIn: boolean }) {
+  const t = useTranslations("chat");
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [pending, start] = useTransition();
+  if (!signedIn) return <Link href={`/auth/login?next=/market/${listingId}`} className="btn-secondary min-h-11">💬 {t("writeSeller")}</Link>;
+  return (
+    <span className="flex flex-col gap-1">
+      <button
+        type="button"
+        disabled={pending}
+        className="btn-secondary min-h-11 w-full"
+        onClick={() =>
+          start(async () => {
+            const r = await openChat(listingId);
+            if (r.ok) router.push(`/account/messages/${r.id}`);
+            else setError(t.has(`err_${r.error}`) ? t(`err_${r.error}` as "err_error") : t("err_error"));
+          })
+        }
+      >
+        💬 {t("writeSeller")}
+      </button>
+      {error && <span className="text-xs text-danger">{error}</span>}
+    </span>
   );
 }
 

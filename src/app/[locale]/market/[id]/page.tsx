@@ -12,7 +12,7 @@ import { shortName } from "@/lib/trust";
 import { platformOf } from "@/lib/market";
 import { rulesAccepted } from "@/lib/market-rules";
 import { listingDetails, listingImages, sellerStats } from "@/lib/market-data";
-import { BuyButton, ReportButton, ShareButton, ViewCounter } from "@/components/market/MarketClient";
+import { BuyButton, ChatButton, ReportButton, ShareButton, ViewCounter } from "@/components/market/MarketClient";
 import { WhatsAppIcon } from "@/components/Icons";
 
 type P = Promise<{ locale: string; id: string }>;
@@ -110,6 +110,7 @@ export default async function ListingPage({ params }: { params: P }) {
                 disabledLabel={l.status === "SOLD" ? t("sold") : l.status === "RESERVED" ? t("reservedLong") : undefined}
               />
             )}
+            {!mine && ["ACTIVE", "RESERVED"].includes(l.status) && <ChatButton listingId={l.id} signedIn={!!user} />}
             <div className="grid grid-cols-2 gap-2">
               <a href={ask} target="_blank" rel="noopener" className="btn-secondary min-h-11"><WhatsAppIcon width={16} height={16} className="text-[#1fa855]" /> {t("ask")}</a>
               <ShareButton url={url} text={`${pLabel} · ${l.title} · ${formatMoney(l.price, l.currency, locale)}`} />

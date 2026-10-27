@@ -296,7 +296,8 @@
     "referrals": "Envite zanmi",
     "privacy": "Konfidansyalite",
     "transfer": "Voye kòb",
-    "market": "Market"
+    "market": "Market",
+    "messages": "Mesaj"
   },
   "wallet": {
     "title": "Bous",
@@ -446,7 +447,10 @@
     "market_deal_update": "Tranzaksyon Market #{number}: {status, select, REQUESTED {yon achtè vle kont lan} PAID {peye ajan an} DELIVERED {kont lan remèt} COMPLETED {fini} CANCELED {anile} DISPUTED {ajan an ap gade yon pwoblèm} other {chanje}}.",
     "market_vendor_approved": "Ou se vandè Market kounye a ({shop}). Ou ka mete kont ou yo.",
     "market_vendor_rejected": "Demann vandè w la pa aksepte: {reason}",
-    "market_vendor_suspended": "Kont vandè w la sispann: {reason}"
+    "market_vendor_suspended": "Kont vandè w la sispann: {reason}",
+    "market_message": "Nouvo mesaj sou “{title}” nan Market la.",
+    "market_offer_accepted": "Vandè a aksepte òf ou pou “{title}”. Peze Achte pou kontinye.",
+    "market_offer_declined": "Vandè a refize òf ou pou “{title}”."
   },
   "pages": {
     "aboutTitle": "Konsènan Haiti Gaming",
@@ -938,6 +942,48 @@
     "err_agree": "Tcheke bwat la pou aksepte.",
     "err_id_photo": "Mete yon foto pyès idantite w.",
     "rule7": "Se sèlman vandè ekip nou an apwouve ki ka vann. Tout moun ka achte.",
-    "optional": "si w vle"
+    "optional": "si w vle",
+    "buyAt": "Achte a {price} (peman jele)"
+  },
+  "chat": {
+    "title": "Mesaj",
+    "subtitle": "Konvèsasyon ou sou kont Market yo.",
+    "none": "Ou pa gen konvèsasyon kounye a.",
+    "browse": "Gade Market la",
+    "youBuy": "W ap achte",
+    "youSell": "W ap vann",
+    "unread": "Nouvo",
+    "photo": "Foto",
+    "back": "Retounen",
+    "safety": "Pa janm peye vandè a dirèkteman. Peye sèlman ajan Haiti Gaming lan. Nimewo telefòn, imèl ak lyen kache.",
+    "empty": "Di bonjou epi poze kesyon ou sou kont lan.",
+    "yourOffer": "Òf ou",
+    "theirOffer": "Òf achtè a",
+    "accept": "Aksepte",
+    "decline": "Refize",
+    "accepted": "Aksepte",
+    "declined": "Refize",
+    "waiting": "N ap tann vandè a",
+    "agent": "Ajan Haiti Gaming",
+    "hidden": "kontak kache",
+    "enterOffer": "Antre montan òf ou a",
+    "close": "Fèmen",
+    "erase": "Efase",
+    "sendOffer": "Voye òf la",
+    "makeOffer": "Fè yon òf",
+    "placeholder": "Ekri yon mesaj…",
+    "send": "Voye",
+    "writeSeller": "Ekri machann nan",
+    "err_error": "Gen yon pwoblèm. Eseye ankò.",
+    "err_not_found": "Nou pa jwenn konvèsasyon an.",
+    "err_too_fast": "Twòp mesaj. Tann yon ti moman.",
+    "err_empty": "Ekri yon bagay anvan.",
+    "err_upload": "Foto a pa t ka voye.",
+    "err_not_buyer": "Se achtè a sèl ki ka fè yon òf.",
+    "err_unavailable": "Kont sa a pa disponib ankò.",
+    "err_offer_amount": "Mete yon montan ki bon.",
+    "err_answered": "Yo deja reponn òf sa a.",
+    "err_own": "Se pwòp anons pa w.",
+    "err_closed": "Market la fèmen pou kounye a."
   }
 }

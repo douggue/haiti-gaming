@@ -22,7 +22,7 @@ export type NotificationType =
   | "transfer_sent"
   | "market_listing_approved"
   | "market_listing_rejected"
-  | "market_deal_update" | "market_vendor_approved" | "market_vendor_rejected" | "market_vendor_suspended";
+  | "market_deal_update" | "market_vendor_approved" | "market_vendor_rejected" | "market_vendor_suspended" | "market_message" | "market_offer_accepted" | "market_offer_declined";
 
 const CATALOGS: Record<string, { notifications: Record<string, string> }> = { ht, fr, en, es };
 

@@ -324,3 +324,76 @@ test("staff can make the vendor ID photo optional", async ({ browser }) => {
     await expect(a.getByText("Saved")).toBeVisible();
   }
 });
+
+test("Market chat: buyer and seller talk, contact details hidden, offer accepted becomes the deal price", async ({ browser }) => {
+  // An approved vendor with an account on sale
+  const s = await newPage(browser);
+  const sellerEmail = `chat-vande.${stamp}@example.com`;
+  await registerCustomer(s, "Kervens Louis", sellerEmail, pw);
+  const seller = await verify(sellerEmail);
+  await db.marketVendor.create({ data: { userId: seller.id, shopName: `KL Gaming ${stamp}`, legalName: "Kervens Louis", whatsapp: "50937445566", city: "Gonaïves", platforms: ["freefire"], volume: "3-10", status: "APPROVED" } });
+  const title = `Kont chat ${stamp}`;
+  const listing = await db.marketListing.create({ data: { sellerId: seller.id, platform: "freefire", title, price: 500000, currency: "HTG", images: ["/icon-192.png"], status: "ACTIVE" } });
+
+  // Buyer writes from the listing; the phone number is hidden
+  const b = await newPage(browser);
+  await registerCustomer(b, "Daphné Noël", `chat-achte.${stamp}@example.com`, pw);
+  await b.goto(`/ht/market/${listing.id}`);
+  await b.waitForLoadState("networkidle");
+  await expect(b.getByText(`KL Gaming ${stamp}`)).toBeVisible();
+  await b.getByRole("button", { name: /Ekri machann nan/ }).click();
+  await b.waitForURL(/\/ht\/account\/messages\/[a-z0-9]+$/);
+  const chatId = b.url().split("/").pop()!;
+  await b.getByLabel("Ekri yon mesaj…").fill("Bonjou! Kont lan toujou la? Rele m 3712 3456");
+  await b.getByRole("button", { name: "Voye", exact: true }).click();
+  const msgs = b.getByTestId("chat-messages");
+  await expect(msgs.getByText("Bonjou! Kont lan toujou la? Rele m •••")).toBeVisible();
+  await expect(msgs.getByText(/3712/)).toHaveCount(0);
+  // Photo
+  await b.getByTestId("chat-photo").setInputFiles({ name: "p.png", mimeType: "image/png", buffer: PNG });
+  await expect(msgs.locator("img")).toHaveCount(1);
+  // Offer with the keypad
+  await b.getByRole("button", { name: "Fè yon òf" }).click();
+  for (const k of ["4", "0", "0", "0"]) await b.getByRole("button", { name: k, exact: true }).click();
+  await expect(b.getByTestId("offer-amount")).toHaveText(/4[\s  ]?000/);
+  await b.getByRole("button", { name: "Voye òf la" }).click();
+  await expect(msgs.getByText("N ap tann vandè a")).toBeVisible();
+
+  // Seller: unread chat in Messages, sees the hidden number as •••, photo is visible to them only
+  await s.goto("/ht/account/messages");
+  await expect(s.getByRole("link", { name: /Mesaj \(1\)/ }).first()).toBeVisible();
+  await s.getByRole("link", { name: /Daphné N\./ }).click();
+  await s.waitForURL(`**/account/messages/${chatId}`);
+  await expect(s.getByText("Bonjou! Kont lan toujou la? Rele m •••")).toBeVisible();
+  const img = await db.marketMessage.findFirstOrThrow({ where: { chatId, kind: "IMAGE" } });
+  expect((await s.request.get(`/api/market-chat/image/${img.id}`)).status()).toBe(200);
+  const stranger = await newPage(browser);
+  await registerCustomer(stranger, "Lòt Moun", `chat-lot.${stamp}@example.com`, pw);
+  expect((await stranger.request.get(`/api/market-chat/image/${img.id}`)).status()).toBe(403);
+  expect((await stranger.goto(`/ht/account/messages/${chatId}`))!.status()).toBe(404);
+  await s.getByRole("button", { name: "Aksepte" }).click();
+  await expect(s.getByText("✓ Aksepte")).toBeVisible();
+
+  // Buyer sees it (refreshes by itself) and buys at the agreed price
+  await expect(msgs.getByText("✓ Aksepte")).toBeVisible({ timeout: 10_000 });
+  await b.route("https://wa.me/**", (r) => r.fulfill({ status: 200, body: "wa" }));
+  await b.getByRole("button", { name: /Achte a 4[\s  ]?000 HTG/ }).click();
+  await b.getByLabel("Mwen li règ yo e mwen aksepte yo.").check();
+  await b.getByRole("button", { name: "Aksepte epi kontinye" }).click();
+  await b.waitForURL(/wa\.me/);
+  const deal = await db.marketDeal.findFirstOrThrow({ where: { listingId: listing.id } });
+  expect(deal.price).toBe(400000);
+
+  // Staff sees the chat with what was really typed, and writes as the agent
+  const a = await newPage(browser);
+  await staffLogin(a);
+  await a.goto("/admin/market?tab=chats");
+  await a.getByRole("link", { name: new RegExp(title) }).click();
+  await expect(a.getByText(/Typed \(hidden from the other side\): .*3712 3456/)).toBeVisible();
+  await a.getByPlaceholder(/Write as the Haiti Gaming agent/).fill("Bonjou tou de, se mwen k ajan an.");
+  await a.getByRole("button", { name: "Send as agent" }).click();
+  await expect(a.getByText("Sent")).toBeVisible();
+  await s.reload();
+  await expect(s.getByTestId("chat-messages").getByText("🛡️ Ajan Haiti Gaming")).toBeVisible();
+  await expect(s.getByText("Bonjou tou de, se mwen k ajan an.")).toBeVisible();
+});

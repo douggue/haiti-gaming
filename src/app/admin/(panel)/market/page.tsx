@@ -20,6 +20,7 @@ const TABS = [
   ["vendors", "Vendors"],
   ["review", "To review"],
   ["deals", "Deals"],
+  ["chats", "Chats"],
   ["listings", "Listings"],
   ["reports", "Reports"],
   ["settings", "Settings"],
@@ -187,6 +188,36 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
           );
         })}
       </div>
+    );
+  } else if (tab === "chats") {
+    const chats = await prisma.marketChat.findMany({
+      where: { messages: { some: {} } },
+      orderBy: { lastAt: "desc" },
+      take: 100,
+      include: {
+        listing: { select: { title: true, platform: true } },
+        buyer: { select: { name: true } },
+        seller: { select: { name: true, marketVendor: { select: { shopName: true } } } },
+        messages: { orderBy: { createdAt: "desc" }, take: 1 },
+        _count: { select: { messages: { where: { original: { not: null } } } } },
+      },
+    });
+    body = chats.length === 0 ? <p className="card p-8 text-center text-muted">No chats yet.</p> : (
+      <ul className="card divide-y divide-border">
+        {chats.map((c) => (
+          <li key={c.id}>
+            <Link href={`/admin/market/chat/${c.id}`} className="block space-y-0.5 p-4 text-sm hover:bg-surface-2">
+              <p className="flex flex-wrap items-center justify-between gap-2">
+                <b>{platformOf(c.listing.platform).icon} {c.listing.title}</b>
+                <span className="text-xs text-muted">{c.lastAt.toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" })}</span>
+              </p>
+              <p className="text-xs text-muted">Buyer {c.buyer.name} · Seller {c.seller.marketVendor?.shopName ?? c.seller.name}{c.agreedPrice ? " · offer accepted" : ""}</p>
+              <p className="truncate text-muted">{c.messages[0]?.kind === "OFFER" ? "💰 Offer" : c.messages[0]?.body || "📷 Photo"}</p>
+              {c._count.messages > 0 && <span className="inline-block rounded-md bg-warning-soft px-2 py-0.5 text-xs font-semibold text-warning">⚠ {c._count.messages} message(s) with contact details hidden</span>}
+            </Link>
+          </li>
+        ))}
+      </ul>
     );
   } else if (tab === "reports") {
     const reports = await prisma.marketReport.findMany({ orderBy: [{ resolved: "asc" }, { createdAt: "desc" }], take: 100, include: { reporter: person, listing: { select: { id: true, title: true, status: true } } } });

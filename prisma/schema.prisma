@@ -65,6 +65,9 @@ model User {
   marketSales      MarketDeal[]     @relation("MarketDealSeller")
   marketReports    MarketReport[]
   marketVendor     MarketVendor?
+  marketChatsBuy   MarketChat[]     @relation("MarketChatBuyer")
+  marketChatsSell  MarketChat[]     @relation("MarketChatSeller")
+  marketMessages   MarketMessage[]
   /// Code other customers send money to ("HG-7K4Q2M"), made on first use
   transferCode     String?       @unique
   transfersSent     Transfer[]   @relation("TransferFrom")
@@ -1044,6 +1047,7 @@ model MarketListing {
   views        Int           @default(0)
   deals        MarketDeal[]
   reports      MarketReport[]
+  chats        MarketChat[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -1126,4 +1130,51 @@ model MarketVendor {
   updatedAt    DateTime     @updatedAt
 
   @@index([status])
+}
+
+/// Buyer ↔ seller conversation about one listing. Staff can read it and write as the agent.
+model MarketChat {
+  id           String          @id @default(cuid())
+  listingId    String
+  listing      MarketListing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyerId      String
+  buyer        User            @relation("MarketChatBuyer", fields: [buyerId], references: [id])
+  sellerId     String
+  seller       User            @relation("MarketChatSeller", fields: [sellerId], references: [id])
+  /// Price agreed through an accepted offer (listing currency, minor units); used when the buyer taps Buy
+  agreedPrice  Int?
+  lastAt       DateTime        @default(now())
+  buyerReadAt  DateTime?
+  sellerReadAt DateTime?
+  messages     MarketMessage[]
+  createdAt    DateTime        @default(now())
+
+  @@unique([listingId, buyerId])
+  @@index([buyerId, lastAt])
+  @@index([sellerId, lastAt])
+  @@index([lastAt])
+}
+
+model MarketMessage {
+  id          String     @id @default(cuid())
+  chatId      String
+  chat        MarketChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  authorId    String?
+  author      User?      @relation(fields: [authorId], references: [id])
+  /// TEXT, IMAGE, OFFER or SYSTEM
+  kind        String     @default("TEXT")
+  /// Text as shown to buyer and seller (phone numbers, emails and links hidden)
+  body        String     @default("")
+  /// Text as typed, when something was hidden (staff only)
+  original    String?
+  /// Private file path of a photo
+  imagePath   String?
+  offerAmount Int?
+  /// PENDING, ACCEPTED or DECLINED (offers only)
+  offerStatus String?
+  /// Written by staff (shown as the Haiti Gaming agent)
+  fromStaff   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  @@index([chatId, createdAt])
 }

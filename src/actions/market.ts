@@ -172,8 +172,10 @@ export async function requestDeal(listingId: string, locale: string): Promise<R>
       if (!l || l.status !== "ACTIVE") throw new Error("unavailable");
       if (l.sellerId === user.id) throw new Error("own");
       await tx.marketListing.update({ where: { id: l.id }, data: { status: "RESERVED" } });
+      // A price agreed in the chat (accepted offer) replaces the listed price.
+      const agreed = (await tx.marketChat.findUnique({ where: { listingId_buyerId: { listingId: l.id, buyerId: user.id } }, select: { agreedPrice: true } }))?.agreedPrice;
       const d = await tx.marketDeal.create({
-        data: { listingId: l.id, buyerId: user.id, sellerId: l.sellerId, price: l.price, currency: l.currency, history: [{ at: new Date().toISOString(), status: "REQUESTED", note: "Buyer asked to buy" }] },
+        data: { listingId: l.id, buyerId: user.id, sellerId: l.sellerId, price: agreed ?? l.price, currency: l.currency, history: [{ at: new Date().toISOString(), status: "REQUESTED", note: "Buyer asked to buy" }] },
       });
       return { ...d, title: l.title, platform: l.platform };
     });

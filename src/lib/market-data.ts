@@ -25,3 +25,13 @@ export async function sellerStats(ids: string[]): Promise<Map<string, SellerStat
 export const listingImages = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
 export const listingDetails = (v: unknown): { label: string; value: string }[] =>
   Array.isArray(v) ? v.filter((d): d is { label: string; value: string } => !!d && typeof d.label === "string" && typeof d.value === "string") : [];
+
+/** Ids of the person's Market chats with something they haven't read yet. */
+export async function unreadChatIds(userId: string): Promise<Set<string>> {
+  const rows = await prisma.$queryRaw<{ id: string }[]>`
+    SELECT c.id FROM "MarketChat" c
+    WHERE EXISTS (SELECT 1 FROM "MarketMessage" m WHERE m."chatId" = c.id)
+      AND ((c."buyerId" = ${userId} AND (c."buyerReadAt" IS NULL OR c."lastAt" > c."buyerReadAt"))
+        OR (c."sellerId" = ${userId} AND (c."sellerReadAt" IS NULL OR c."lastAt" > c."sellerReadAt")))`;
+  return new Set(rows.map((r) => r.id));
+}
