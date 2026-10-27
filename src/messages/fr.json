@@ -336,7 +336,8 @@
       "REFUND": "Remboursement",
       "EXCHANGE": "Conversion",
       "ADJUSTMENT": "Ajustement",
-      "HOLD_RELEASE": "Fonds libérés"
+      "HOLD_RELEASE": "Fonds libérés",
+      "TRANSFER": "Transfert"
     },
     "depositStatus": {
       "PENDING": "En attente",
@@ -375,7 +376,21 @@
     "cryptoSteps1": "Copiez l'adresse ou scannez le QR.",
     "cryptoSteps2": "Envoyez de l'USDT sur {network} uniquement.",
     "cryptoSteps3": "Collez le hash de la transaction et envoyez. Nous le vérifions sur la blockchain.",
-    "methodAuto": "Automatique"
+    "methodAuto": "Automatique",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "moneyIn": "Entrées",
+    "moneyOut": "Sorties",
+    "last30": "30 derniers jours",
+    "myCodeLabel": "Mon code pour recevoir de l'argent",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "onHold": "en attente",
+    "filter_all": "Tout",
+    "filter_in": "Entrées",
+    "filter_out": "Sorties",
+    "transferIn": "De {name}",
+    "transferOut": "À {name}"
   },
   "auth": {
     "loginTitle": "Se connecter",
