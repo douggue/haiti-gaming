@@ -10,7 +10,13 @@ import { savePrivateImage, uploadsEnabled, UploadError } from "@/lib/storage";
 import { chatChannel, publish, userChannel } from "@/lib/realtime";
 
 type R<T = object> = ({ ok: true } & T) | { ok: false; error: string };
-const fail = (e: unknown): { ok: false; error: string } => ({ ok: false, error: e instanceof Error && /^[a-z_]+$/.test(e.message) ? e.message : "error" });
+/** Known problems come back as a short code; anything unexpected is logged with a reference shown to the customer. */
+const fail = (e: unknown): { ok: false; error: string } => {
+  if (e instanceof Error && /^[a-z_]+$/.test(e.message)) return { ok: false, error: e.message };
+  const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
+  console.error(`market chat failed [${ref}]`, e);
+  return { ok: false, error: `error:${ref}` };
+};
 
 export type ChatMessage = {
   id: string;

@@ -8,9 +8,10 @@ import { pageSeo } from "@/lib/seo";
 import { siteUrl } from "@/lib/site-url";
 import { formatMoney } from "@/lib/money";
 import { shortName } from "@/lib/trust";
-import { PLATFORMS, isPlatform, platformOf } from "@/lib/market";
+import { isPlatform, platformOf } from "@/lib/market";
 import { listingDetails, listingImages, sellerStats } from "@/lib/market-data";
-import { RulesLink, ShareButton } from "@/components/market/MarketClient";
+import { RulesLink } from "@/components/market/MarketClient";
+import { MarketBrowser } from "@/components/market/MarketBrowser";
 
 type SP = Promise<{ p?: string; q?: string }>;
 
@@ -30,9 +31,10 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
   const q = (sp.q ?? "").trim().slice(0, 60);
   const t = await getTranslations("market");
   const listings = await prisma.marketListing.findMany({
-    where: { status: { in: ["ACTIVE", "RESERVED"] }, ...(platform ? { platform } : {}), ...(q ? { title: { contains: q, mode: "insensitive" } } : {}) },
+    // Everything on sale is sent once; MarketBrowser filters it in the browser (no page reload per game).
+    where: { status: { in: ["ACTIVE", "RESERVED"] } },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
-    take: 60,
+    take: 300,
     include: { seller: { select: { name: true, marketVendor: { select: { shopName: true, status: true } } } } },
   });
   const stats = await sellerStats(listings.map((l) => l.sellerId));
@@ -62,64 +64,29 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
         </ul>
       </section>
 
-      <form className="flex gap-2" action="">
-        {platform && <input type="hidden" name="p" value={platform} />}
-        <input name="q" defaultValue={q} placeholder={t("search")} className="input" aria-label={t("search")} />
-        <button className="btn-secondary">{t("searchBtn")}</button>
-      </form>
-      <nav aria-label={t("platform")} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <Link href={q ? `/market?q=${encodeURIComponent(q)}` : "/market"} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium ${!platform ? "border-primary bg-primary text-white" : "border-border"}`}>{t("all")}</Link>
-        {PLATFORMS.map((p) => (
-          <Link key={p.key} href={`/market?p=${p.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`shrink-0 rounded-full border px-3.5 py-1.5 text-sm font-medium ${platform === p.key ? "border-primary bg-primary text-white" : "border-border"}`}>
-            {p.icon} {p.key === "other" ? t("otherPlatform") : p.label}
-          </Link>
-        ))}
-      </nav>
-
-      {listings.length === 0 ? (
-        <div className="card p-10 text-center">
-          <p className="text-muted">{t("empty")}</p>
-          <Link href="/market/sell" className="btn-primary mt-4">{t("sellFirst")}</Link>
-        </div>
-      ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {listings.map((l) => {
-            const img = listingImages(l.images)[0];
-            const p = platformOf(l.platform);
-            const s = stats.get(l.sellerId);
-            const details = listingDetails(l.details).slice(0, 3);
-            return (
-              <li key={l.id} className="card flex flex-col overflow-hidden" data-testid="market-card">
-                <Link href={`/market/${l.id}`} className="relative block aspect-video bg-surface-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {img && <img src={img} alt="" loading="lazy" className="size-full object-cover" />}
-                  <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2.5 py-1 text-xs font-semibold text-white">{p.icon} {p.key === "other" ? t("otherPlatform") : p.label}</span>
-                  {l.status === "RESERVED" && <span className="absolute right-2 top-2 rounded-full bg-amber-500 px-2.5 py-1 text-xs font-bold text-black">{t("reserved")}</span>}
-                </Link>
-                <div className="flex flex-1 flex-col gap-2 p-4">
-                  <Link href={`/market/${l.id}`} className="line-clamp-2 font-semibold">{l.title}</Link>
-                  {details.length > 0 && (
-                    <p className="flex flex-wrap gap-1.5 text-xs">
-                      {details.map((d) => <span key={d.label} className="rounded-md bg-surface-2 px-2 py-0.5"><span className="text-muted">{d.label}:</span> {d.value}</span>)}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted">
-                    {l.seller.marketVendor?.shopName ?? shortName(l.seller.name)}{l.seller.marketVendor?.status === "APPROVED" && <span className="text-primary" title={t("verified")}> ✓</span>}
-                    {s?.rating ? ` · ★ ${s.rating.toFixed(1)}` : ""} · {t("views", { n: l.views })}
-                  </p>
-                  <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                    <b className="text-lg">{formatMoney(l.price, l.currency, locale)}</b>
-                    <span className="flex gap-1.5">
-                      <ShareButton compact url={`${base}/${locale}/market/${l.id}`} text={`${p.label} · ${l.title} · ${formatMoney(l.price, l.currency, locale)}`} />
-                      <Link href={`/market/${l.id}`} className="btn-primary min-h-9 px-3 text-xs">{t("inspect")}</Link>
-                    </span>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <MarketBrowser
+        initialPlatform={platform}
+        initialQuery={q}
+        items={listings.map((l) => {
+          const p = platformOf(l.platform);
+          const price = formatMoney(l.price, l.currency, locale);
+          return {
+            id: l.id,
+            title: l.title,
+            platform: l.platform,
+            image: listingImages(l.images)[0] ?? null,
+            reserved: l.status === "RESERVED",
+            details: listingDetails(l.details).slice(0, 3),
+            seller: l.seller.marketVendor?.shopName ?? shortName(l.seller.name),
+            verified: l.seller.marketVendor?.status === "APPROVED",
+            rating: stats.get(l.sellerId)?.rating ?? null,
+            views: l.views,
+            price,
+            shareUrl: `${base}/${locale}/market/${l.id}`,
+            shareText: `${p.label} · ${l.title} · ${price}`,
+          };
+        })}
+      />
     </div>
   );
 }

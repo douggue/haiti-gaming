@@ -130,7 +130,11 @@ export function ShareButton({ url, text, compact }: { url: string; text: string;
   );
 }
 
-const errText = (t: ReturnType<typeof useTranslations<"market">>, e: string) => (t.has(`err_${e}`) ? t(`err_${e}` as "err_error") : t("err_error"));
+const errText = (t: ReturnType<typeof useTranslations<"market">>, e: string) => {
+  const [code, ref] = e.split(":");
+  const text = t.has(`err_${code}`) ? t(`err_${code}` as "err_error") : t("err_error");
+  return ref ? `${text} (${ref})` : text;
+};
 
 /** "Buy now (frozen payment)": reserves the account and opens WhatsApp with the agent. */
 export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabledLabel, label }: { listingId: string; locale: string; signedIn: boolean; rulesAccepted: boolean; disabledLabel?: string; label?: string }) {

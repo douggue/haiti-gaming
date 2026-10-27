@@ -944,7 +944,9 @@
     "err_id_photo": "Añade una foto de tu documento.",
     "rule7": "Solo los vendedores aprobados por nuestro equipo pueden vender. Cualquiera puede comprar.",
     "optional": "opcional",
-    "buyAt": "Comprar a {price} (pago congelado)"
+    "buyAt": "Comprar a {price} (pago congelado)",
+    "noMatch": "Ninguna cuenta coincide. Prueba otro juego u otra palabra.",
+    "clearFilters": "Quitar filtros"
   },
   "chat": {
     "title": "Mensajes",

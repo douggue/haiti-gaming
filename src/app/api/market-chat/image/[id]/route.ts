@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getUser } from "@/lib/session";
 import { can, isStaff } from "@/lib/permissions";
-import { readPrivateFile } from "@/lib/storage";
+import { imageContentType, readPrivateFile } from "@/lib/storage";
 
 /** Market chat photos: the buyer and seller of that chat, and staff who handle Market deals. */
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -18,6 +18,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     (user.role === "CUSTOM" ? (await prisma.user.findUnique({ where: { id: user.id }, include: { customRole: true } }))?.customRole?.permissions.includes("orders.view") : can(user.role, "orders.view"));
   if (!party && !staffOk) return new NextResponse("Forbidden", { status: 403 });
   const buf = await readPrivateFile(m.imagePath);
-  const ext = m.imagePath.split(".").pop();
-  return new NextResponse(new Uint8Array(buf), { headers: { "content-type": ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg", "cache-control": "private, max-age=3600", "x-content-type-options": "nosniff" } });
+  return new NextResponse(new Uint8Array(buf), { headers: { "content-type": imageContentType(buf), "cache-control": "private, max-age=3600", "x-content-type-options": "nosniff" } });
 }

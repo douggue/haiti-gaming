@@ -944,7 +944,9 @@
     "err_id_photo": "Ajoutez une photo de votre pièce d'identité.",
     "rule7": "Seuls les vendeurs approuvés par notre équipe peuvent vendre. Tout le monde peut acheter.",
     "optional": "facultatif",
-    "buyAt": "Acheter à {price} (paiement bloqué)"
+    "buyAt": "Acheter à {price} (paiement bloqué)",
+    "noMatch": "Aucun compte ne correspond. Essayez un autre jeu ou mot.",
+    "clearFilters": "Effacer les filtres"
   },
   "chat": {
     "title": "Messages",

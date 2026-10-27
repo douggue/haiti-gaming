@@ -409,3 +409,32 @@ test("Market chat: buyer and seller talk, contact details hidden, offer accepted
   await expect(s.getByTestId("chat-messages").getByText("🛡️ Ajan Haiti Gaming")).toBeVisible();
   await expect(s.getByText("Bonjou tou de, se mwen k ajan an.")).toBeVisible();
 });
+
+test("Market: switching games and searching filter instantly, without reloading the page", async ({ browser }) => {
+  const s = await newPage(browser);
+  const email = `filt.${stamp}@example.com`;
+  await registerCustomer(s, "Filtè Tès", email, pw);
+  const seller = await verify(email);
+  const ff = await db.marketListing.create({ data: { sellerId: seller.id, platform: "freefire", title: `FF filt ${stamp}`, price: 200000, currency: "HTG", images: ["/icon-192.png"], status: "ACTIVE" } });
+  const tt = await db.marketListing.create({ data: { sellerId: seller.id, platform: "tiktok", title: `TikTok filt ${stamp}`, price: 900000, currency: "HTG", images: ["/icon-192.png"], status: "ACTIVE" } });
+
+  const v = await newPage(browser);
+  await v.goto("/ht/market");
+  await v.waitForLoadState("networkidle");
+  await v.evaluate(() => ((window as unknown as { stayed: boolean }).stayed = true));
+  await v.getByRole("button", { name: /TikTok/ }).click();
+  await expect(v.getByText(tt.title)).toBeVisible();
+  await expect(v.getByText(ff.title)).toHaveCount(0);
+  expect(v.url()).toContain("p=tiktok");
+  await v.getByRole("button", { name: /^Tout/ }).click();
+  await v.getByLabel("Chèche yon kont…").fill(`FF filt ${stamp}`);
+  await expect(v.getByText(ff.title)).toBeVisible();
+  await expect(v.getByText(tt.title)).toHaveCount(0);
+  // Same page all along (a reload would have cleared this)
+  expect(await v.evaluate(() => (window as unknown as { stayed?: boolean }).stayed)).toBe(true);
+  // A shared link opens on the same filter
+  await v.goto("/ht/market?p=tiktok");
+  await expect(v.getByText(tt.title)).toBeVisible();
+  await expect(v.getByText(ff.title)).toHaveCount(0);
+  await db.marketListing.updateMany({ where: { id: { in: [ff.id, tt.id] } }, data: { status: "REMOVED" } });
+});

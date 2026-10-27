@@ -2,7 +2,7 @@ import "server-only";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { del, get, put } from "@vercel/blob";
-import { randomToken } from "./crypto";
+import { decryptBytes, encryptBytes, randomToken } from "./crypto";
 
 /**
  * Private file storage for payment evidence.
@@ -37,8 +37,16 @@ export async function savePrivateImage(file: File, folder: string): Promise<stri
   const name = `${folder}/${Date.now()}-${randomToken(12)}.${ext}`;
 
   if (blobEnabled()) {
-    const blob = await put(name, buf, { access: "private", contentType: file.type, addRandomSuffix: false });
-    return blob.pathname;
+    try {
+      const blob = await put(name, buf, { access: "private", contentType: file.type, addRandomSuffix: false });
+      return blob.pathname;
+    } catch (e) {
+      // A Blob store created for public files refuses private ones. Then the file is stored encrypted
+      // (AES-256-GCM with ENCRYPTION_KEY): the public copy is unreadable, and only our access-checked routes decrypt it.
+      console.warn("private Blob upload refused, storing the file encrypted instead", e instanceof Error ? e.message : e);
+      const sealed = await put(`sealed/${name}.bin`, encryptBytes(buf), { access: "public", contentType: "application/octet-stream", addRandomSuffix: true });
+      return `sealed:${sealed.url}`;
+    }
   }
   if (!uploadsEnabled()) throw new UploadError("storage");
   await mkdir(path.join(ROOT, folder), { recursive: true });
@@ -105,7 +113,21 @@ export function isOwnImageUrl(url: string): boolean {
   }
 }
 
+/** Image type from the file's first bytes (works whatever the stored name ends with). */
+export function imageContentType(buf: Buffer): string {
+  if (buf[0] === 0x89 && buf[1] === 0x50) return "image/png";
+  if (buf.subarray(8, 12).toString() === "WEBP") return "image/webp";
+  return "image/jpeg";
+}
+
 export async function readPrivateFile(relPath: string): Promise<Buffer> {
+  if (relPath.startsWith("sealed:")) {
+    const url = relPath.slice("sealed:".length);
+    if (!isOwnImageUrl(url)) throw new Error("Invalid path");
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("File not found");
+    return decryptBytes(Buffer.from(await res.arrayBuffer()));
+  }
   if (blobEnabled()) {
     const res = await get(relPath, { access: "private", useCache: false });
     if (!res || res.statusCode !== 200) throw new Error("File not found");

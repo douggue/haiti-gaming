@@ -15,7 +15,16 @@ import { siteUrl } from "@/lib/site-url";
 import { notify } from "@/lib/notify";
 
 type R = { ok: true; id?: string; whatsapp?: string } | { ok: false; error: string };
-const fail = (e: unknown): R => ({ ok: false, error: e instanceof Error && /^[a-z_]+$/.test(e.message) ? e.message : "error" });
+/**
+ * Known problems come back as a short code (shown translated). Anything unexpected is logged with a reference
+ * that is also shown to the customer, so it can be found in the Vercel logs.
+ */
+const fail = (e: unknown): R => {
+  if (e instanceof Error && /^[a-z_]+$/.test(e.message)) return { ok: false, error: e.message };
+  const ref = Math.random().toString(36).slice(2, 8).toUpperCase();
+  console.error(`market action failed [${ref}]`, e);
+  return { ok: false, error: `error:${ref}` };
+};
 
 async function marketUser() {
   const user = await assertUser();

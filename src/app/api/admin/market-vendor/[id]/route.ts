@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getUser } from "@/lib/session";
 import { can, isStaff } from "@/lib/permissions";
-import { readPrivateFile } from "@/lib/storage";
+import { imageContentType, readPrivateFile } from "@/lib/storage";
 
 /** A vendor applicant's ID photo: staff with catalog rights (and 2FA) only. */
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -14,6 +14,5 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const v = await prisma.marketVendor.findUnique({ where: { id }, select: { idPhotoPath: true } });
   if (!v?.idPhotoPath) return new NextResponse("Not found", { status: 404 });
   const buf = await readPrivateFile(v.idPhotoPath);
-  const ext = v.idPhotoPath.split(".").pop();
-  return new NextResponse(new Uint8Array(buf), { headers: { "content-type": ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg", "cache-control": "private, no-store", "x-content-type-options": "nosniff" } });
+  return new NextResponse(new Uint8Array(buf), { headers: { "content-type": imageContentType(buf), "cache-control": "private, no-store", "x-content-type-options": "nosniff" } });
 }

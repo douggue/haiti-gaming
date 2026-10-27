@@ -23,6 +23,20 @@ export function decrypt(payload: string): string {
   return Buffer.concat([decipher.update(buf.subarray(28)), decipher.final()]).toString("utf8");
 }
 
+/** AES-256-GCM for files. Output: iv | tag | ciphertext. */
+export function encryptBytes(plain: Buffer): Buffer {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", key(), iv);
+  const enc = Buffer.concat([cipher.update(plain), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), enc]);
+}
+
+export function decryptBytes(payload: Buffer): Buffer {
+  const decipher = createDecipheriv("aes-256-gcm", key(), payload.subarray(0, 12));
+  decipher.setAuthTag(payload.subarray(12, 28));
+  return Buffer.concat([decipher.update(payload.subarray(28)), decipher.final()]);
+}
+
 /** Keyed hash for uniqueness checks without storing plaintext. */
 export function hmac(value: string): string {
   return createHmac("sha256", key()).update(value.trim()).digest("hex");

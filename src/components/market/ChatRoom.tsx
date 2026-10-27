@@ -49,7 +49,11 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
   const fileRef = useRef<HTMLInputElement>(null);
   const last = useRef(initial.at(-1)?.at);
   const money = (n: number) => formatMoney(n, listing.currency, locale);
-  const err = (e: string) => (t.has(`err_${e}`) ? t(`err_${e}` as "err_error") : t("err_error"));
+  const err = (e: string) => {
+    const [code, ref] = e.split(":");
+    const text = t.has(`err_${code}`) ? t(`err_${code}` as "err_error") : t("err_error");
+    return ref ? `${text} (${ref})` : text;
+  };
 
   const merge = useCallback((incoming: ChatMessage[]) => {
     if (!incoming.length) return;

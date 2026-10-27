@@ -944,7 +944,9 @@
     "err_id_photo": "Mete yon foto pyès idantite w.",
     "rule7": "Se sèlman vandè ekip nou an apwouve ki ka vann. Tout moun ka achte.",
     "optional": "si w vle",
-    "buyAt": "Achte a {price} (peman jele)"
+    "buyAt": "Achte a {price} (peman jele)",
+    "noMatch": "Pa gen kont ki koresponn. Eseye yon lòt jwèt oswa yon lòt mo.",
+    "clearFilters": "Efase filt yo"
   },
   "chat": {
     "title": "Mesaj",

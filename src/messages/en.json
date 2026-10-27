@@ -944,7 +944,9 @@
     "err_id_photo": "Add a photo of your ID.",
     "rule7": "Only vendors approved by our team can sell. Anyone can buy.",
     "optional": "optional",
-    "buyAt": "Buy now at {price} (frozen payment)"
+    "buyAt": "Buy now at {price} (frozen payment)",
+    "noMatch": "No account matches. Try another game or word.",
+    "clearFilters": "Clear filters"
   },
   "chat": {
     "title": "Messages",
