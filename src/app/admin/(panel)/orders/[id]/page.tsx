@@ -6,7 +6,7 @@ import { requireStaff } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import { formatMoney } from "@/lib/money";
 import { itemTitle } from "@/lib/orders";
-import { deliverItem, refundOrder, revealOrderCodes, runFulfillment } from "@/actions/admin";
+import { completeCod, deliverItem, refundOrder, revealOrderCodes, runFulfillment } from "@/actions/admin";
 import { ActionButton } from "@/components/admin/ActionButton";
 import { RevealCodes } from "@/components/admin/RevealCodes";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -30,6 +30,7 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
       events: { orderBy: { createdAt: "asc" } },
       payments: { orderBy: { createdAt: "desc" } },
       riskFlags: true,
+      deliveryZone: { select: { name: true } },
     },
   });
   if (!order) notFound();
@@ -88,7 +89,30 @@ export default async function AdminOrder({ params }: { params: Promise<{ id: str
             <Link href={`/admin/customers/${order.userId}`} className="inline-flex items-center gap-2 font-medium text-primary"><Avatar name={order.user.name} image={order.user.image} size={28} />{order.user.name}</Link>
             <p className="text-muted">{order.user.email} {order.user.phone && <>· <a href={`https://wa.me/${waNumber(order.user.phone)}`} target="_blank" rel="noopener" className="text-[#1fa855]">{formatPhone(order.user.phone)} ↗</a></>}</p>
             {order.recipientNote && <p className="mt-2"><span className="text-muted">Note:</span> {order.recipientNote}</p>}
-            <p className="mt-2 break-all text-xs"><span className="text-muted">Tracking link:</span> {`${siteUrl()}/${order.user.locale}/order-status/${order.id}?t=${order.accessToken}`}</p>
+          </section>
+          {order.deliveryAddress && (
+            <section className="card space-y-2 p-5 text-sm">
+              <h2 className="font-semibold">Delivery{order.paymentMethod === "COD" ? " · cash on delivery" : ""}</h2>
+              <p><b>{order.deliveryName}</b> · {formatPhone(order.deliveryPhone) || order.deliveryPhone}</p>
+              <p className="whitespace-pre-wrap">{order.deliveryAddress}</p>
+              <p className="text-muted">{order.deliveryZone?.name ?? "—"} · fee {formatMoney(order.deliveryFee, order.currency, "en")}{order.deliveryNote ? ` · ${order.deliveryNote}` : ""}</p>
+              {order.deliveryPhone && (
+                <a
+                  href={`https://wa.me/${waNumber(order.deliveryPhone)}?text=${encodeURIComponent(`Bonjou ${order.deliveryName ?? ""}, se Haiti Gaming. Nou resevwa kòmand #${order.number} ou a (${formatMoney(order.total, order.currency, "ht")}${order.paymentMethod === "COD" ? ", peye lè w resevwa l" : ""}). Ki lè ak ki kote nou ka livre w?`)}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="btn-primary min-h-10 !bg-[#1fa855] text-sm"
+                >
+                  WhatsApp the customer
+                </a>
+              )}
+              {order.paymentMethod === "COD" && order.status === "AWAITING_PAYMENT" && (
+                <ActionButton label="Delivered + cash received" className="btn-secondary min-h-10 px-3 text-sm" prompt="Note (who delivered, amount collected…)" confirm="Mark as delivered and paid in cash?" action={completeCod.bind(null, order.id)} />
+              )}
+            </section>
+          )}
+          <section className="card p-5 text-sm">
+            <p className="break-all text-xs"><span className="text-muted">Tracking link:</span> {`${siteUrl()}/${order.user.locale}/order-status/${order.id}?t=${order.accessToken}`}</p>
           </section>
           <section className="card p-5 text-sm">
             <h2 className="mb-2 font-semibold">Payments</h2>

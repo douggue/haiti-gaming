@@ -1,0 +1,194 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { assertUser } from "@/lib/session";
+import { audit } from "@/lib/audit";
+import { getSettings } from "@/lib/settings";
+import { parseAmount, formatMoney } from "@/lib/money";
+import { savePublicImage, uploadsEnabled, UploadError } from "@/lib/storage";
+import { isPlatform, platformOf } from "@/lib/market";
+import { mustVerifyEmail } from "@/lib/verify-email";
+import { siteUrl } from "@/lib/site-url";
+import { notify } from "@/lib/notify";
+
+type R = { ok: true; id?: string; whatsapp?: string } | { ok: false; error: string };
+const fail = (e: unknown): R => ({ ok: false, error: e instanceof Error && /^[a-z_]+$/.test(e.message) ? e.message : "error" });
+
+async function marketUser() {
+  const user = await assertUser();
+  const s = await getSettings();
+  if (!s.marketEnabled) throw new Error("closed");
+  return { user, settings: s };
+}
+
+async function needsRules(userId: string) {
+  const u = await prisma.user.findUnique({ where: { id: userId }, select: { marketRulesAt: true } });
+  return !u?.marketRulesAt;
+}
+
+export async function acceptMarketRules(): Promise<R> {
+  try {
+    const user = await assertUser();
+    await prisma.user.update({ where: { id: user.id }, data: { marketRulesAt: new Date() } });
+    revalidatePath("/[locale]/market", "layout");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Seller posts an account. It shows only after staff checks it. */
+export async function createListing(form: FormData): Promise<R> {
+  try {
+    const { user } = await marketUser();
+    if (await needsRules(user.id)) return { ok: false, error: "rules" };
+    if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
+    const pending = await prisma.marketListing.count({ where: { sellerId: user.id, status: "PENDING" } });
+    if (pending >= 5) return { ok: false, error: "too_many" };
+    const platform = String(form.get("platform"));
+    if (!isPlatform(platform)) return { ok: false, error: "platform" };
+    const title = String(form.get("title") ?? "").trim().slice(0, 80);
+    if (title.length < 3) return { ok: false, error: "title" };
+    const currency = form.get("currency") === "USD" ? "USD" : "HTG";
+    const price = parseAmount(String(form.get("price") ?? ""));
+    if (!price || price < 100) return { ok: false, error: "price" };
+    const details = [0, 1, 2, 3, 4, 5]
+      .map((i) => ({ label: String(form.get(`dl${i}`) ?? "").trim().slice(0, 30), value: String(form.get(`dv${i}`) ?? "").trim().slice(0, 60) }))
+      .filter((d) => d.label && d.value);
+    const files = form.getAll("images").filter((f): f is File => f instanceof File && f.size > 0).slice(0, 5);
+    if (!files.length) return { ok: false, error: "images" };
+    if (!uploadsEnabled()) return { ok: false, error: "upload" };
+    const images: string[] = [];
+    for (const f of files) {
+      try {
+        images.push(await savePublicImage(f, "market"));
+      } catch (e) {
+        if (e instanceof UploadError) return { ok: false, error: "upload" };
+        throw e;
+      }
+    }
+    const l = await prisma.marketListing.create({
+      data: {
+        sellerId: user.id,
+        platform,
+        title,
+        description: String(form.get("description") ?? "").trim().slice(0, 1500),
+        price,
+        currency,
+        images,
+        details: details as Prisma.InputJsonValue,
+        withEmail: form.get("withEmail") === "on",
+      },
+    });
+    await audit(user.id, "market.listing.create", "MarketListing", l.id, { platform, price, currency });
+    revalidatePath("/[locale]/account/market", "page");
+    return { ok: true, id: l.id };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function removeMyListing(id: string): Promise<R> {
+  try {
+    const user = await assertUser();
+    const r = await prisma.marketListing.updateMany({ where: { id, sellerId: user.id, status: { in: ["PENDING", "ACTIVE", "REJECTED"] } }, data: { status: "REMOVED" } });
+    if (!r.count) return { ok: false, error: "not_found" };
+    revalidatePath("/[locale]/account/market", "page");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** "Buy (escrow)": opens a deal and hands the buyer to the Market agent on WhatsApp. */
+export async function requestDeal(listingId: string, locale: string): Promise<R> {
+  try {
+    const { user, settings } = await marketUser();
+    if (await needsRules(user.id)) return { ok: false, error: "rules" };
+    const deal = await prisma.$transaction(async (tx) => {
+      const [l] = await tx.$queryRaw<{ id: string; status: string; sellerId: string; price: number; currency: "HTG" | "USD"; title: string; platform: string }[]>`
+        SELECT id, status, "sellerId", price, currency, title, platform FROM "MarketListing" WHERE id = ${listingId} FOR UPDATE`;
+      if (!l || l.status !== "ACTIVE") throw new Error("unavailable");
+      if (l.sellerId === user.id) throw new Error("own");
+      await tx.marketListing.update({ where: { id: l.id }, data: { status: "RESERVED" } });
+      const d = await tx.marketDeal.create({
+        data: { listingId: l.id, buyerId: user.id, sellerId: l.sellerId, price: l.price, currency: l.currency, history: [{ at: new Date().toISOString(), status: "REQUESTED", note: "Buyer asked to buy" }] },
+      });
+      return { ...d, title: l.title, platform: l.platform };
+    });
+    await notify(deal.sellerId, "market_deal_update", { number: deal.number, status: "REQUESTED" }, "/account/market");
+    await audit(user.id, "market.deal.request", "MarketDeal", deal.id, { listingId });
+    const number = (settings.marketWhatsapp || settings.whatsappNumber).replace(/\D/g, "");
+    const text = `Bonjou! Mwen vle achte kont sa a sou Market Haiti Gaming (peman jele):\n${platformOf(deal.platform).label} · ${deal.title}\n${formatMoney(deal.price, deal.currency, locale)}\nDeal #${deal.number}\n${siteUrl()}/${locale}/market/${listingId}`;
+    revalidatePath("/[locale]/market", "layout");
+    return { ok: true, id: deal.id, whatsapp: `https://wa.me/${number}?text=${encodeURIComponent(text)}` };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Buyer changes their mind before paying the agent. */
+export async function cancelMyDeal(id: string): Promise<R> {
+  try {
+    const user = await assertUser();
+    await prisma.$transaction(async (tx) => {
+      const d = await tx.marketDeal.findFirst({ where: { id, buyerId: user.id, status: "REQUESTED" } });
+      if (!d) throw new Error("not_found");
+      await tx.marketDeal.update({ where: { id }, data: { status: "CANCELED", history: [{ at: new Date().toISOString(), status: "CANCELED", note: "Canceled by the buyer" }, ...((d.history as object[]) ?? [])] } });
+      await tx.marketListing.updateMany({ where: { id: d.listingId, status: "RESERVED" }, data: { status: "ACTIVE" } });
+    });
+    revalidatePath("/[locale]/account/market", "page");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Buyer: "I received it, all good" (the agent then pays the seller). */
+export async function confirmDeal(id: string): Promise<R> {
+  try {
+    const user = await assertUser();
+    const d = await prisma.marketDeal.findFirst({ where: { id, buyerId: user.id, status: "DELIVERED" } });
+    if (!d) return { ok: false, error: "not_found" };
+    await prisma.marketDeal.update({ where: { id }, data: { history: [{ at: new Date().toISOString(), status: "DELIVERED", note: "Buyer confirmed: all good" }, ...((d.history as object[]) ?? [])] } });
+    await audit(user.id, "market.deal.confirm", "MarketDeal", id);
+    revalidatePath("/[locale]/account/market", "page");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function rateSeller(id: string, stars: number, note: string): Promise<R> {
+  try {
+    const user = await assertUser();
+    const s = Math.round(stars);
+    if (!(s >= 1 && s <= 5)) return { ok: false, error: "rating" };
+    const r = await prisma.marketDeal.updateMany({ where: { id, buyerId: user.id, status: "COMPLETED", rating: null }, data: { rating: s, ratingNote: note.trim().slice(0, 300) || null } });
+    if (!r.count) return { ok: false, error: "not_found" };
+    revalidatePath("/[locale]/account/market", "page");
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function reportListing(id: string, reason: string): Promise<R> {
+  try {
+    const user = await assertUser();
+    const text = reason.trim().slice(0, 500);
+    if (text.length < 5) return { ok: false, error: "reason" };
+    const recent = await prisma.marketReport.count({ where: { reporterId: user.id, createdAt: { gte: new Date(Date.now() - 86_400_000) } } });
+    if (recent >= 10) return { ok: false, error: "too_many" };
+    await prisma.marketReport.create({ data: { listingId: id, reporterId: user.id, reason: text } });
+    return { ok: true };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Counts a visit (at most one per page view; good enough for "480 visits"). */
+export async function countView(id: string) {
+  await prisma.marketListing.updateMany({ where: { id, status: { in: ["ACTIVE", "RESERVED", "SOLD"] } }, data: { views: { increment: 1 } } }).catch(() => undefined);
+}

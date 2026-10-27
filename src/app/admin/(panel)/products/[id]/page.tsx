@@ -82,6 +82,9 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
               <label><span className="mb-1 block text-xs text-muted">Order</span><input name="sortOrder" type="number" defaultValue={v.sortOrder} className="input" /></label>
             </div>
             {supplierFields(v)}
+            {product.fulfillmentType === "PHYSICAL" && (
+              <label className="block"><span className="mb-1 block text-xs text-muted">In stock (empty = not counted)</span><input name="stock" type="number" min={0} defaultValue={v.stock ?? ""} className="input" /></label>
+            )}
             <div className="flex items-center justify-between text-sm">
               <span className="flex flex-wrap items-center gap-x-4 gap-y-1">
                 <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked={v.isActive} /> Active</label>
@@ -102,6 +105,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
             <input name="sortOrder" type="number" defaultValue={product.variants.length} className="input" />
           </div>
           {supplierFields()}
+          {product.fulfillmentType === "PHYSICAL" && <input name="stock" type="number" min={0} placeholder="In stock (empty = not counted)" className="input" />}
           <div className="flex items-center gap-4 text-sm">
             <label className="flex items-center gap-2"><input type="checkbox" name="isActive" defaultChecked /> Active</label>
             <label className="flex items-center gap-2"><input type="checkbox" name="soldOut" /> Out of stock</label>

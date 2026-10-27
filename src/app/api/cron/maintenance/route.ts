@@ -70,6 +70,8 @@ export async function GET(req: NextRequest) {
         items: { none: { status: "DELIVERED" } },
         riskFlags: { none: { status: "OPEN" } },
         NOT: { items: { some: { supplierOrders: { some: { status: { in: OPEN } } } } } },
+        // Accessories are delivered by hand and take longer: never refunded automatically
+        deliveryAddress: null,
       },
       select: { id: true },
       take: 50,

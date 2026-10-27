@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const user = await requireStaff();
-  const [settings, reviews, risks, processing, approvals, tickets, newReviews, supplierIssues] = await Promise.all([
+  const [settings, reviews, risks, processing, approvals, tickets, newReviews, supplierIssues, marketQueue] = await Promise.all([
     getSettings(),
     prisma.paymentIntent.count({ where: { status: "REVIEW" } }),
     prisma.riskFlag.count({ where: { status: "OPEN" } }),
@@ -18,6 +18,12 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     prisma.review.count({ where: { status: "pending" } }),
     // Supplier orders staff must look at: failed, or no longer checked automatically
     prisma.supplierOrder.count({ where: { OR: [{ status: "FAILED" }, { status: { in: ["PENDING", "UNKNOWN"] }, nextCheckAt: null }] } }),
+    // Market: listings to check, deals in progress, open reports
+    Promise.all([
+      prisma.marketListing.count({ where: { status: "PENDING" } }),
+      prisma.marketDeal.count({ where: { status: { in: ["REQUESTED", "PAID", "DELIVERED", "DISPUTED"] } } }),
+      prisma.marketReport.count({ where: { resolved: false } }),
+    ]).then((n) => n.reduce((a, b) => a + b, 0)),
   ]);
   const all: { href: string; label: string; group: string; perm: Permission; badge?: number }[] = [
     { href: "/admin", label: "Dashboard", group: "", perm: "dashboard.view" },
@@ -29,11 +35,14 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     { href: "/admin/support", label: "Support", group: "Operations", perm: "support.manage", badge: tickets },
     { href: "/admin/products", label: "Products", group: "Catalog", perm: "catalog.manage" },
     { href: "/admin/codes", label: "Code inventory", group: "Catalog", perm: "codes.manage" },
+    { href: "/admin/delivery", label: "Delivery", group: "Catalog", perm: "settings.manage" },
     { href: "/admin/suppliers", label: "Suppliers", group: "Catalog", perm: "settings.manage", badge: supplierIssues },
+    { href: "/admin/market", label: "Market", group: "Operations", perm: "orders.view", badge: marketQueue },
     { href: "/admin/media", label: "Media", group: "Catalog", perm: "catalog.manage" },
     { href: "/admin/trust", label: "Trust", group: "Catalog", perm: "catalog.manage", badge: newReviews },
     { href: "/admin/customers", label: "Customers", group: "Customers", perm: "customers.view" },
     { href: "/admin/wallet", label: "Ledger", group: "Customers", perm: "wallet.view" },
+    { href: "/admin/transfers", label: "Transfers", group: "Customers", perm: "wallet.view" },
     { href: "/admin/referrals", label: "Referrals", group: "Customers", perm: "referrals.manage" },
     { href: "/admin/analytics", label: "Reports", group: "Customers", perm: "analytics.view" },
     { href: "/admin/homepage", label: "Homepage", group: "Content", perm: "content.manage" },

@@ -29,6 +29,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       events: { orderBy: { createdAt: "asc" } },
       payments: { orderBy: { createdAt: "desc" }, take: 1 },
       review: { select: { id: true } },
+      deliveryZone: { select: { name: true } },
     },
   });
   if (!order) notFound();
@@ -95,6 +96,18 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       {order.status === "AWAITING_PAYMENT" && order.paymentMethod === "MONCASH" && (
         <section className="card p-5">
           <MoncashRetryButton orderId={order.id} />
+        </section>
+      )}
+      {order.paymentMethod === "COD" && order.status === "AWAITING_PAYMENT" && (
+        <p className="rounded-xl bg-primary-soft px-4 py-3 text-sm text-primary">{to("codWaiting")}</p>
+      )}
+      {order.deliveryAddress && (
+        <section className="card space-y-1 p-5 text-sm">
+          <h2 className="mb-2 font-semibold">{to("deliveryTitle")}</h2>
+          <p><b>{order.deliveryName}</b> · {order.deliveryPhone}</p>
+          <p className="whitespace-pre-wrap">{order.deliveryAddress}</p>
+          {order.deliveryZone && <p className="text-muted">{order.deliveryZone.name}{order.deliveryFee ? ` · ${formatMoney(order.deliveryFee, order.currency, locale)}` : ""}</p>}
+          {order.deliveryNote && <p className="text-muted">{order.deliveryNote}</p>}
         </section>
       )}
       {order.status === "PAYMENT_REVIEW" && (

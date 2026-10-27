@@ -11,6 +11,11 @@ async function handle(req: NextRequest, op: string) {
   if (req.headers.get("x-api-key") !== "mock-key") return NextResponse.json({ message: "bad key" }, { status: 401 });
   if (op === "balance") return NextResponse.json({ balance: 1234.5, currency: "USD" });
   const b = (await req.json().catch(() => ({}))) as { ref?: string; sku?: string; quantity?: number; player?: string };
+  if (op === "validate") {
+    // Player check: "000…" is a wrong ID, anything else is found.
+    if (!b.player || /^0+$/.test(b.player)) return NextResponse.json({ error: "WRONG_ID", message: "Player not found" }, { status: 400 });
+    return NextResponse.json({ player_name: `Mock${b.player.slice(-3)}`, region: "NA" });
+  }
   const ref = String(b.ref ?? "");
   const qty = Math.max(1, Number(b.quantity) || 1);
   const codes = Array.from({ length: qty }, (_, i) => `MOCK-${ref.slice(-6).toUpperCase()}-${i + 1}`);

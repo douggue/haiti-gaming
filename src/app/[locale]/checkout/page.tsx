@@ -21,7 +21,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
   setRequestLocale(locale);
   const user = await requireUser(locale, `/${locale}/checkout`);
   if (await mustVerifyEmail(user.id)) return <div className="container-page py-8 sm:py-12"><VerifyGate email={user.email} /></div>;
-  const [balances, settings, manualMethods] = await Promise.all([getBalances(prisma, user.id), getSettings(), getManualMethods(locale, "orders")]);
+  const [balances, settings, manualMethods, zones] = await Promise.all([
+    getBalances(prisma, user.id),
+    getSettings(),
+    getManualMethods(locale, "orders"),
+    prisma.deliveryZone.findMany({ where: { isEnabled: true }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true, feeHtg: true, eta: true } }),
+  ]);
   return (
     <div className="container-page py-8 sm:py-12">
       <CheckoutForm
@@ -29,6 +34,8 @@ export default async function CheckoutPage({ params }: { params: Promise<{ local
         moncashEnabled={moncashAvailable(settings.moncashEnabled)}
         natcashEnabled={settings.natcashEnabled}
         manualMethods={manualMethods}
+        zones={zones}
+        codEnabled={settings.codEnabled}
       />
     </div>
   );

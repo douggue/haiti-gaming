@@ -17,13 +17,15 @@ export async function Header() {
   const [user, settings] = await Promise.all([getUser(), getDisplaySettings()]);
   const unread = user ? await prisma.notification.count({ where: { userId: user.id, readAt: null } }) : 0;
   const custom = settings.navigation?.header ?? [];
-  const nav = custom.length ? custom.map((l) => ({ href: l.href, label: txt(l.label, locale) })) : [
+  const base = custom.length ? custom.map((l) => ({ href: l.href, label: txt(l.label, locale) })) : [
     { href: "/store", label: t("store") },
     { href: "/categories", label: t("categories") },
     { href: "/guides", label: t("guides") },
     { href: "/news", label: t("news") },
     { href: "/faq", label: t("faqShort") },
   ];
+  // The Market link shows even with a custom menu, until staff adds it themselves or turns the Market off.
+  const nav = settings.marketEnabled && !base.some((l) => l.href.startsWith("/market")) ? [base[0], { href: "/market", label: t("market") }, ...base.slice(1)] : base;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md">

@@ -44,6 +44,7 @@ export function ProductForm({ product, categories }: { product?: P; categories: 
             <option value="CODE_INVENTORY">Code inventory (instant)</option>
             <option value="MANUAL">Manual (staff delivers)</option>
             <option value="SUPPLIER_API">Supplier API (ordered from the supplier set on each option)</option>
+            <option value="PHYSICAL">Physical product (delivered: accessories)</option>
           </select>
         </label>
         <label><span className="label">Tile color</span><input name="accent" type="color" defaultValue={product?.accent ?? "#1467F5"} className="input h-11 p-1" /></label>

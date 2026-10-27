@@ -7,13 +7,15 @@ import { LimitExceededError } from "@/lib/risk";
 import { createMoncashPayment } from "@/lib/payments/moncash";
 import { z } from "zod";
 import { mustVerifyEmail } from "@/lib/verify-email";
+import { normalizePhone } from "@/lib/phone";
 
 const input = z.object({
   items: cartSchema,
   currency: z.enum(["HTG", "USD"]),
-  method: z.enum(["WALLET", "MONCASH", "NATCASH", "MANUAL"]),
+  method: z.enum(["WALLET", "MONCASH", "NATCASH", "MANUAL", "COD"]),
   manualMethodId: z.string().max(64).optional(),
   note: z.string().max(300).optional(),
+  delivery: z.object({ zoneId: z.string().max(64), name: z.string().max(80), phone: z.string().max(30), address: z.string().max(300), note: z.string().max(300).optional() }).optional(),
 });
 
 export type PlaceOrderResult = { ok: true; orderId: string; redirect?: string } | { ok: false; error: string };
@@ -28,10 +30,10 @@ export async function placeOrder(raw: unknown): Promise<PlaceOrderResult> {
   if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
   const parsed = input.safeParse(raw);
   if (!parsed.success) return { ok: false, error: "invalid_field" };
-  const { items, currency, method, note, manualMethodId } = parsed.data;
+  const { items, currency, method, note, manualMethodId, delivery } = parsed.data;
 
   try {
-    const order = await createOrder({ userId: user.id, items, currency, method, manualMethodId, recipientNote: note });
+    const order = await createOrder({ userId: user.id, items, currency, method, manualMethodId, recipientNote: note, delivery: delivery ? { ...delivery, phone: normalizePhone(delivery.phone) ?? delivery.phone } : undefined });
     await rememberPlayerIds(user.id, items);
 
     if (method === "MONCASH") {

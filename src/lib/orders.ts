@@ -67,11 +67,14 @@ export async function createOrder(input: {
   method: PaymentMethodKind;
   manualMethodId?: string;
   recipientNote?: string;
+  /** Required when the cart has physical products */
+  delivery?: { zoneId: string; name: string; phone: string; address: string; note?: string };
 }) {
   const settings = await getSettings();
   const currency: Currency = input.method === "WALLET" ? input.currency : "HTG";
   if (input.method === "MONCASH" && !moncashAvailable(settings.moncashEnabled)) throw new OrderError("method_unavailable");
   if (input.method === "NATCASH" && !settings.natcashEnabled) throw new OrderError("method_unavailable");
+  if (input.method === "COD" && !settings.codEnabled) throw new OrderError("method_unavailable");
   if (input.method === "MANUAL") {
     const m = input.manualMethodId ? await prisma.manualMethod.findUnique({ where: { id: input.manualMethodId } }) : null;
     if (!m || !m.isEnabled || !m.allowOrders) throw new OrderError("method_unavailable");
@@ -113,8 +116,22 @@ export async function createOrder(input: {
     };
   });
 
+  // Physical products: delivery city + fee; cash on delivery only when everything is physical.
+  const physical = variants.filter((v) => v.product.fulfillmentType === "PHYSICAL");
+  const physicalIds = new Set(physical.map((v) => v.id));
+  const hasPhysical = input.items.some((i) => physicalIds.has(i.variantId));
+  if (input.method === "COD" && (!hasPhysical || input.items.some((i) => !physicalIds.has(i.variantId)))) throw new OrderError("cod_physical_only");
+  let zone: { id: string; feeHtg: number } | null = null;
+  if (hasPhysical) {
+    const d = input.delivery;
+    if (!d || !d.name.trim() || !d.phone.trim() || d.address.trim().length < 5) throw new OrderError("delivery_required");
+    zone = await prisma.deliveryZone.findFirst({ where: { id: d.zoneId, isEnabled: true }, select: { id: true, feeHtg: true } });
+    if (!zone) throw new OrderError("delivery_required");
+  }
+  const feeHtg = zone?.feeHtg ?? 0;
+  const fee = priceIn(feeHtg, currency, settings.htgPerUsd);
   const subtotal = lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0);
-  const totalHtg = lines.reduce((s, l) => s + l.unitHtg * l.quantity, 0);
+  const totalHtg = lines.reduce((s, l) => s + l.unitHtg * l.quantity, 0) + feeHtg;
   const user = await prisma.user.findUniqueOrThrow({ where: { id: input.userId } });
   if (user.status !== "ACTIVE") throw new OrderError("account_restricted");
 
@@ -125,7 +142,17 @@ export async function createOrder(input: {
         userId: input.userId,
         currency,
         subtotal,
-        total: subtotal,
+        total: subtotal + fee,
+        ...(zone && input.delivery
+          ? {
+              deliveryZoneId: zone.id,
+              deliveryFee: fee,
+              deliveryName: input.delivery.name.trim().slice(0, 80),
+              deliveryPhone: input.delivery.phone.trim().slice(0, 30),
+              deliveryAddress: input.delivery.address.trim().slice(0, 300),
+              deliveryNote: input.delivery.note?.trim().slice(0, 300) || null,
+            }
+          : {}),
         rateUsed: currency === "USD" ? new Prisma.Decimal(settings.htgPerUsd) : null,
         paymentMethod: input.method,
         manualMethodId: input.method === "MANUAL" ? input.manualMethodId : null,
@@ -136,7 +163,16 @@ export async function createOrder(input: {
         },
       },
     });
-    await addEvent(tx, created.id, "AWAITING_PAYMENT", `Payment method: ${input.method}`);
+    await addEvent(tx, created.id, "AWAITING_PAYMENT", input.method === "COD" ? "Cash on delivery: staff contacts the customer on WhatsApp" : `Payment method: ${input.method}`);
+    // Stock is taken when ordering (and put back if the order is canceled or refunded).
+    for (const l of lines) {
+      if (!physicalIds.has(l.variantId)) continue;
+      const taken = await tx.productVariant.updateMany({ where: { id: l.variantId, stock: { gte: l.quantity } }, data: { stock: { decrement: l.quantity } } });
+      if (taken.count === 0) {
+        const v = await tx.productVariant.findUnique({ where: { id: l.variantId }, select: { stock: true } });
+        if (v?.stock !== null && v?.stock !== undefined) throw new OrderError("out_of_stock");
+      }
+    }
 
     if (totalHtg >= settings.reviewOrderThresholdHtg) {
       await flag(tx, "High-value order: review before release", { userId: input.userId, orderId: created.id });
@@ -237,6 +273,7 @@ export async function refundOrCancel(orderId: string, actorId: string | null, re
     if (["AWAITING_PAYMENT", "PAYMENT_REVIEW"].includes(order.status)) {
       await tx.order.update({ where: { id: orderId }, data: { status: "CANCELED" } });
       await addEvent(tx, orderId, "CANCELED", reason, actorId);
+      await restock(tx, orderId);
       return "canceled" as const;
     }
     if (!["PAID", "PROCESSING", "FAILED"].includes(order.status)) throw new OrderError("not_refundable");
@@ -248,6 +285,7 @@ export async function refundOrCancel(orderId: string, actorId: string | null, re
     await refundOrder(tx, order, actorId, reason);
     await tx.order.update({ where: { id: orderId }, data: { status: "REFUNDED" } });
     await addEvent(tx, orderId, "REFUNDED", reason, actorId);
+    await restock(tx, orderId);
     return "refunded" as const;
   });
   if (outcome === "refunded") {
@@ -255,6 +293,27 @@ export async function refundOrCancel(orderId: string, actorId: string | null, re
     await notify(o.userId, "order_refunded", { number: o.number }, `/account/orders/${o.id}`);
   }
   return outcome;
+}
+
+/** Canceled / refunded before delivery: physical units go back in stock. */
+async function restock(tx: Tx, orderId: string) {
+  const items = await tx.orderItem.findMany({ where: { orderId, status: { not: "DELIVERED" }, variant: { product: { fulfillmentType: "PHYSICAL" }, stock: { not: null } } }, select: { variantId: true, quantity: true } });
+  for (const i of items) await tx.productVariant.update({ where: { id: i.variantId }, data: { stock: { increment: i.quantity } } });
+}
+
+/** Cash on delivery: staff delivered it and collected the money. */
+export async function completeCodOrder(orderId: string, actorId: string, note: string) {
+  const done = await prisma.$transaction(async (tx) => {
+    const [o] = await tx.$queryRaw<{ id: string; status: OrderStatus; paymentMethod: string }[]>`SELECT id, status, "paymentMethod" FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+    if (!o || o.paymentMethod !== "COD" || o.status !== "AWAITING_PAYMENT") throw new OrderError("not_cod");
+    const now = new Date();
+    await tx.orderItem.updateMany({ where: { orderId, status: "PENDING" }, data: { status: "DELIVERED", deliveryNote: note || null } });
+    await tx.order.update({ where: { id: orderId }, data: { status: "FULFILLED", paidAt: now, fulfilledAt: now } });
+    await addEvent(tx, orderId, "FULFILLED", `Delivered, cash received${note ? `: ${note}` : ""}`, actorId);
+    return tx.order.findUniqueOrThrow({ where: { id: orderId } });
+  });
+  await notify(done.userId, "order_fulfilled", { number: done.number }, `/account/orders/${done.id}`);
+  return done;
 }
 
 /** Codes are only decrypted for the order owner (or staff with codes.reveal) and every reveal is audited by the caller. */

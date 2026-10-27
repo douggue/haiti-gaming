@@ -35,7 +35,7 @@ export async function ProductCard({ product }: { product: ProductWithVariants })
             <span className="text-muted">{tr("from")} </span>
             <Price htg={minPrice(product)} className="font-bold text-text" />
           </p>
-          {product.variants.length > 0 && product.variants.every((v) => v.soldOut) ? (
+          {product.variants.length > 0 && product.variants.every((v) => v.soldOut || v.stock === 0) ? (
             <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-surface-2 px-3 text-sm font-bold text-danger">{tp("soldOut")}</span>
           ) : (
             <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-white transition-colors group-hover:bg-primary-hover">{tr("choose")}</span>

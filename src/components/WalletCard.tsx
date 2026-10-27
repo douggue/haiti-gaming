@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/money";
-import { PlusIcon, StoreIcon, SwapIcon, WalletIcon } from "./Icons";
+import { PlusIcon, StoreIcon, SendIcon, WalletIcon } from "./Icons";
 
 type B = { available: number; held: number };
 
@@ -33,7 +33,7 @@ export function WalletCard({ balances, initial, showUsd = true }: { balances: { 
       <p className="relative text-4xl font-extrabold tracking-tight sm:text-5xl">{formatMoney(b.available, cur, locale)}</p>
       {b.held > 0 && <p className="relative mt-1 text-sm text-[#ffd48a]">{ta("held", { amount: formatMoney(b.held, cur, locale) })}</p>}
       <div className="relative mt-6 grid grid-cols-3 gap-2">
-        {([["/account/wallet/deposit", PlusIcon, ta("deposit")], ["/account/wallet/exchange", SwapIcon, ta("exchange")], ["/store", StoreIcon, ta("shop")]] as const).map(([href, Icon, label]) => (
+        {([["/account/wallet/deposit", PlusIcon, ta("deposit")], ["/account/wallet/transfer", SendIcon, ta("transfer")], ["/store", StoreIcon, ta("shop")]] as const).map(([href, Icon, label]) => (
           <Link key={href} href={href} className="group flex flex-col items-center gap-1.5 text-xs font-bold">
             <span className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-white/20 transition-colors group-hover:bg-white/30"><Icon /></span>
             {label}

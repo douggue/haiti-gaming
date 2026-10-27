@@ -10,6 +10,18 @@ export type Settings = {
   bingSiteVerification: string;
   /** Extra paths robots.txt asks search engines to skip, one per line */
   robotsDisallow: string[];
+  /** Market (accounts sold between customers) is open */
+  marketEnabled: boolean;
+  /** Market commission the agent keeps from the seller, in basis points (1000 = 10%) */
+  marketCommissionBps: number;
+  /** WhatsApp number of the Market agent (digits); empty = the store's WhatsApp */
+  marketWhatsapp: string;
+  /** Physical products can be paid in cash when delivered */
+  codEnabled: boolean;
+  /** Customers can send gourdes to each other with their transfer code (no fee) */
+  transfersEnabled: boolean;
+  /** Most a customer can send in 24 hours, in HTG centimes */
+  transferDailyLimitHtg: number;
   /** Let customers switch prices to USD (header toggle). Off = everything in gourdes (HTG). */
   showUsd: boolean;
   /** Recent sales popup on the products ticked in Admin → Trust */
@@ -186,6 +198,12 @@ export const DEFAULT_SETTINGS: Settings = {
   maxAccountsPerDevice: 3,
   moneyExchange: DEFAULT_EXCHANGE,
   showUsd: false,
+  transfersEnabled: true,
+  codEnabled: true,
+  marketEnabled: true,
+  marketCommissionBps: 1000,
+  marketWhatsapp: "",
+  transferDailyLimitHtg: 1_000_000,
   googleSiteVerification: "",
   bingSiteVerification: "",
   robotsDisallow: [],

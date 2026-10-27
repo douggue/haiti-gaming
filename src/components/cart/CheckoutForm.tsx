@@ -7,11 +7,15 @@ import { formatMoney } from "@/lib/money";
 import { t } from "@/lib/text";
 import { linePrice, useStore } from "./CartProvider";
 import { PayLogo } from "@/components/PayLogo";
+import { PhoneInput } from "@/components/PhoneInput";
+import { priceIn } from "@/lib/money";
 
 type Method = string; // "WALLET" | "MONCASH" | "NATCASH" | "MANUAL:<id>"
 type Manual = { id: string; name: string; instructions: string; logo: string | null };
 
-export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualMethods = [] }: { balances: { HTG: number; USD: number }; moncashEnabled: boolean; natcashEnabled: boolean; manualMethods?: Manual[] }) {
+type Zone = { id: string; name: string; feeHtg: number; eta: string | null };
+
+export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualMethods = [], zones = [], codEnabled = false }: { balances: { HTG: number; USD: number }; moncashEnabled: boolean; natcashEnabled: boolean; manualMethods?: Manual[]; zones?: Zone[]; codEnabled?: boolean }) {
   const tc = useTranslations("checkout");
   const tcart = useTranslations("cart");
   const locale = useLocale();
@@ -21,10 +25,19 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   const [walletCurrency, setWalletCurrency] = useState<"HTG" | "USD">(store.currency);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  // Physical products (accessories): where to deliver
+  const hasPhysical = store.lines.some((l) => l.physical);
+  const allPhysical = store.lines.length > 0 && store.lines.every((l) => l.physical);
+  const [zoneId, setZoneId] = useState(zones[0]?.id ?? "");
+  const [dName, setDName] = useState("");
+  const [dAddress, setDAddress] = useState("");
+  const [dNote, setDNote] = useState("");
+  const zone = zones.find((z) => z.id === zoneId);
   const [pending, start] = useTransition();
 
   const currency = method === "WALLET" ? walletCurrency : "HTG";
-  const total = store.lines.reduce((s, l) => s + linePrice(l, currency, store.htgPerUsd) * l.quantity, 0);
+  const fee = hasPhysical && zone ? priceIn(zone.feeHtg, currency, store.htgPerUsd) : 0;
+  const total = store.lines.reduce((s, l) => s + linePrice(l, currency, store.htgPerUsd) * l.quantity, 0) + fee;
   const insufficient = method === "WALLET" && balances[walletCurrency] < total;
   const fmt = (n: number, c: "HTG" | "USD") => formatMoney(n, c, locale);
 
@@ -45,6 +58,9 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
         method: method.startsWith("MANUAL:") ? "MANUAL" : method,
         manualMethodId: method.startsWith("MANUAL:") ? method.slice(7) : undefined,
         note: note || undefined,
+        ...(hasPhysical
+          ? { delivery: { zoneId, name: dName, phone: String(new FormData(document.getElementById("checkout-delivery") as HTMLFormElement).get("phone") ?? ""), address: dAddress, note: dNote || undefined } }
+          : {}),
       });
       if (!res.ok) {
         if (res.error === "signin") return router.push("/auth/login?next=/checkout");
@@ -66,6 +82,13 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
       hint: `${tc("walletBalance", { balance: fmt(balances.HTG, "HTG") })} · ${fmt(balances.USD, "USD")}`,
       enabled: true,
       badge: <span className="rounded-md bg-navy px-2 py-1 text-[11px] font-extrabold text-white">HG</span>,
+    },
+    {
+      id: "COD",
+      title: tc("cod"),
+      hint: tc("codHint"),
+      enabled: codEnabled && allPhysical,
+      badge: <span className="rounded-md bg-success px-2 py-1 text-[11px] font-extrabold text-white">CASH</span>,
     },
     ...manualMethods.map((m) => ({
       id: `MANUAL:${m.id}`,
@@ -117,6 +140,27 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
           <p className="text-sm text-muted">{tc("htgOnly")}</p>
         )}
 
+        {hasPhysical && (
+          <form id="checkout-delivery" className="card space-y-3 p-4" onSubmit={(e) => e.preventDefault()}>
+            <h2 className="font-semibold">{tc("deliveryTitle")}</h2>
+            <p className="text-sm text-muted">{tc("deliveryHint")}</p>
+            {zones.length === 0 ? (
+              <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{tc("deliveryNone")}</p>
+            ) : (
+              <label className="block">
+                <span className="label">{tc("deliveryZone")}</span>
+                <select value={zoneId} onChange={(e) => setZoneId(e.target.value)} className="input">
+                  {zones.map((z) => <option key={z.id} value={z.id}>{z.name} · {z.feeHtg ? fmt(z.feeHtg, "HTG") : tc("free")}{z.eta ? ` · ${z.eta}` : ""}</option>)}
+                </select>
+              </label>
+            )}
+            <label className="block"><span className="label">{tc("deliveryName")}</span><input value={dName} onChange={(e) => setDName(e.target.value)} maxLength={80} autoComplete="name" className="input" /></label>
+            <div><span className="label">{tc("deliveryPhone")}</span><PhoneInput id="delivery-phone" name="phone" /></div>
+            <label className="block"><span className="label">{tc("deliveryAddress")}</span><textarea value={dAddress} onChange={(e) => setDAddress(e.target.value)} rows={2} maxLength={300} autoComplete="street-address" className="input" /></label>
+            <label className="block"><span className="label">{tc("deliveryNote")}</span><input value={dNote} onChange={(e) => setDNote(e.target.value)} maxLength={300} className="input" /></label>
+          </form>
+        )}
+
         <div>
           <label htmlFor="note" className="label">{tc("giftNote")}</label>
           <input id="note" className="input" maxLength={300} placeholder={tc("giftNotePlaceholder")} value={note} onChange={(e) => setNote(e.target.value)} />
@@ -136,12 +180,18 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
             </li>
           ))}
         </ul>
+        {hasPhysical && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted">{tc("deliveryFee")}{zone ? ` · ${zone.name}` : ""}</span>
+            <span className="font-medium">{fee ? fmt(fee, currency) : tc("free")}</span>
+          </div>
+        )}
         <div className="flex items-center justify-between border-t border-border pt-4">
           <span className="font-semibold">{tc("total")}</span>
           <span className="text-xl font-bold">{fmt(total, currency)}</span>
         </div>
         {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
-        <button type="button" className="btn-primary min-h-12 w-full" onClick={submit} disabled={pending || insufficient || !store.ready}>
+        <button type="button" className="btn-primary min-h-12 w-full" onClick={submit} disabled={pending || insufficient || !store.ready || (hasPhysical && (!zone || !dName.trim() || dAddress.trim().length < 5))}>
           {pending ? tc("placing") : tc("placeOrder")}
         </button>
       </aside>

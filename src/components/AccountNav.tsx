@@ -1,9 +1,9 @@
 "use client";
 import { Link, usePathname } from "@/i18n/navigation";
 import { SignOutButton } from "./HeaderClient";
-import { BagIcon, BellIcon, GiftIcon, HeadsetIcon, HomeIcon, LockIcon, ShieldIcon, UserIcon, WalletIcon } from "./Icons";
+import { BagIcon, BellIcon, GiftIcon, HeadsetIcon, HomeIcon, LockIcon, ShieldIcon, TagIcon, UserIcon, WalletIcon } from "./Icons";
 
-const ICONS = { home: HomeIcon, orders: BagIcon, wallet: WalletIcon, support: HeadsetIcon, bell: BellIcon, gift: GiftIcon, user: UserIcon, shield: ShieldIcon, lock: LockIcon };
+const ICONS = { home: HomeIcon, orders: BagIcon, wallet: WalletIcon, support: HeadsetIcon, bell: BellIcon, gift: GiftIcon, user: UserIcon, shield: ShieldIcon, lock: LockIcon, market: TagIcon };
 
 export function AccountNav({ items }: { items: { href: string; label: string; icon: string }[] }) {
   const pathname = usePathname();

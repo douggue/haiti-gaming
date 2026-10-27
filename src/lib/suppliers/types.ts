@@ -31,6 +31,9 @@ export type Operation = {
     currency?: string;
     token?: string;
     expiresIn?: string;
+    /** Player check: the in-game name, and the region if the supplier gives it */
+    playerName?: string;
+    region?: string;
   };
   /** Supplier status value (case-insensitive) → our meaning */
   statusMap?: Record<string, Outcome>;
@@ -54,6 +57,8 @@ export type SupplierConfig = {
   /** Some suppliers return codes on a separate call after success */
   codes?: Operation;
   balance?: Operation;
+  /** Optional player ID check before payment (name / region); map.playerName, errors via errorPath or HTTP status */
+  validate?: Operation;
   /** Our order reference: "hg-…" (default) or a UUID for suppliers that require one */
   refFormat?: "uuid";
   /** What the callback URL replies, e.g. {"status":"success"} or "success" */
@@ -75,5 +80,7 @@ export type CallResult = {
   currency?: string;
   token?: string;
   expiresIn?: number;
+  playerName?: string;
+  region?: string;
   raw: string;
 };

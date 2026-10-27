@@ -17,6 +17,8 @@ export type CartLine = {
   /** "Customer enters the amount" products: USD cents typed, and the price in USD (not converted at the store rate) */
   amount?: number;
   priceUsd?: number;
+  /** Delivered to an address (accessories): checkout asks where */
+  physical?: boolean;
 };
 
 /** Unit price of a cart line in the display currency. */

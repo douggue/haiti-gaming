@@ -8,7 +8,7 @@ import { assertStaff, assertStepUp } from "@/lib/session";
 import { audit } from "@/lib/audit";
 import { encrypt, hmac, randomToken } from "@/lib/crypto";
 import { completePayment, rejectPayment } from "@/lib/payments/complete";
-import { deliverItemManually, fulfillOrder, refundOrCancel, revealCode } from "@/lib/orders";
+import { completeCodOrder, deliverItemManually, fulfillOrder, refundOrCancel, revealCode } from "@/lib/orders";
 import { adjustWallet } from "@/lib/wallet";
 import { parseAmount } from "@/lib/money";
 import { DEFAULT_SETTINGS, getSettings, setSetting, type ExchangePricing, type Settings } from "@/lib/settings";
@@ -250,6 +250,8 @@ export async function saveVariant(form: FormData): Promise<R> {
       sortOrder: Number(form.get("sortOrder") ?? 0) || 0,
       isActive: form.get("isActive") === "on",
       soldOut: form.get("soldOut") === "on",
+      // Only sent by the form for physical products
+      ...(form.has("stock") ? { stock: String(form.get("stock") ?? "").trim() === "" ? null : Math.max(0, Math.round(Number(form.get("stock")) || 0)) } : {}),
       // Only sent by the form for "Supplier API" products
       ...(form.has("supplierId")
         ? { supplierId: String(form.get("supplierId") || "") || null, supplierSku: String(form.get("supplierSku") ?? "").trim().slice(0, 120) || null }
@@ -430,6 +432,8 @@ export async function saveSettings(form: FormData): Promise<R> {
       requireEmailVerification: form.get("requireEmailVerification") === "on",
       maxAccountsPerDevice: Math.max(1, Math.min(50, Math.round(num("maxAccountsPerDevice")) || 3)),
       referralRewardHtg: money("referralRewardHtg"),
+      transferDailyLimitHtg: money("transferDailyLimitHtg"),
+      transfersEnabled: form.get("transfersEnabled") === "on",
       referralMinOrderHtg: money("referralMinOrderHtg"),
       natcashRecipientName: str("natcashRecipientName"),
       natcashRecipientPhone: str("natcashRecipientPhone"),
@@ -768,6 +772,51 @@ export async function saveMoneyExchange(input: ExchangePricing): Promise<R> {
     await audit(staff.id, "exchange.update", "SiteSetting", null, { before, after: next });
     revalidatePath("/", "layout");
     return { ok: true, message: `Saved. Customers now get 1 USD = ${marketRate + margin} HTG.` };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Cash on delivery: delivered and paid in cash. */
+export async function completeCod(orderId: string, note: string): Promise<R> {
+  try {
+    const staff = await assertStaff("orders.manage");
+    await completeCodOrder(orderId, staff.id, note.trim().slice(0, 300));
+    await audit(staff.id, "order.cod.complete", "Order", orderId, { note });
+    revalidatePath(`/admin/orders/${orderId}`);
+    return { ok: true, message: "Delivered and paid" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+/** Delivery cities / areas and their fee (HTG). */
+export async function saveDeliveryZone(form: FormData): Promise<R> {
+  try {
+    const staff = await assertStaff("settings.manage");
+    const id = String(form.get("id") ?? "") || null;
+    const name = String(form.get("name") ?? "").trim().slice(0, 60);
+    if (!name) return { ok: false, error: "Name the city or area" };
+    const raw = String(form.get("fee") ?? "").trim();
+    const fee = raw ? parseAmount(raw) : 0;
+    if (fee === null) return { ok: false, error: "Fee: a number in HTG" };
+    const data = { name, feeHtg: fee, eta: String(form.get("eta") ?? "").trim().slice(0, 40) || null, isEnabled: form.get("isEnabled") === "on", sortOrder: Number(form.get("sortOrder") ?? 0) || 0 };
+    const z = id ? await prisma.deliveryZone.update({ where: { id }, data }) : await prisma.deliveryZone.create({ data });
+    await audit(staff.id, id ? "delivery.update" : "delivery.create", "DeliveryZone", z.id, data);
+    revalidatePath("/admin/delivery");
+    return { ok: true, message: "Saved" };
+  } catch (e) {
+    return fail(e);
+  }
+}
+
+export async function setCodEnabled(on: boolean): Promise<R> {
+  try {
+    const staff = await assertStaff("settings.manage");
+    await setSetting("codEnabled", on);
+    await audit(staff.id, "delivery.cod", "SiteSetting", null, { on });
+    revalidatePath("/admin/delivery");
+    return { ok: true, message: on ? "Pay on delivery is on" : "Pay on delivery is off" };
   } catch (e) {
     return fail(e);
   }

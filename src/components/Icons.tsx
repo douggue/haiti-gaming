@@ -44,3 +44,4 @@ export const PhoneDownIcon = (p: P) => (<svg {...base} {...p}><rect x="6" y="2.5
 export const GiftIcon = (p: P) => (<svg {...base} {...p}><rect x="3" y="8" width="18" height="5" rx="1" /><path d="M5 13v7h14v-7M12 8v12M12 8S10.5 3 8 4s-1 4 4 4ZM12 8s1.5-5 4-4 1 4-4 4Z" /></svg>);
 export const LockIcon = (p: P) => (<svg {...base} {...p}><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></svg>);
 export const HeadsetIcon = (p: P) => (<svg {...base} {...p}><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="3" y="14" width="4" height="6" rx="1.5" /><rect x="17" y="14" width="4" height="6" rx="1.5" /><path d="M19 20a3 3 0 0 1-3 2h-2" /></svg>);
+export const SendIcon = (p: P) => (<svg {...base} {...p}><path d="M21 3 10 14" /><path d="m21 3-7 18-4-7-7-4Z" /></svg>);

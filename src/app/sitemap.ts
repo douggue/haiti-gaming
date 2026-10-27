@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
   const skip = new Set(hidden.map((h) => (h.path === "/" ? "" : h.path)));
   const paths: { path: string; lastModified?: Date }[] = [
-    { path: "" }, { path: "/store" }, { path: "/categories" }, { path: "/guides" }, { path: "/faq" },
+    { path: "" }, { path: "/store" }, { path: "/categories" }, { path: "/guides" }, { path: "/faq" }, { path: "/market" },
     { path: "/about" }, { path: "/news" }, { path: "/contact" }, { path: "/terms" }, { path: "/privacy" }, { path: "/refunds" },
     ...categories.map((c) => ({ path: `/categories/${c.slug}`, lastModified: c.updatedAt })),
     ...products.map((p) => ({ path: `/products/${p.slug}`, lastModified: p.updatedAt })),

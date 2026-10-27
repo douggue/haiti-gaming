@@ -17,6 +17,7 @@ export default async function AccountLayout({ children, params }: { children: Re
     { href: "/account/orders", label: tc("orders"), icon: "orders" },
     { href: "/account/wallet", label: tc("wallet"), icon: "wallet" },
     { href: "/account/support", label: ta("support"), icon: "support" },
+    ...(settings.marketEnabled ? [{ href: "/account/market", label: ta("market"), icon: "market" }] : []),
     { href: "/account/notifications", label: tn("title"), icon: "bell" },
     ...(settings.referralEnabled ? [{ href: "/account/referrals", label: ta("referrals"), icon: "gift" }] : []),
     { href: "/account/profile", label: ta("profile"), icon: "user" },

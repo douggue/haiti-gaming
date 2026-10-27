@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { checkPlayer } from "@/actions/player";
+import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { t } from "@/lib/text";
@@ -10,9 +11,9 @@ import { formatMoney, parseAmount } from "@/lib/money";
 import { amountInRange, customerRate, quoteAmount } from "@/lib/amount";
 import type { ExchangePricing } from "@/lib/amount";
 
-type Variant = { id: string; name: Record<string, string>; priceHtg: number; salePriceHtg: number | null; inStock: boolean; lowStock?: boolean };
+type Variant = { id: string; name: Record<string, string>; priceHtg: number; salePriceHtg: number | null; inStock: boolean; lowStock?: boolean; canCheck?: boolean };
 type Props = {
-  product: { id: string; slug: string; name: Record<string, string>; accent: string | null; image: string | null; fields: FieldDef[]; variants: Variant[] };
+  product: { id: string; slug: string; name: Record<string, string>; accent: string | null; image: string | null; fields: FieldDef[]; variants: Variant[]; physical?: boolean };
   saved: { id: string; label: string | null; values: Record<string, string> }[];
   pricing?: ExchangePricing;
 };
@@ -61,6 +62,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
       ...(quote ? { amount: quote.amount, priceUsd: quote.totalUsd } : {}),
       quantity: quote ? 1 : qty,
       fields: Object.fromEntries(product.fields.map((f) => [f.key, (fields[f.key] ?? "").trim()]).filter(([, v]) => v)),
+      ...(product.physical ? { physical: true } : {}),
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
@@ -202,6 +204,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
               )}
             </div>
           ))}
+          {variant?.canCheck && <PlayerCheck variantId={variant.id} fields={fields} />}
           {/* Only game top-ups ask for a player ID: the "for someone else" tip makes no sense on an email or phone field. */}
           {product.fields.some((f) => /player|uid|gameid|game_id|zone|server/i.test(f.key)) && (
             <p className="text-xs text-muted">
@@ -256,6 +259,38 @@ function LowStock({ name, seed }: { name: string; seed: string }) {
           <span className="low-bar block h-full rounded-full" style={{ width: `${barWidth(seed)}%` }} />
         </span>
       </span>
+    </div>
+  );
+}
+
+/** "Verify ID": asks the supplier who this player is (name, region) before paying. */
+function PlayerCheck({ variantId, fields }: { variantId: string; fields: Record<string, string> }) {
+  const tp = useTranslations("product");
+  const [state, setState] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const sig = JSON.stringify(fields);
+  // A new ID or option: the old answer no longer applies.
+  useEffect(() => setState(null), [sig, variantId]);
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        disabled={busy || !Object.values(fields).some((v) => v?.trim())}
+        onClick={async () => {
+          setBusy(true);
+          const r = await checkPlayer(variantId, fields).catch(() => ({ ok: false as const, error: "unavailable" as const }));
+          setBusy(false);
+          setState(
+            r.ok
+              ? { ok: true, text: r.name ? tp("playerFound", { name: r.name }) + (r.region ? ` · ${r.region}` : "") : tp("playerOk") }
+              : { ok: false, text: r.error === "invalid" ? tp("playerInvalid") : r.error === "busy" ? tp("playerBusy") : tp("playerUnavailable") },
+          );
+        }}
+        className="btn-secondary min-h-10 px-4 text-sm"
+      >
+        {busy ? "…" : tp("checkPlayer")}
+      </button>
+      {state && <span role="status" className={`text-sm font-semibold ${state.ok ? "text-success" : "text-danger"}`}>{state.ok ? "✓ " : "✕ "}{state.text}</span>}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { baseContext, readPath, render, renderValue, type Ctx } from "./template
 import type { CallResult, DeliveredCode, Operation, Outcome, SupplierConfig } from "./types";
 
 type SupplierRow = { id: string; baseUrl: string; config: unknown; secrets: string | null; tokenEncrypted: string | null; tokenExpiresAt: Date | null };
-export type OpName = "order" | "status" | "codes" | "balance" | "token";
+export type OpName = "order" | "status" | "codes" | "balance" | "token" | "validate";
 
 export function secretsOf(s: { secrets: string | null }): Record<string, string> {
   if (!s.secrets) return {};
@@ -63,7 +63,7 @@ function readOutcome(op: Operation, kind: OpName, http: number, data: unknown): 
   // We can't be sure the supplier got (or didn't get) the request: never treat as a failure.
   // 409 = "this reference already exists": the order may be there, so check instead of calling it failed.
   if (http >= 500 || http === 401 || http === 403 || http === 408 || http === 409 || http === 429) return { outcome: "UNKNOWN", message };
-  if (http >= 400) return { outcome: kind === "order" ? "FAILED" : "UNKNOWN", message };
+  if (http >= 400) return { outcome: kind === "order" || kind === "validate" ? "FAILED" : "UNKNOWN", message };
   if (m.status) {
     const raw = readPath(data, m.status);
     const key = String(raw ?? "").trim().toLowerCase();
@@ -72,10 +72,10 @@ function readOutcome(op: Operation, kind: OpName, http: number, data: unknown): 
   }
   if (op.errorPath) {
     const e = readPath(data, op.errorPath);
-    if (e && e !== "0" && e !== "false") return { outcome: kind === "order" ? "FAILED" : "UNKNOWN", message: message ?? String(e) };
+    if (e && e !== "0" && e !== "false") return { outcome: kind === "order" || kind === "validate" ? "FAILED" : "UNKNOWN", message: message ?? String(e) };
   }
   if (op.okOutcome) return { outcome: op.okOutcome, message };
-  if (kind === "balance" || kind === "token" || kind === "codes") return { outcome: "SUCCESS", message };
+  if (kind === "balance" || kind === "token" || kind === "codes" || kind === "validate") return { outcome: "SUCCESS", message };
   return { outcome: "UNKNOWN", message };
 }
 
@@ -147,6 +147,8 @@ async function callRaw(s: SupplierRow, cfg: SupplierConfig, kind: OpName, extra:
       currency: m.currency ? String(readPath(data, m.currency) ?? "") || undefined : undefined,
       token: m.token ? String(readPath(data, m.token) ?? "") || undefined : undefined,
       expiresIn: m.expiresIn ? num(m.expiresIn) : undefined,
+      playerName: m.playerName ? String(readPath(data, m.playerName) ?? "") || undefined : undefined,
+      region: m.region ? String(readPath(data, m.region) ?? "") || undefined : undefined,
       raw: text,
     };
   } catch (e) {

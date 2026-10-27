@@ -51,6 +51,19 @@ export default async function ProductPage({ params }: { params: P }) {
       )
     : null;
   const low = new Set(lowStockVariants(product.variants, stock, settings.lowStockLimit));
+  // Options whose supplier can check the player ID before payment
+  const checkable = new Set(
+    product.fulfillmentType === "SUPPLIER_API"
+      ? (
+          await prisma.productVariant.findMany({
+            where: { productId: product.id, supplier: { isEnabled: true } },
+            select: { id: true, supplier: { select: { config: true } } },
+          })
+        )
+          .filter((v) => !!(v.supplier?.config as { validate?: unknown } | null)?.validate)
+          .map((v) => v.id)
+      : [],
+  );
   const sales = settings.salesPopupEnabled ? await recentSales(product.id, settings.moneyExchange) : [];
   const related = (await searchProducts({ category: product.category.slug, take: 5 })).filter((p) => p.id !== product.id).slice(0, 4);
   const name = t(product.name, locale);
@@ -112,13 +125,15 @@ export default async function ProductPage({ params }: { params: P }) {
               accent: product.accent,
               image: product.image,
               fields: product.fields as FieldDef[],
+              physical: product.fulfillmentType === "PHYSICAL",
               variants: product.variants.map((v) => ({
                 id: v.id,
                 name: v.name as Record<string, string>,
                 priceHtg: v.priceHtg,
                 salePriceHtg: v.salePriceHtg,
-                inStock: !v.soldOut && (stock ? (stock[v.id] ?? 0) > 0 : true),
+                inStock: !v.soldOut && (stock ? (stock[v.id] ?? 0) > 0 : true) && (v.stock === null || v.stock > 0),
                 lowStock: low.has(v.id),
+                canCheck: checkable.has(v.id),
               })),
             }}
             pricing={isExchangeProduct(settings.moneyExchange, product.category) ? settings.moneyExchange : undefined}

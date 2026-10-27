@@ -55,7 +55,7 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
  * Store a public image and return its URL.
  * Vercel Blob (public access) when configured; otherwise `uploads/public`, served at /media/... (development).
  */
-export async function savePublicImage(file: File, folder: "products" | "categories" | "brand"): Promise<string> {
+export async function savePublicImage(file: File, folder: "products" | "categories" | "brand" | "market"): Promise<string> {
   const ext = ALLOWED[file.type];
   if (!ext) throw new UploadError("type");
   if (file.size > MAX_IMAGE_BYTES) throw new UploadError("size");

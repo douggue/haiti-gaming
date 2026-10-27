@@ -58,6 +58,16 @@ model User {
   city             String?
   /// Customer may hide their first name from the recent sales popup (Account → Privacy)
   showInFeed       Boolean       @default(true)
+  /// Accepted the Market rules (needed to sell or buy on the Market)
+  marketRulesAt    DateTime?
+  marketListings   MarketListing[]  @relation("MarketSeller")
+  marketBuys       MarketDeal[]     @relation("MarketBuyer")
+  marketSales      MarketDeal[]     @relation("MarketDealSeller")
+  marketReports    MarketReport[]
+  /// Code other customers send money to ("HG-7K4Q2M"), made on first use
+  transferCode     String?       @unique
+  transfersSent     Transfer[]   @relation("TransferFrom")
+  transfersReceived Transfer[]   @relation("TransferTo")
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 
@@ -181,6 +191,8 @@ enum FulfillmentType {
   CODE_INVENTORY
   MANUAL
   SUPPLIER_API
+  /// Accessories and other things delivered to an address (Admin → Delivery for cities and fees)
+  PHYSICAL
 }
 
 model Product {
@@ -228,6 +240,8 @@ model ProductVariant {
   isActive     Boolean     @default(true)
   /// Marked "out of stock" by staff: stays visible (red dot, struck through) but can't be bought
   soldOut      Boolean     @default(false)
+  /// Physical products: units in stock (empty = not counted). Taken when ordered, put back if canceled.
+  stock        Int?
   /// "Stock is low" message: off | auto (codes left under the limit) | on (manual, until lowStockUntil)
   lowStock     String      @default("off")
   lowStockUntil DateTime?
@@ -298,6 +312,8 @@ enum PaymentMethodKind {
   MONCASH
   NATCASH
   MANUAL
+  /// Cash on delivery (physical products only): staff collects when delivering
+  COD
 }
 
 model Order {
@@ -315,6 +331,15 @@ model Order {
   paymentMethod PaymentMethodKind
   manualMethodId String?
   recipientNote String?
+  /// Physical products: where and to whom (staff confirms on WhatsApp)
+  deliveryZoneId  String?
+  deliveryZone    DeliveryZone?   @relation(fields: [deliveryZoneId], references: [id])
+  /// In the order's currency, included in `total`
+  deliveryFee     Int             @default(0)
+  deliveryName    String?
+  deliveryPhone   String?
+  deliveryAddress String?
+  deliveryNote    String?
   accessToken   String            @unique
   /// Private gift page link (/gift/<token>) the buyer sends to the person receiving the codes
   giftToken     String?           @unique
@@ -451,6 +476,7 @@ enum LedgerTxType {
   EXCHANGE
   ADJUSTMENT
   HOLD_RELEASE
+  TRANSFER
 }
 
 model LedgerTransaction {
@@ -934,4 +960,133 @@ model SupplierLog {
   createdAt       DateTime       @default(now())
 
   @@index([supplierId, createdAt])
+}
+
+/// Wallet-to-wallet transfer between customers (gourdes), sent with the recipient's code. No fee.
+model Transfer {
+  id         String   @id @default(cuid())
+  fromUserId String
+  from       User     @relation("TransferFrom", fields: [fromUserId], references: [id])
+  toUserId   String
+  to         User     @relation("TransferTo", fields: [toUserId], references: [id])
+  /// HTG centimes
+  amount     Int
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([fromUserId, createdAt])
+  @@index([toUserId, createdAt])
+}
+
+/// City / area where physical products can be delivered, with its fee
+model DeliveryZone {
+  id        String   @id @default(cuid())
+  name      String
+  /// HTG centimes
+  feeHtg    Int      @default(0)
+  /// e.g. "Same day", "1–2 days"
+  eta       String?
+  isEnabled Boolean  @default(true)
+  sortOrder Int      @default(0)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────── Market (accounts sold between customers, staff in the middle) ───────────────────────────────
+
+enum ListingStatus {
+  /// Waiting for staff to check it
+  PENDING
+  ACTIVE
+  /// A buyer is in a deal for it
+  RESERVED
+  SOLD
+  REJECTED
+  /// Taken down by the seller or staff
+  REMOVED
+}
+
+enum DealStatus {
+  /// Buyer asked to buy; the agent contacts both on WhatsApp
+  REQUESTED
+  /// Buyer paid the agent (outside the site)
+  PAID
+  /// Account handed to the buyer, waiting for "all good"
+  DELIVERED
+  /// Buyer confirmed; the agent paid the seller minus the commission
+  COMPLETED
+  CANCELED
+  DISPUTED
+}
+
+/// An account for sale (game or social media). Checked by staff before it shows.
+model MarketListing {
+  id           String        @id @default(cuid())
+  sellerId     String
+  seller       User          @relation("MarketSeller", fields: [sellerId], references: [id])
+  /// freefire, pubg, efootball, codm, tiktok, instagram, facebook, youtube, other
+  platform     String
+  title        String
+  description  String        @default("")
+  /// Minor units of `currency` (the seller chooses HTG or USD)
+  price        Int
+  currency     Currency      @default(HTG)
+  /// Public image URLs (screenshots)
+  images       Json          @default("[]")
+  /// Level, rank, region, followers…: [{ label, value }]
+  details      Json          @default("[]")
+  /// The account's original email can be handed over too
+  withEmail    Boolean       @default(false)
+  status       ListingStatus @default(PENDING)
+  staffNote    String?
+  views        Int           @default(0)
+  deals        MarketDeal[]
+  reports      MarketReport[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([status, platform])
+  @@index([sellerId])
+}
+
+/// One purchase on the Market. Money and the account go through a staff agent, outside the site.
+model MarketDeal {
+  id          String        @id @default(cuid())
+  number      Int           @unique @default(autoincrement())
+  listingId   String
+  listing     MarketListing @relation(fields: [listingId], references: [id])
+  buyerId     String
+  buyer       User          @relation("MarketBuyer", fields: [buyerId], references: [id])
+  sellerId    String
+  seller      User          @relation("MarketDealSeller", fields: [sellerId], references: [id])
+  agentId     String?
+  price       Int
+  currency    Currency
+  /// What the agent kept when paying the seller (same currency)
+  commission  Int?
+  status      DealStatus    @default(REQUESTED)
+  /// Staff notes, newest first: [{ at, by, status, note }]
+  history     Json          @default("[]")
+  rating      Int?
+  ratingNote  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status])
+  @@index([buyerId])
+  @@index([sellerId])
+}
+
+model MarketReport {
+  id         String        @id @default(cuid())
+  listingId  String
+  listing    MarketListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reporterId String
+  reporter   User          @relation(fields: [reporterId], references: [id])
+  reason     String
+  resolved   Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+
+  @@index([resolved])
 }

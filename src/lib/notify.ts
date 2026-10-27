@@ -17,7 +17,12 @@ export type NotificationType =
   | "order_refunded"
   | "exchange_done"
   | "wallet_adjusted"
-  | "referral_rewarded";
+  | "referral_rewarded"
+  | "transfer_received"
+  | "transfer_sent"
+  | "market_listing_approved"
+  | "market_listing_rejected"
+  | "market_deal_update";
 
 const CATALOGS: Record<string, { notifications: Record<string, string> }> = { ht, fr, en, es };
 
