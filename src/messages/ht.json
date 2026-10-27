@@ -937,6 +937,7 @@
     "err_volume": "Chwazi konbyen kont pa mwa.",
     "err_agree": "Tcheke bwat la pou aksepte.",
     "err_id_photo": "Mete yon foto pyès idantite w.",
-    "rule7": "Se sèlman vandè ekip nou an apwouve ki ka vann. Tout moun ka achte."
+    "rule7": "Se sèlman vandè ekip nou an apwouve ki ka vann. Tout moun ka achte.",
+    "optional": "si w vle"
   }
 }

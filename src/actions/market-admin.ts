@@ -129,6 +129,7 @@ export async function saveMarketSettings(form: FormData): Promise<R> {
       }),
     ) as Record<"ht" | "fr" | "en" | "es", string[]>;
     await setSetting("marketRules", rules);
+    await setSetting("marketVendorIdRequired", form.get("vendorIdRequired") === "on");
     if (form.get("reaccept") === "on") await setSetting("marketRulesUpdatedAt", new Date().toISOString());
     await audit(staff.id, "market.settings", "SiteSetting", null, { pct, reaccept: form.get("reaccept") === "on" });
     return done("Saved");

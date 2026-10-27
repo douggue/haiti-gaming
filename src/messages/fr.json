@@ -937,6 +937,7 @@
     "err_volume": "Choisissez le nombre de comptes par mois.",
     "err_agree": "Cochez la case pour accepter.",
     "err_id_photo": "Ajoutez une photo de votre pièce d'identité.",
-    "rule7": "Seuls les vendeurs approuvés par notre équipe peuvent vendre. Tout le monde peut acheter."
+    "rule7": "Seuls les vendeurs approuvés par notre équipe peuvent vendre. Tout le monde peut acheter.",
+    "optional": "facultatif"
   }
 }

@@ -81,6 +81,7 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
               <div className="flex flex-wrap items-center gap-2">
                 <a href={`https://wa.me/${waNumber(v.whatsapp)}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener" className="btn-primary min-h-9 !bg-[#1fa855] px-3 text-xs">WhatsApp {formatPhone(v.whatsapp)}</a>
                 {v.idPhotoPath && catalog && <a href={`/api/admin/market-vendor/${v.id}`} target="_blank" rel="noopener" className="btn-secondary min-h-9 px-3 text-xs">ID photo ↗</a>}
+                {!v.idPhotoPath && <span className="rounded-lg bg-warning-soft px-2.5 py-1.5 text-xs font-semibold text-warning">No ID photo</span>}
                 {catalog && v.status !== "APPROVED" && <ActionButton label="Approve" className="btn-primary min-h-9 px-3 text-xs" confirm={`Let ${v.shopName} list accounts?`} action={reviewVendor.bind(null, v.id, "APPROVED")} />}
                 {catalog && v.status === "PENDING" && <ActionButton label="Reject…" className="btn-danger min-h-9 px-3 text-xs" prompt="Why? (the applicant sees this and can apply again)" action={reviewVendor.bind(null, v.id, "REJECTED")} />}
                 {catalog && v.status === "APPROVED" && <ActionButton label="Suspend…" className="btn-danger min-h-9 px-3 text-xs" prompt="Why? (their listings are taken down)" action={reviewVendor.bind(null, v.id, "SUSPENDED")} />}
@@ -212,6 +213,7 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="enabled" defaultChecked={settings.marketEnabled} /> Market is open (menu link, listings, selling)</label>
         <label className="block"><span className="label">Commission kept from the seller (%)</span><input name="commission" defaultValue={settings.marketCommissionBps / 100} className="input" inputMode="decimal" /><span className="mt-1 block text-xs text-muted">Shown to sellers. You can change it per deal when closing it.</span></label>
         <label className="block"><span className="label">Market agent WhatsApp (digits, with 509)</span><input name="whatsapp" defaultValue={settings.marketWhatsapp} placeholder={settings.whatsappNumber} className="input" inputMode="tel" /><span className="mt-1 block text-xs text-muted">Buyers are sent here when they tap “Buy”. Empty = the main support number.</span></label>
+        <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="vendorIdRequired" defaultChecked={settings.marketVendorIdRequired} className="mt-1" /> <span>Vendor applications must include a photo of an ID <span className="text-muted">(off = optional: applicants can still add one)</span></span></label>
         <fieldset className="space-y-3 border-t border-border pt-4">
           <legend className="font-semibold">Market rules</legend>
           <p className="text-xs text-muted">Shown before buying, selling or applying as a vendor. One rule per line (numbered automatically). Empty a language to use the standard rules; a language left empty after you customize shows the Kreyòl ones.</p>

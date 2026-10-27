@@ -401,7 +401,7 @@ export function RateSeller({ dealId }: { dealId: string }) {
 }
 
 /** Vendor enrollment: staff contacts the applicant on WhatsApp, then approves or rejects. */
-export function VendorForm({ rulesAccepted, again }: { rulesAccepted: boolean; again?: boolean }) {
+export function VendorForm({ rulesAccepted, again, idRequired = true }: { rulesAccepted: boolean; again?: boolean; idRequired?: boolean }) {
   const t = useTranslations("market");
   const router = useRouter();
   const [error, setError] = useState("");
@@ -448,7 +448,7 @@ export function VendorForm({ rulesAccepted, again }: { rulesAccepted: boolean; a
       </label>
       <label className="block"><span className="label">{t("about")}</span><textarea name="about" rows={3} maxLength={1000} placeholder={t("aboutPh")} className="input py-2" /></label>
       <div>
-        <span className="label">{t("idPhoto")}</span>
+        <span className="label">{t("idPhoto")}{idRequired ? "" : ` (${t("optional")})`}</span>
         <PhotoPicker name="idPhoto" label={t("idPhoto")} hint={t("idPhotoHint")} />
       </div>
       <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="agree" required className="mt-0.5 size-4" /> {t("vendorAgree")}</label>

@@ -106,7 +106,7 @@ const VOLUMES = ["1-2", "3-10", "10+"];
  */
 export async function applyVendor(form: FormData): Promise<R> {
   try {
-    const { user } = await marketUser();
+    const { user, settings } = await marketUser();
     if (await needsRules(user.id)) return { ok: false, error: "rules" };
     if (await mustVerifyEmail(user.id)) return { ok: false, error: "verify_email" };
     const existing = await prisma.marketVendor.findUnique({ where: { userId: user.id } });
@@ -125,15 +125,19 @@ export async function applyVendor(form: FormData): Promise<R> {
     if (!platforms.length) return { ok: false, error: "platform" };
     if (!VOLUMES.includes(volume)) return { ok: false, error: "volume" };
     if (form.get("agree") !== "on") return { ok: false, error: "agree" };
+    // The ID photo is required or optional depending on Admin → Market → Settings.
     const file = form.get("idPhoto");
-    if (!(file instanceof File) || file.size === 0) return { ok: false, error: "id_photo" };
-    if (!uploadsEnabled()) return { ok: false, error: "upload" };
-    let idPhotoPath: string;
-    try {
-      idPhotoPath = await savePrivateImage(file, "vendors");
-    } catch (e) {
-      if (e instanceof UploadError) return { ok: false, error: "upload" };
-      throw e;
+    const hasFile = file instanceof File && file.size > 0;
+    if (!hasFile && settings.marketVendorIdRequired) return { ok: false, error: "id_photo" };
+    let idPhotoPath: string | null = null;
+    if (hasFile) {
+      if (!uploadsEnabled()) return { ok: false, error: "upload" };
+      try {
+        idPhotoPath = await savePrivateImage(file, "vendors");
+      } catch (e) {
+        if (e instanceof UploadError) return { ok: false, error: "upload" };
+        throw e;
+      }
     }
     const data = { shopName, legalName, whatsapp, city, platforms, volume, about: String(form.get("about") ?? "").trim().slice(0, 1000), idPhotoPath, status: "PENDING" as const, staffNote: null, reviewedAt: null, reviewedById: null };
     const v = await prisma.marketVendor.upsert({ where: { userId: user.id }, create: { userId: user.id, ...data }, update: data });

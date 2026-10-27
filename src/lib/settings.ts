@@ -20,6 +20,8 @@ export type Settings = {
   marketRules: Record<"ht" | "fr" | "en" | "es", string[]>;
   /** When the rules last changed in a way everyone must accept again (ISO date, "" = never). */
   marketRulesUpdatedAt: string;
+  /** Vendor applications must include a photo of an ID document */
+  marketVendorIdRequired: boolean;
   /** Physical products can be paid in cash when delivered */
   codEnabled: boolean;
   /** Customers can send gourdes to each other with their transfer code (no fee) */
@@ -209,6 +211,7 @@ export const DEFAULT_SETTINGS: Settings = {
   marketWhatsapp: "",
   marketRules: { ht: [], fr: [], en: [], es: [] },
   marketRulesUpdatedAt: "",
+  marketVendorIdRequired: true,
   transferDailyLimitHtg: 1_000_000,
   googleSiteVerification: "",
   bingSiteVerification: "",

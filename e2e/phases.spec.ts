@@ -287,3 +287,40 @@ test("staff edits the Market rules; customers must accept the new ones", async (
   await a.reload();
   await expect(a.locator('textarea[name="rules_ht"]')).toHaveValue(/Chak acha pase nan men yon ajan/);
 });
+
+test("staff can make the vendor ID photo optional", async ({ browser }) => {
+  const a = await newPage(browser);
+  await staffLogin(a);
+  await a.goto("/admin/market?tab=settings");
+  await a.locator('input[name="vendorIdRequired"]').uncheck();
+  await a.getByRole("button", { name: "Save" }).click();
+  await expect(a.getByText("Saved")).toBeVisible();
+
+  try {
+    const c = await newPage(browser);
+    const email = `san-id.${stamp}@example.com`;
+    await registerCustomer(c, "Wisly Joseph", email, pw);
+    await verify(email);
+    await c.goto("/ht/market/sell");
+    await c.getByLabel("Mwen li règ yo e mwen aksepte yo.").check();
+    await c.getByRole("button", { name: "Aksepte epi kontinye" }).click();
+    await expect(c.getByText("(si w vle)").first()).toBeVisible();
+    await c.getByLabel("Non boutik ou (achtè yo wè l)").fill(`Wisly Store ${stamp}`);
+    await c.getByLabel("Non konplè (jan l ye sou pyès ou)").fill("Wisly Joseph");
+    await c.locator("#vendor-phone").fill("37334455");
+    await c.getByLabel("Vil", { exact: true }).fill("Jacmel");
+    await c.getByText("🎵 TikTok").click();
+    await c.getByLabel("Konbyen kont pa mwa?").selectOption("1-2");
+    await c.getByLabel(/Kont m ap vann yo se pa m/).check();
+    await c.getByRole("button", { name: "Voye demann mwen" }).click();
+    await expect(c.getByTestId("vendor-pending")).toBeVisible();
+
+    await a.goto("/admin/market?tab=vendors");
+    await expect(a.locator(".card", { hasText: `Wisly Store ${stamp}` }).getByText("No ID photo")).toBeVisible();
+  } finally {
+    await a.goto("/admin/market?tab=settings");
+    await a.locator('input[name="vendorIdRequired"]').check();
+    await a.getByRole("button", { name: "Save" }).click();
+    await expect(a.getByText("Saved")).toBeVisible();
+  }
+});

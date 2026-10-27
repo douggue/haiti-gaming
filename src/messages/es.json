@@ -937,6 +937,7 @@
     "err_volume": "Elige cuántas cuentas al mes.",
     "err_agree": "Marca la casilla para aceptar.",
     "err_id_photo": "Añade una foto de tu documento.",
-    "rule7": "Solo los vendedores aprobados por nuestro equipo pueden vender. Cualquiera puede comprar."
+    "rule7": "Solo los vendedores aprobados por nuestro equipo pueden vender. Cualquiera puede comprar.",
+    "optional": "opcional"
   }
 }

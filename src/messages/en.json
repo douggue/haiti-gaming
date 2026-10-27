@@ -937,6 +937,7 @@
     "err_volume": "Choose how many accounts a month.",
     "err_agree": "Tick the box to accept.",
     "err_id_photo": "Add a photo of your ID.",
-    "rule7": "Only vendors approved by our team can sell. Anyone can buy."
+    "rule7": "Only vendors approved by our team can sell. Anyone can buy.",
+    "optional": "optional"
   }
 }

@@ -47,7 +47,7 @@ export default async function SellPage({ params }: { params: Promise<{ locale: s
     body = (
       <>
         {vendor?.status === "REJECTED" && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{t("vendorRejected", { reason: vendor.staffNote ?? "" })}</p>}
-        <VendorForm rulesAccepted={rules} again={vendor?.status === "REJECTED"} />
+        <VendorForm rulesAccepted={rules} again={vendor?.status === "REJECTED"} idRequired={settings.marketVendorIdRequired} />
       </>
     );
   return (
