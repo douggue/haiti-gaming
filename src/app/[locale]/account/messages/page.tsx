@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { formatMoney } from "@/lib/money";
 import { shortName } from "@/lib/trust";
-import { listingImages, unreadChatIds } from "@/lib/market-data";
+import { listingImages, unreadChats } from "@/lib/market-data";
 
 export default async function Messages({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -23,7 +23,7 @@ export default async function Messages({ params }: { params: Promise<{ locale: s
         messages: { orderBy: { createdAt: "desc" }, take: 1 },
       },
     }),
-    unreadChatIds(user.id),
+    unreadChats(user.id),
   ]);
   return (
     <div className="space-y-5">
@@ -44,7 +44,7 @@ export default async function Messages({ params }: { params: Promise<{ locale: s
             const other = buyer ? (c.seller.marketVendor?.shopName ?? shortName(c.seller.name)) : shortName(c.buyer.name);
             const m = c.messages[0];
             const preview = !m ? "" : m.kind === "OFFER" ? `💰 ${formatMoney(m.offerAmount ?? 0, c.listing.currency, locale)}` : m.kind === "IMAGE" && !m.body ? `📷 ${t("photo")}` : m.fromStaff ? `🛡️ ${m.body}` : m.body;
-            const isNew = unread.has(c.id);
+            const isNew = unread.get(c.id) ?? 0;
             return (
               <li key={c.id}>
                 <Link href={`/account/messages/${c.id}`} className="flex items-center gap-3 p-4 hover:bg-surface-2">
@@ -58,7 +58,7 @@ export default async function Messages({ params }: { params: Promise<{ locale: s
                     <span className="block truncate text-xs text-muted">{buyer ? t("youBuy") : t("youSell")} · {c.listing.title}</span>
                     <span className={`block truncate text-sm ${isNew ? "font-semibold" : "text-muted"}`}>{preview}</span>
                   </span>
-                  {isNew && <span className="size-2.5 shrink-0 rounded-full bg-primary" aria-label={t("unread")} />}
+                  {isNew > 0 && <span className="grid min-w-6 shrink-0 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-xs font-bold text-white" aria-label={t("unreadCount", { n: isNew })}>{isNew}</span>}
                 </Link>
               </li>
             );

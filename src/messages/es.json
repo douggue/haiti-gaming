@@ -63,7 +63,8 @@
     "tabAccount": "Cuenta",
     "more": "Más",
     "faqShort": "Preguntas",
-    "market": "Market"
+    "market": "Market",
+    "messages": "Mensajes"
   },
   "home": {
     "eyebrow": "Hecho en Haití, para gamers",
@@ -984,6 +985,10 @@
     "err_offer_amount": "Ingresa un monto válido.",
     "err_answered": "Esta oferta ya fue respondida.",
     "err_own": "Es tu propio anuncio.",
-    "err_closed": "El Market está cerrado por ahora."
+    "err_closed": "El Market está cerrado por ahora.",
+    "unreadCount": "{n} sin leer",
+    "newMessages": "Mensajes nuevos",
+    "sent": "Enviado",
+    "seen": "Visto"
   }
 }

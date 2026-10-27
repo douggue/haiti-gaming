@@ -26,12 +26,14 @@ export const listingImages = (v: unknown): string[] => (Array.isArray(v) ? v.fil
 export const listingDetails = (v: unknown): { label: string; value: string }[] =>
   Array.isArray(v) ? v.filter((d): d is { label: string; value: string } => !!d && typeof d.label === "string" && typeof d.value === "string") : [];
 
-/** Ids of the person's Market chats with something they haven't read yet. */
-export async function unreadChatIds(userId: string): Promise<Set<string>> {
-  const rows = await prisma.$queryRaw<{ id: string }[]>`
-    SELECT c.id FROM "MarketChat" c
-    WHERE EXISTS (SELECT 1 FROM "MarketMessage" m WHERE m."chatId" = c.id)
-      AND ((c."buyerId" = ${userId} AND (c."buyerReadAt" IS NULL OR c."lastAt" > c."buyerReadAt"))
-        OR (c."sellerId" = ${userId} AND (c."sellerReadAt" IS NULL OR c."lastAt" > c."sellerReadAt")))`;
-  return new Set(rows.map((r) => r.id));
+/** Unread messages per chat (from the other side or the agent, after the person last opened the chat). */
+export async function unreadChats(userId: string): Promise<Map<string, number>> {
+  const rows = await prisma.$queryRaw<{ id: string; n: bigint }[]>`
+    SELECT c.id, COUNT(m.id) AS n FROM "MarketChat" c
+    JOIN "MarketMessage" m ON m."chatId" = c.id
+    WHERE (m."authorId" IS DISTINCT FROM ${userId} OR m."fromStaff")
+      AND ((c."buyerId" = ${userId} AND (c."buyerReadAt" IS NULL OR m."createdAt" > c."buyerReadAt"))
+        OR (c."sellerId" = ${userId} AND (c."sellerReadAt" IS NULL OR m."createdAt" > c."sellerReadAt")))
+    GROUP BY c.id`;
+  return new Map(rows.map((r) => [r.id, Number(r.n)]));
 }

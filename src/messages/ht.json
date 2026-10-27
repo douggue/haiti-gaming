@@ -63,7 +63,8 @@
     "tabAccount": "Kont",
     "more": "Plis",
     "faqShort": "Kesyon",
-    "market": "Market"
+    "market": "Market",
+    "messages": "Mesaj"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -984,6 +985,10 @@
     "err_offer_amount": "Mete yon montan ki bon.",
     "err_answered": "Yo deja reponn òf sa a.",
     "err_own": "Se pwòp anons pa w.",
-    "err_closed": "Market la fèmen pou kounye a."
+    "err_closed": "Market la fèmen pou kounye a.",
+    "unreadCount": "{n} poko li",
+    "newMessages": "Nouvo mesaj",
+    "sent": "Voye",
+    "seen": "Wè"
   }
 }

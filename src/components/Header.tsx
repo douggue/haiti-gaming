@@ -8,7 +8,8 @@ import { t as txt } from "@/lib/text";
 import { Logo } from "./Logo";
 import { Avatar } from "./Avatar";
 import { PriorityNav } from "./NavMore";
-import { BellIcon, SearchIcon, UserIcon } from "./Icons";
+import { BellIcon, ChatIcon, SearchIcon, UserIcon } from "./Icons";
+import { unreadChats } from "@/lib/market-data";
 import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } from "./HeaderClient";
 
 export async function Header() {
@@ -16,6 +17,10 @@ export async function Header() {
   const locale = await getLocale();
   const [user, settings] = await Promise.all([getUser(), getDisplaySettings()]);
   const unread = user ? await prisma.notification.count({ where: { userId: user.id, readAt: null } }) : 0;
+  // Unread Market chat messages (the icon shows only once the person has a conversation)
+  const chats = user && settings.marketEnabled ? await unreadChats(user.id) : null;
+  const unreadMessages = chats ? [...chats.values()].reduce((a, b) => a + b, 0) : 0;
+  const hasChats = !!user && settings.marketEnabled && (unreadMessages > 0 || (await prisma.marketChat.count({ where: { OR: [{ buyerId: user.id }, { sellerId: user.id }], messages: { some: {} } } })) > 0);
   const custom = settings.navigation?.header ?? [];
   const base = custom.length ? custom.map((l) => ({ href: l.href, label: txt(l.label, locale) })) : [
     { href: "/store", label: t("store") },
@@ -48,6 +53,12 @@ export async function Header() {
           <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex" aria-label={t("search")}>
             <SearchIcon />
           </Link>
+          {hasChats && (
+            <Link href="/account/messages" className="btn-ghost relative min-h-10 px-2 sm:px-2.5" aria-label={`${t("messages")} (${unreadMessages})`} data-testid="header-messages">
+              <ChatIcon />
+              {unreadMessages > 0 && <span className="absolute -right-0.5 top-0.5 grid min-w-5 place-items-center rounded-full bg-danger px-1 text-[11px] font-bold leading-5 text-white ring-2 ring-surface">{unreadMessages > 99 ? "99+" : unreadMessages}</span>}
+            </Link>
+          )}
           {user && (
             <Link href="/account/notifications" className="btn-ghost relative min-h-10 px-2 sm:px-2.5" aria-label={`${t("notifications")} (${unread})`}>
               <BellIcon />

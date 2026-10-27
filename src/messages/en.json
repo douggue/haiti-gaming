@@ -63,7 +63,8 @@
     "tabAccount": "Account",
     "more": "More",
     "faqShort": "FAQ",
-    "market": "Market"
+    "market": "Market",
+    "messages": "Messages"
   },
   "home": {
     "eyebrow": "Made in Haiti, for gamers",
@@ -984,6 +985,10 @@
     "err_offer_amount": "Enter a valid amount.",
     "err_answered": "This offer was already answered.",
     "err_own": "That's your own listing.",
-    "err_closed": "The Market is closed right now."
+    "err_closed": "The Market is closed right now.",
+    "unreadCount": "{n} unread",
+    "newMessages": "New messages",
+    "sent": "Sent",
+    "seen": "Seen"
   }
 }

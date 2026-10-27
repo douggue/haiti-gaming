@@ -63,7 +63,8 @@
     "tabAccount": "Compte",
     "more": "Plus",
     "faqShort": "FAQ",
-    "market": "Market"
+    "market": "Market",
+    "messages": "Messages"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",
@@ -984,6 +985,10 @@
     "err_offer_amount": "Entrez un montant valide.",
     "err_answered": "Cette offre a déjà reçu une réponse.",
     "err_own": "C'est votre propre annonce.",
-    "err_closed": "Le Market est fermé pour le moment."
+    "err_closed": "Le Market est fermé pour le moment.",
+    "unreadCount": "{n} non lus",
+    "newMessages": "Nouveaux messages",
+    "sent": "Envoyé",
+    "seen": "Vu"
   }
 }

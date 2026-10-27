@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { answerOffer, chatUpdates, makeOffer, sendChatMessage, type ChatMessage } from "@/actions/market-chat";
 import { formatMoney } from "@/lib/money";
 import { compressImage } from "@/lib/compress-image";
@@ -16,19 +16,26 @@ type Props = {
   initial: ChatMessage[];
   agreedPrice: number | null;
   rulesAccepted: boolean;
+  /** First message that arrived since the person last opened the chat */
+  firstUnreadId: string | null;
+  /** When the other side last had the chat open (for ✓✓ "seen") */
+  otherReadAt: string | null;
 };
 
 const ImageIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 9" /></svg>
 );
 
-export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted }: Props) {
+export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted, firstUnreadId, otherReadAt: otherRead0 }: Props) {
   const t = useTranslations("chat");
   const tm = useTranslations("market");
   const locale = useLocale();
   const [messages, setMessages] = useState(initial);
   const [agreed, setAgreed] = useState(agreed0);
   const [status, setStatus] = useState(listing.status);
+  const [otherRead, setOtherRead] = useState(otherRead0);
+  const [divider, setDivider] = useState(firstUnreadId);
+  const dividerRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState("");
   const [keypad, setKeypad] = useState(false);
   const [amount, setAmount] = useState("");
@@ -58,6 +65,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
     merge(r.messages);
     setAgreed(r.agreedPrice);
     setStatus(r.listingStatus);
+    setOtherRead(r.otherReadAt);
   }, [chatId, merge]);
 
   // New messages every 4 seconds while the page is on screen.
@@ -71,6 +79,12 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
     };
   }, [refresh]);
 
+  // The header's unread counter was drawn before this chat was marked as read: redraw it once.
+  const router = useRouter();
+  useEffect(() => {
+    router.refresh();
+  }, [router]);
+
   // The floating WhatsApp button would cover the Send button.
   useEffect(() => {
     document.body.dataset.chat = "1";
@@ -79,15 +93,29 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
     };
   }, []);
 
+  // Opens at the "new messages" line if there is one, else at the bottom.
+  const first = useRef(true);
   useEffect(() => {
-    list.current?.scrollTo({ top: list.current.scrollHeight, behavior: "smooth" });
+    if (first.current && dividerRef.current && list.current) {
+      list.current.scrollTop = dividerRef.current.offsetTop - list.current.offsetTop - 8;
+    } else list.current?.scrollTo({ top: list.current.scrollHeight, behavior: first.current ? "auto" : "smooth" });
+    first.current = false;
   }, [messages.length]);
+
+  const seen = (at: string) => !!otherRead && otherRead >= at;
+  const ticks = (m: ChatMessage) =>
+    m.mine ? (
+      <span className={seen(m.at) ? "text-sky-200" : ""} aria-label={seen(m.at) ? t("seen") : t("sent")} title={seen(m.at) ? t("seen") : t("sent")}>
+        {" "}{seen(m.at) ? "✓✓" : "✓"}
+      </span>
+    ) : null;
 
   const send = (fd: FormData) =>
     start(async () => {
       setError("");
       const r = await sendChatMessage(chatId, fd);
       if (!r.ok) return setError(err(r.error));
+      setDivider(null);
       setText("");
       await refresh();
     });
@@ -123,29 +151,8 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
       await refresh();
     });
 
-  const press = (k: string) => setAmount((a) => (k === "⌫" ? a.slice(0, -1) : (a + k).replace(/^0+/, "").slice(0, 9)));
-  const canOffer = role === "buyer" && status === "ACTIVE";
-
-  return (
-    <div className="flex h-[calc(100dvh-17rem-env(safe-area-inset-bottom))] min-h-[24rem] flex-col overflow-hidden rounded-3xl border border-border bg-surface md:h-[calc(100dvh-13rem)]">
-      {/* Header: who, which account, price */}
-      <div className="flex items-center gap-3 border-b border-border p-3">
-        <Link href="/account/messages" className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-2" aria-label={t("back")}>←</Link>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {listing.image && <img src={listing.image} alt="" className="size-10 shrink-0 rounded-xl object-cover" />}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-bold">{otherName}</p>
-          <Link href={`/market/${listing.id}`} className="block truncate text-xs text-muted">
-            {listing.title} · {agreed ? <><s>{money(listing.price)}</s> <b className="text-success">{money(agreed)}</b></> : money(listing.price)}
-          </Link>
-        </div>
-      </div>
-      <p className="border-b border-border bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-300">🔒 {t("safety")}</p>
-
-      <div ref={list} className="flex-1 space-y-2 overflow-y-auto p-3" data-testid="chat-messages">
-        {messages.length === 0 && <p className="py-10 text-center text-sm text-muted">{t("empty")}</p>}
-        {messages.map((m) => {
-          if (m.kind === "OFFER") {
+  const bubble = (m: ChatMessage) => {
+    if (m.kind === "OFFER") {
             const mine = m.mine;
             return (
               <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
@@ -186,10 +193,44 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
                 <p className={`mt-0.5 text-[10px] ${m.mine ? "text-white/70" : "text-muted"}`}>
                   {new Date(m.at).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
                   {m.hidden && ` · ${t("hidden")}`}
+                  {ticks(m)}
                 </p>
               </div>
             </div>
           );
+  };
+
+  const press = (k: string) => setAmount((a) => (k === "⌫" ? a.slice(0, -1) : (a + k).replace(/^0+/, "").slice(0, 9)));
+  const canOffer = role === "buyer" && status === "ACTIVE";
+
+  return (
+    <div className="flex h-[calc(100dvh-17rem-env(safe-area-inset-bottom))] min-h-[24rem] flex-col overflow-hidden rounded-3xl border border-border bg-surface md:h-[calc(100dvh-13rem)]">
+      {/* Header: who, which account, price */}
+      <div className="flex items-center gap-3 border-b border-border p-3">
+        <Link href="/account/messages" className="grid size-10 shrink-0 place-items-center rounded-full bg-surface-2" aria-label={t("back")}>←</Link>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {listing.image && <img src={listing.image} alt="" className="size-10 shrink-0 rounded-xl object-cover" />}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-bold">{otherName}</p>
+          <Link href={`/market/${listing.id}`} className="block truncate text-xs text-muted">
+            {listing.title} · {agreed ? <><s>{money(listing.price)}</s> <b className="text-success">{money(agreed)}</b></> : money(listing.price)}
+          </Link>
+        </div>
+      </div>
+      <p className="border-b border-border bg-amber-500/10 px-4 py-2 text-xs text-amber-700 dark:text-amber-300">🔒 {t("safety")}</p>
+
+      <div ref={list} className="flex-1 space-y-2 overflow-y-auto p-3" data-testid="chat-messages">
+        {messages.length === 0 && <p className="py-10 text-center text-sm text-muted">{t("empty")}</p>}
+        {messages.map((m) => {
+          const line =
+            divider === m.id ? (
+              <div ref={dividerRef} className="flex items-center gap-2 py-1 text-[11px] font-bold uppercase tracking-wide text-primary" data-testid="unread-divider">
+                <span className="h-px flex-1 bg-primary/40" />
+                {t("newMessages")}
+                <span className="h-px flex-1 bg-primary/40" />
+              </div>
+            ) : null;
+          return <div key={m.id}>{line}{bubble(m)}</div>;
         })}
       </div>
 

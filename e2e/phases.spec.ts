@@ -358,12 +358,24 @@ test("Market chat: buyer and seller talk, contact details hidden, offer accepted
   await expect(b.getByTestId("offer-amount")).toHaveText(/4[\s  ]?000/);
   await b.getByRole("button", { name: "Voye òf la" }).click();
   await expect(msgs.getByText("N ap tann vandè a")).toBeVisible();
+  // Not seen yet: one tick
+  await expect(msgs.getByLabel("Voye").first()).toBeVisible();
+  // One notification for the whole batch, not one per message
+  expect(await db.notification.count({ where: { userId: seller.id, type: "market_message", readAt: null } })).toBe(1);
 
   // Seller: unread chat in Messages, sees the hidden number as •••, photo is visible to them only
   await s.goto("/ht/account/messages");
   await expect(s.getByRole("link", { name: /Mesaj \(1\)/ }).first()).toBeVisible();
+  await expect(s.getByTestId("header-messages")).toContainText("3");
+  await expect(s.getByLabel("3 poko li")).toBeVisible();
   await s.getByRole("link", { name: /Daphné N\./ }).click();
   await s.waitForURL(`**/account/messages/${chatId}`);
+  await expect(s.getByTestId("unread-divider")).toBeVisible();
+  await expect(s.getByTestId("header-messages")).not.toContainText("3");
+  // Opening the chat clears its notification and the counters
+  expect(await db.notification.count({ where: { userId: seller.id, type: "market_message", readAt: null } })).toBe(0);
+  // The buyer's messages now show as seen (✓✓) on the buyer's screen
+  await expect(msgs.getByLabel("Wè").first()).toBeVisible({ timeout: 10_000 });
   await expect(s.getByText("Bonjou! Kont lan toujou la? Rele m •••")).toBeVisible();
   const img = await db.marketMessage.findFirstOrThrow({ where: { chatId, kind: "IMAGE" } });
   expect((await s.request.get(`/api/market-chat/image/${img.id}`)).status()).toBe(200);

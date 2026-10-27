@@ -57,10 +57,26 @@ function toDto(m: { id: string; kind: string; body: string; imagePath: string | 
   };
 }
 
-/** Tell the other side about a new message, at most once every 10 minutes per chat. */
-async function ping(chat: { id: string; buyerId: string; sellerId: string; listing: { title: string } }, to: string[], lastAt: Date) {
-  if (Date.now() - lastAt.getTime() < 10 * 60_000) return;
-  for (const uid of to) await notify(uid, "market_message", { title: chat.listing.title }, `/account/messages/${chat.id}`);
+/**
+ * Tell people about a new message: not while they have the chat open (seen in the last 12 s),
+ * and only once per unread batch (no new notification while the previous one is still unread).
+ */
+async function ping(chat: { id: string; listing: { title: string } }, to: { id: string; readAt: Date | null }[]) {
+  const link = `/account/messages/${chat.id}`;
+  for (const r of to) {
+    if (r.readAt && Date.now() - r.readAt.getTime() < 12_000) continue;
+    if (await prisma.notification.findFirst({ where: { userId: r.id, link, readAt: null }, select: { id: true } })) continue;
+    await notify(r.id, "market_message", { title: chat.listing.title }, link);
+  }
+}
+
+/** Opening a chat also clears its notifications. */
+async function markSeen(chatId: string, role: "buyer" | "seller", userId: string) {
+  const now = new Date();
+  await prisma.$transaction([
+    prisma.marketChat.update({ where: { id: chatId }, data: role === "buyer" ? { buyerReadAt: now } : { sellerReadAt: now } }),
+    prisma.notification.updateMany({ where: { userId, link: `/account/messages/${chatId}`, readAt: null }, data: { readAt: now } }),
+  ]);
 }
 
 /** "Ekri machann nan": opens (or reopens) the buyer's chat with the seller about a listing. */
@@ -80,7 +96,7 @@ export async function openChat(listingId: string): Promise<R<{ id: string }>> {
 }
 
 /** New messages since `after` (ISO), and marks the chat as read. */
-export async function chatUpdates(chatId: string, after?: string): Promise<R<{ messages: ChatMessage[]; agreedPrice: number | null; listingStatus: string }>> {
+export async function chatUpdates(chatId: string, after?: string): Promise<R<{ messages: ChatMessage[]; agreedPrice: number | null; listingStatus: string; otherReadAt: string | null }>> {
   try {
     const { user, chat, role } = await myChat(chatId);
     const since = after ? new Date(after) : null;
@@ -89,8 +105,9 @@ export async function chatUpdates(chatId: string, after?: string): Promise<R<{ m
       orderBy: { createdAt: "asc" },
       take: 300,
     });
-    await prisma.marketChat.update({ where: { id: chat.id }, data: role === "buyer" ? { buyerReadAt: new Date() } : { sellerReadAt: new Date() } });
-    return { ok: true, messages: rows.map((m) => toDto(m, user.id)), agreedPrice: chat.agreedPrice, listingStatus: chat.listing.status };
+    await markSeen(chat.id, role, user.id);
+    const other = role === "buyer" ? chat.sellerReadAt : chat.buyerReadAt;
+    return { ok: true, messages: rows.map((m) => toDto(m, user.id)), agreedPrice: chat.agreedPrice, listingStatus: chat.listing.status, otherReadAt: other?.toISOString() ?? null };
   } catch (e) {
     return fail(e);
   }
@@ -116,12 +133,11 @@ export async function sendChatMessage(chatId: string, form: FormData): Promise<R
       }
     }
     const r = redactContacts(text);
-    const prev = chat.lastAt;
     await prisma.$transaction([
       prisma.marketMessage.create({ data: { chatId: chat.id, authorId: user.id, kind: imagePath ? "IMAGE" : "TEXT", body: r.body, original: r.hidden ? text : null, imagePath } }),
       prisma.marketChat.update({ where: { id: chat.id }, data: { lastAt: new Date(), ...(role === "buyer" ? { buyerReadAt: new Date() } : { sellerReadAt: new Date() }) } }),
     ]);
-    await ping(chat, [role === "buyer" ? chat.sellerId : chat.buyerId], prev);
+    await ping(chat, [role === "buyer" ? { id: chat.sellerId, readAt: chat.sellerReadAt } : { id: chat.buyerId, readAt: chat.buyerReadAt }]);
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -136,13 +152,12 @@ export async function makeOffer(chatId: string, amount: string): Promise<R> {
     if (chat.listing.status !== "ACTIVE") return { ok: false, error: "unavailable" };
     const minor = parseAmount(amount);
     if (!minor || minor < 100 || minor > chat.listing.price * 2) return { ok: false, error: "offer_amount" };
-    const prev = chat.lastAt;
     await prisma.$transaction([
       prisma.marketMessage.updateMany({ where: { chatId: chat.id, kind: "OFFER", offerStatus: "PENDING" }, data: { offerStatus: "DECLINED" } }),
       prisma.marketMessage.create({ data: { chatId: chat.id, authorId: user.id, kind: "OFFER", offerAmount: minor, offerStatus: "PENDING" } }),
       prisma.marketChat.update({ where: { id: chat.id }, data: { lastAt: new Date(), buyerReadAt: new Date() } }),
     ]);
-    await ping(chat, [chat.sellerId], prev);
+    await ping(chat, [{ id: chat.sellerId, readAt: chat.sellerReadAt }]);
     return { ok: true };
   } catch (e) {
     return fail(e);
@@ -181,7 +196,10 @@ export async function staffChatMessage(chatId: string, form: FormData): Promise<
       prisma.marketMessage.create({ data: { chatId, authorId: staff.id, kind: "TEXT", body: text, fromStaff: true } }),
       prisma.marketChat.update({ where: { id: chatId }, data: { lastAt: new Date() } }),
     ]);
-    await ping(chat, [chat.buyerId, chat.sellerId], new Date(0));
+    await ping(chat, [
+      { id: chat.buyerId, readAt: chat.buyerReadAt },
+      { id: chat.sellerId, readAt: chat.sellerReadAt },
+    ]);
     await audit(staff.id, "market.chat.staff_message", "MarketChat", chatId);
     return { ok: true, message: "Sent" };
   } catch (e) {
