@@ -9,6 +9,7 @@ import { CloseIcon, CopyIcon, ShareIcon, WhatsAppIcon } from "../Icons";
 import { PhoneInput } from "../PhoneInput";
 import { PhotoPicker } from "../PhotoPicker";
 import { compressImage } from "@/lib/compress-image";
+import { PlatformIcon } from "./PlatformIcon";
 
 /** Bottom sheet on phones, centered dialog on larger screens. */
 function Sheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
@@ -291,7 +292,7 @@ export function SellForm({ commissionPct, rulesAccepted }: { commissionPct: numb
           {PLATFORMS.map((p) => (
             <label key={p.key} className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium ${platform === p.key ? "border-primary bg-primary text-white" : "border-border hover:bg-surface-2"}`}>
               <input type="radio" name="platform" value={p.key} checked={platform === p.key} onChange={() => setPlatform(p.key)} className="sr-only" />
-              {p.icon} {p.key === "other" ? t("otherPlatform") : p.label}
+              <PlatformIcon platform={p.key} size={20} className="-ml-1 inline-block align-[-5px]" /> {p.key === "other" ? t("otherPlatform") : p.label}
             </label>
           ))}
         </div>
@@ -465,7 +466,7 @@ export function VendorForm({ rulesAccepted, again, idRequired = true }: { rulesA
           {PLATFORMS.map((p) => (
             <label key={p.key} className="cursor-pointer rounded-full border border-border px-3 py-1.5 text-sm font-medium has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-white">
               <input type="checkbox" name="platforms" value={p.key} className="sr-only" />
-              {p.icon} {p.key === "other" ? t("otherPlatform") : p.label}
+              <PlatformIcon platform={p.key} size={20} className="-ml-1 inline-block align-[-5px]" /> {p.key === "other" ? t("otherPlatform") : p.label}
             </label>
           ))}
         </div>

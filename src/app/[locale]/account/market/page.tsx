@@ -8,6 +8,7 @@ import { commissionOf, platformOf } from "@/lib/market";
 import { listingImages } from "@/lib/market-data";
 import { MarketAction, RateSeller } from "@/components/market/MarketClient";
 import { WhatsAppIcon } from "@/components/Icons";
+import { PlatformIcon } from "@/components/market/PlatformIcon";
 
 const TONE: Record<string, string> = {
   ACTIVE: "bg-success-soft text-success",
@@ -61,7 +62,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
             {purchases.map((d) => (
               <li key={d.id} className="space-y-2 py-3 text-sm">
                 <div className="flex items-start justify-between gap-3">
-                  <Link href={`/market/${d.listing.id}`} className="min-w-0"><b className="block truncate">{platformOf(d.listing.platform).icon} {d.listing.title}</b><span className="text-xs text-muted">#{d.number} · {fmt.dateTime(d.createdAt, { dateStyle: "medium" })} · {formatMoney(d.price, d.currency, locale)}</span></Link>
+                  <Link href={`/market/${d.listing.id}`} className="min-w-0"><b className="flex items-center gap-1.5 truncate"><PlatformIcon platform={d.listing.platform} size={20} /> {d.listing.title}</b><span className="text-xs text-muted">#{d.number} · {fmt.dateTime(d.createdAt, { dateStyle: "medium" })} · {formatMoney(d.price, d.currency, locale)}</span></Link>
                   {badge(d.status)}
                 </div>
                 <p className="text-xs text-muted">{t(`buyerStep_${d.status}` as "buyerStep_REQUESTED")}</p>
@@ -86,7 +87,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
               return (
                 <li key={d.id} className="space-y-1 py-3 text-sm">
                   <div className="flex items-start justify-between gap-3">
-                    <b className="min-w-0 truncate">{platformOf(d.listing.platform).icon} {d.listing.title} <span className="font-normal text-muted">#{d.number}</span></b>
+                    <b className="flex min-w-0 items-center gap-1.5 truncate"><PlatformIcon platform={d.listing.platform} size={20} /> {d.listing.title} <span className="font-normal text-muted">#{d.number}</span></b>
                     {badge(d.status)}
                   </div>
                   <p className="text-xs text-muted">{t("youReceive", { price: formatMoney(d.price, d.currency, locale), cut: formatMoney(cut, d.currency, locale), net: formatMoney(d.price - cut, d.currency, locale) })}</p>

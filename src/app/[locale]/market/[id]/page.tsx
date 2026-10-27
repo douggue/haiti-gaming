@@ -14,6 +14,7 @@ import { rulesAccepted } from "@/lib/market-rules";
 import { listingDetails, listingImages, sellerStats } from "@/lib/market-data";
 import { BuyButton, ChatButton, ReportButton, ShareButton, ViewCounter } from "@/components/market/MarketClient";
 import { WhatsAppIcon } from "@/components/Icons";
+import { PlatformIcon } from "@/components/market/PlatformIcon";
 
 type P = Promise<{ locale: string; id: string }>;
 const PUBLIC = ["ACTIVE", "RESERVED", "SOLD"];
@@ -49,9 +50,9 @@ export default async function ListingPage({ params }: { params: P }) {
   const agent = (settings.marketWhatsapp || settings.whatsappNumber).replace(/\D/g, "");
   const ask = `https://wa.me/${agent}?text=${encodeURIComponent(t("askText", { title: `${pLabel} · ${l.title}`, url }))}`;
   const statusLabel = { ACTIVE: t("statusActive"), RESERVED: t("reserved"), SOLD: t("sold"), PENDING: t("statusPending"), REJECTED: t("statusRejected"), REMOVED: t("statusRemoved") }[l.status];
-  const rows: [string, string][] = [
-    [t("platform"), `${p.icon} ${pLabel}`],
-    ...listingDetails(l.details).map((d) => [d.label, d.value] as [string, string]),
+  const rows: [string, React.ReactNode][] = [
+    [t("platform"), <span key="p" className="inline-flex items-center gap-1.5"><PlatformIcon platform={p.key} size={20} /> {pLabel}</span>],
+    ...listingDetails(l.details).map((d) => [d.label, d.value] as [string, React.ReactNode]),
     [t("withEmailShort"), l.withEmail ? t("yes") : t("no")],
     [t("visits"), String(l.views)],
     [t("status"), statusLabel],
@@ -91,7 +92,7 @@ export default async function ListingPage({ params }: { params: P }) {
         </div>
         <aside className="order-2 space-y-4 lg:order-none lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:h-fit">
           <section className="card space-y-4 p-5">
-            <p className="text-sm font-semibold text-primary">{p.icon} {pLabel}</p>
+            <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary"><PlatformIcon platform={p.key} size={28} /> {pLabel}</p>
             <h1 className="text-2xl font-extrabold tracking-tight">{l.title}</h1>
             <p className="text-3xl font-extrabold">{formatMoney(l.price, l.currency, locale)}</p>
             <div className="flex items-center gap-3 rounded-2xl bg-surface-2 p-3 text-sm">

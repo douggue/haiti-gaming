@@ -12,6 +12,7 @@ import { isPlatform, platformOf } from "@/lib/market";
 import { listingDetails, listingImages, sellerStats } from "@/lib/market-data";
 import { RulesLink } from "@/components/market/MarketClient";
 import { MarketBrowser } from "@/components/market/MarketBrowser";
+import { PlatformIcon, TrustIcon } from "@/components/market/PlatformIcon";
 
 type SP = Promise<{ p?: string; q?: string }>;
 
@@ -50,10 +51,10 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
         {/* Decoration: blurred glows and floating game icons */}
         <span aria-hidden className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-fuchsia-500/40 blur-3xl" />
         <span aria-hidden className="pointer-events-none absolute -bottom-20 -left-10 size-56 rounded-full bg-sky-400/30 blur-3xl" />
-        <span aria-hidden className="pointer-events-none absolute right-4 top-4 hidden select-none gap-2 text-4xl opacity-80 sm:flex">
-          <span className="animate-bounce [animation-duration:2.4s]">🔥</span>
-          <span className="animate-bounce [animation-delay:300ms] [animation-duration:2.8s]">⚽</span>
-          <span className="animate-bounce [animation-delay:600ms] [animation-duration:2.6s]">🎵</span>
+        <span aria-hidden className="pointer-events-none absolute right-4 top-4 hidden select-none gap-3 sm:flex">
+          <span className="animate-bounce [animation-duration:2.4s]"><PlatformIcon platform="freefire" size={52} className="rotate-[-8deg] drop-shadow-xl" /></span>
+          <span className="animate-bounce [animation-delay:300ms] [animation-duration:2.8s]"><PlatformIcon platform="efootball" size={52} className="drop-shadow-xl" /></span>
+          <span className="animate-bounce [animation-delay:600ms] [animation-duration:2.6s]"><PlatformIcon platform="tiktok" size={52} className="rotate-[8deg] drop-shadow-xl" /></span>
         </span>
         <div className="relative max-w-xl">
           <p className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-widest">
@@ -63,6 +64,11 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
             {t("heroTitle1")} <span className="bg-gradient-to-r from-amber-300 to-pink-400 bg-clip-text text-transparent">{t("heroTitle2")}</span>
           </h1>
           <p className="mt-2 text-sm text-white/85 sm:text-base">{t("subtitle")}</p>
+          <div className="mt-4 flex gap-2 sm:hidden" aria-hidden>
+            {["freefire", "pubg", "efootball", "tiktok", "instagram", "youtube"].map((k, i) => (
+              <PlatformIcon key={k} platform={k} size={38} className={`drop-shadow-lg ${i % 2 ? "rotate-[6deg]" : "-rotate-[6deg]"}`} />
+            ))}
+          </div>
           <div className="mt-5 flex flex-wrap gap-2">
             <a href="#listings" className="btn-primary min-h-12 !bg-white px-5 !text-[#1d2a8a] shadow-lg">🛒 {t("browseCta")}</a>
             <Link href="/market/sell" className="btn-primary min-h-12 !bg-amber-400 px-5 !text-black shadow-lg">＋ {t("sell")}</Link>
@@ -86,7 +92,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
       <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 sm:grid sm:grid-cols-3">
         {(["trustEscrow", "trustChecked", "trustSupport"] as const).map((k, i) => (
           <li key={k} className="flex min-w-[15rem] items-start gap-3 rounded-2xl border border-border bg-surface p-3 text-sm sm:min-w-0">
-            <span aria-hidden className={`grid size-10 shrink-0 place-items-center rounded-xl text-lg ${["bg-emerald-500/15", "bg-sky-500/15", "bg-violet-500/15"][i]}`}>{["🔒", "✅", "💬"][i]}</span>
+            <span className="shrink-0 drop-shadow"><TrustIcon kind={(["escrow", "checked", "support"] as const)[i]} size={42} /></span>
             <span><b className="block">{t(k)}</b><span className="text-xs text-muted">{t(`${k}Hint`)}</span></span>
           </li>
         ))}

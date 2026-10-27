@@ -1,9 +1,10 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { PLATFORMS } from "@/lib/market";
 import { ShareButton } from "./MarketClient";
+import { PlatformIcon } from "./PlatformIcon";
 
 export type MarketItem = {
   id: string;
@@ -20,6 +21,24 @@ export type MarketItem = {
   shareUrl: string;
   shareText: string;
 };
+
+/** "All games" tile icon. */
+function AllIcon() {
+  const id = `pi-all-${useId().replace(/:/g, "")}`;
+  return (
+    <svg width="46" height="46" viewBox="0 0 48 48" aria-hidden className="drop-shadow-md">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#60a5fa" />
+          <stop offset="0.5" stopColor="#8b5cf6" />
+          <stop offset="1" stopColor="#ec4899" />
+        </linearGradient>
+      </defs>
+      <rect width="48" height="48" rx="13" fill={`url(#${id})`} />
+      {[[13, 13], [26, 13], [13, 26], [26, 26]].map(([x, y]) => <rect key={`${x}${y}`} x={x} y={y} width="9" height="9" rx="2.5" fill="#fff" />)}
+    </svg>
+  );
+}
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
@@ -66,10 +85,10 @@ export function MarketBrowser({ items, initialPlatform, initialQuery }: { items:
 
       {/* Game tiles: tap to filter, tap again (or "All") to see everything */}
       <nav aria-label={t("platform")} className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2">
-        <button type="button" onClick={() => setPlatform("")} aria-pressed={!platform} className={`relative flex h-24 w-24 shrink-0 snap-start flex-col items-center justify-center gap-1 rounded-2xl border-2 text-sm font-bold transition-transform active:scale-95 ${!platform ? "border-primary bg-primary text-white shadow-lg shadow-primary/30" : "border-border bg-surface"}`}>
-          <span className="text-2xl" aria-hidden>✨</span>
+        <button type="button" onClick={() => setPlatform("")} aria-pressed={!platform} className={`relative flex h-[6.5rem] w-24 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-2xl border-2 text-xs font-bold transition-all active:scale-95 ${!platform ? "border-primary bg-primary/10 shadow-lg shadow-primary/25" : "border-border bg-surface"}`}>
+          <AllIcon />
           {t("all")}
-          <span className="absolute right-1.5 top-1.5 rounded-full bg-black/20 px-1.5 text-[10px]">{items.length}</span>
+          <span className="absolute right-1 top-1 min-w-5 rounded-full bg-primary px-1 text-[10px] leading-5 text-white">{items.length}</span>
         </button>
         {PLATFORMS.filter((p) => counts[p.key] || platform === p.key).map((p) => {
           const on = platform === p.key;
@@ -79,11 +98,11 @@ export function MarketBrowser({ items, initialPlatform, initialQuery }: { items:
               type="button"
               onClick={() => setPlatform(on ? "" : p.key)}
               aria-pressed={on}
-              className={`relative flex h-24 w-24 shrink-0 snap-start flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl bg-gradient-to-br ${p.color} px-1 text-center text-xs font-bold leading-tight text-white transition-all active:scale-95 ${on ? "scale-[1.04] ring-4 ring-primary ring-offset-2 ring-offset-bg" : "opacity-90 hover:opacity-100"}`}
+              className={`relative flex h-[6.5rem] w-24 shrink-0 snap-start flex-col items-center justify-center gap-1.5 rounded-2xl border-2 px-1 text-center text-xs font-bold leading-tight transition-all active:scale-95 ${on ? "border-primary bg-primary/10 shadow-lg shadow-primary/25" : "border-border bg-surface hover:border-primary/40"}`}
             >
-              <span className="text-3xl drop-shadow" aria-hidden>{p.icon}</span>
+              <PlatformIcon platform={p.key} size={46} className={`drop-shadow-md transition-transform ${on ? "scale-110" : ""}`} />
               {p.key === "other" ? t("otherPlatform") : p.label}
-              <span className="absolute right-1.5 top-1.5 rounded-full bg-black/30 px-1.5 text-[10px]">{counts[p.key] ?? 0}</span>
+              <span className="absolute right-1 top-1 min-w-5 rounded-full bg-primary px-1 text-[10px] leading-5 text-white">{counts[p.key] ?? 0}</span>
             </button>
           );
         })}
@@ -107,9 +126,9 @@ export function MarketBrowser({ items, initialPlatform, initialQuery }: { items:
               <li key={l.id} className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10" data-testid="market-card">
                 <Link href={`/market/${l.id}`} className={`relative block aspect-[4/3] overflow-hidden bg-gradient-to-br ${p.color}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {l.image ? <img src={l.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <span className="grid size-full place-items-center text-5xl">{p.icon}</span>}
+                  {l.image ? <img src={l.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <span className="grid size-full place-items-center"><PlatformIcon platform={p.key} size={72} className="drop-shadow-xl" /></span>}
                   <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 to-transparent" />
-                  <span className={`absolute left-2 top-2 rounded-full bg-gradient-to-r ${p.color} px-2 py-0.5 text-[11px] font-bold text-white shadow`}>{p.icon} {p.key === "other" ? t("otherPlatform") : p.label}</span>
+                  <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 py-0.5 pl-0.5 pr-2 text-[11px] font-bold text-white shadow backdrop-blur"><PlatformIcon platform={p.key} size={18} /> {p.key === "other" ? t("otherPlatform") : p.label}</span>
                   {l.reserved ? (
                     <span className="absolute right-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-extrabold text-black">{t("reserved")}</span>
                   ) : l.views >= 50 ? (
