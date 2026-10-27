@@ -982,7 +982,9 @@
     "credNotePh": "Códigos de respaldo, pregunta de seguridad…",
     "err_credentials": "Ingresa el usuario y la contraseña para el agente.",
     "allSold": "¡{n, plural, one {La cuenta se vendió} other {Las # cuentas se vendieron}}! Pronto llegan nuevas.",
-    "pendingMine": "{n, plural, one {Tu cuenta está} other {# de tus cuentas están}} en revisión por nuestro equipo"
+    "pendingMine": "{n, plural, one {Tu cuenta está} other {# de tus cuentas están}} en revisión por nuestro equipo",
+    "memberSince": "Miembro desde",
+    "similar": "Más cuentas de {game}"
   },
   "chat": {
     "title": "Mensajes",

@@ -982,7 +982,9 @@
     "credNotePh": "Backup codes, security question…",
     "err_credentials": "Enter the login and password for the agent.",
     "allSold": "All {n, plural, one {# account} other {# accounts}} sold! New ones are coming soon.",
-    "pendingMine": "{n, plural, one {Your account is} other {# of your accounts are}} being checked by our team"
+    "pendingMine": "{n, plural, one {Your account is} other {# of your accounts are}} being checked by our team",
+    "memberSince": "Member since",
+    "similar": "More {game} accounts"
   },
   "chat": {
     "title": "Messages",

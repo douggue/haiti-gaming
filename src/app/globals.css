@@ -480,3 +480,4 @@ body[data-chat] .wa-float { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .inspect-btn::after { animation: none; }
 }
+@media (max-width: 1023px) { body[data-buybar] .wa-float { display: none; } }

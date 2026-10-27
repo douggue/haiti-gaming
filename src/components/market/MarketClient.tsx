@@ -506,3 +506,14 @@ export function VendorForm({ rulesAccepted, again, idRequired = true }: { rulesA
     </form>
   );
 }
+
+/** Hides the floating WhatsApp help button while mounted (it would cover the Buy bar; the page has its own agent button). */
+export function HideHelpButton() {
+  useEffect(() => {
+    document.body.dataset.buybar = "1";
+    return () => {
+      delete document.body.dataset.buybar;
+    };
+  }, []);
+  return null;
+}
