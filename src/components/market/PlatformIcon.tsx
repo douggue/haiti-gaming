@@ -1,5 +1,29 @@
 "use client";
-import { useId } from "react";
+import { createContext, useContext, useId } from "react";
+import { BRAND_ICONS } from "@/lib/brand-icons";
+
+/** Icons uploaded by staff (Admin → Market → Settings), by platform key; they replace the built-in ones. */
+const Custom = createContext<Record<string, string>>({});
+export function PlatformIconsProvider({ icons, children }: { icons: Record<string, string>; children: React.ReactNode }) {
+  return <Custom.Provider value={icons}>{children}</Custom.Provider>;
+}
+
+/** Official icons shipped with the site (public/market-icons). Staff uploads still take priority. */
+const BUILT_IN: Record<string, string> = {
+  freefire: "/market-icons/freefire.webp",
+  pubg: "/market-icons/pubg.webp",
+  codm: "/market-icons/codm.webp",
+  efootball: "/market-icons/efootball.webp",
+};
+
+/** Real logos: background and logo colors per brand. */
+const BRAND_STYLE: Record<string, { bg: string; fg: string }> = {
+  pubg: { bg: "#F4B942", fg: "#1b1b1b" },
+  tiktok: { bg: "#000000", fg: "#ffffff" },
+  instagram: { bg: "", fg: "#ffffff" },
+  facebook: { bg: "#0866FF", fg: "#ffffff" },
+  youtube: { bg: "#ffffff", fg: "#FF0000" },
+};
 
 /**
  * Colorful app-style icons for Market games and platforms (drawn here, no image files to load).
@@ -91,12 +115,42 @@ function Glyph({ platform }: { platform: string }) {
 }
 
 export function PlatformIcon({ platform, size = 40, className }: Props) {
+  const custom = useContext(Custom)[platform] || BUILT_IN[platform];
   const key = BG[platform] ? platform : "other";
   const [a, b, c] = BG[key];
   // Unique per icon: an id shared with a hidden copy of the same icon would leave this one without its colors.
   const uid = useId().replace(/:/g, "");
   const id = `pi-${key}-${uid}`;
   const shine = `pi-shine-${uid}`;
+  if (custom) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={custom} alt="" width={size} height={size} className={`rounded-[27%] object-cover ring-1 ring-black/10 ${className ?? ""}`} style={{ width: size, height: size }} />;
+  }
+  const brand = BRAND_ICONS[key];
+  const style = BRAND_STYLE[key];
+  if (brand && style) {
+    const logo = <path d={brand.path} transform="translate(10.5 10.5) scale(1.125)" />;
+    return (
+      <svg width={size} height={size} viewBox="0 0 48 48" className={className} aria-hidden>
+        <defs>
+          <linearGradient id={id} x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="#feda75" />
+            <stop offset="0.3" stopColor="#fa7e1e" />
+            <stop offset="0.6" stopColor="#d62976" />
+            <stop offset="1" stopColor="#4f5bd5" />
+          </linearGradient>
+        </defs>
+        <rect width="48" height="48" rx="13" fill={style.bg || `url(#${id})`} />
+        {key === "tiktok" && (
+          <>
+            <g fill="#25F4EE" transform="translate(-1.1 -1.1)">{logo}</g>
+            <g fill="#FE2C55" transform="translate(1.1 1.1)">{logo}</g>
+          </>
+        )}
+        <g fill={style.fg}>{logo}</g>
+      </svg>
+    );
+  }
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" className={className} aria-hidden>
       <defs>

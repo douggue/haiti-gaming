@@ -6,7 +6,7 @@ import { audit } from "@/lib/audit";
 import { getSettings, setSetting } from "@/lib/settings";
 import { notify } from "@/lib/notify";
 import { parseAmount } from "@/lib/money";
-import { commissionOf } from "@/lib/market";
+import { commissionOf, PLATFORMS } from "@/lib/market";
 import { defaultRules } from "@/lib/market-rules";
 import type { DealStatus } from "@prisma/client";
 
@@ -130,6 +130,13 @@ export async function saveMarketSettings(form: FormData): Promise<R> {
     ) as Record<"ht" | "fr" | "en" | "es", string[]>;
     await setSetting("marketRules", rules);
     await setSetting("marketVendorIdRequired", form.get("vendorIdRequired") === "on");
+    // Uploaded platform icons (empty = the built-in icon)
+    const icons: Record<string, string> = {};
+    for (const p of PLATFORMS) {
+      const url = String(form.get(`icon_${p.key}`) ?? "").trim();
+      if (url && /^(https:\/\/|\/)/.test(url)) icons[p.key] = url.slice(0, 500);
+    }
+    await setSetting("marketIcons", icons);
     if (form.get("reaccept") === "on") await setSetting("marketRulesUpdatedAt", new Date().toISOString());
     await audit(staff.id, "market.settings", "SiteSetting", null, { pct, reaccept: form.get("reaccept") === "on" });
     return done("Saved");

@@ -163,7 +163,7 @@ test("Market: vendor applies and is approved, sells, staff approves, buyer reser
   await s.getByLabel("Non konplè (jan l ye sou pyès ou)").fill("Ricardo Augustin");
   await s.locator("#vendor-phone").fill("37223344");
   await s.getByLabel("Vil", { exact: true }).fill("Cap-Haïtien");
-  await s.getByText("🔥 Free Fire").click();
+  await s.locator("label", { hasText: "Free Fire" }).first().click();
   await s.getByLabel("Konbyen kont pa mwa?").selectOption("3-10");
   await s.locator("#photo-idPhoto").setInputFiles({ name: "id.png", mimeType: "image/png", buffer: PNG });
   await expect(s.getByText("✓ Foto pyès idantite w")).toBeVisible();
@@ -309,7 +309,7 @@ test("staff can make the vendor ID photo optional", async ({ browser }) => {
     await c.getByLabel("Non konplè (jan l ye sou pyès ou)").fill("Wisly Joseph");
     await c.locator("#vendor-phone").fill("37334455");
     await c.getByLabel("Vil", { exact: true }).fill("Jacmel");
-    await c.getByText("🎵 TikTok").click();
+    await c.locator("label", { hasText: "TikTok" }).first().click();
     await c.getByLabel("Konbyen kont pa mwa?").selectOption("1-2");
     await c.getByLabel(/Kont m ap vann yo se pa m/).check();
     await c.getByRole("button", { name: "Voye demann mwen" }).click();

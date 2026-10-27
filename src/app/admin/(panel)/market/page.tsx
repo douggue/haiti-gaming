@@ -5,8 +5,10 @@ import { requireStaff } from "@/lib/session";
 import { can } from "@/lib/permissions";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
-import { commissionOf, platformOf } from "@/lib/market";
+import { commissionOf, PLATFORMS, platformOf } from "@/lib/market";
 import { defaultRules } from "@/lib/market-rules";
+import { ImageField } from "@/components/admin/ImageField";
+import { PlatformIcon } from "@/components/market/PlatformIcon";
 import { listingDetails, listingImages } from "@/lib/market-data";
 import { formatPhone, waNumber } from "@/lib/phone";
 import { resolveReport, reviewListing, reviewVendor, saveMarketSettings, setDealStatus, takeDownListing } from "@/actions/market-admin";
@@ -244,6 +246,18 @@ export default async function AdminMarket({ searchParams }: { searchParams: Prom
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="enabled" defaultChecked={settings.marketEnabled} /> Market is open (menu link, listings, selling)</label>
         <label className="block"><span className="label">Commission kept from the seller (%)</span><input name="commission" defaultValue={settings.marketCommissionBps / 100} className="input" inputMode="decimal" /><span className="mt-1 block text-xs text-muted">Shown to sellers. You can change it per deal when closing it.</span></label>
         <label className="block"><span className="label">Market agent WhatsApp (digits, with 509)</span><input name="whatsapp" defaultValue={settings.marketWhatsapp} placeholder={settings.whatsappNumber} className="input" inputMode="tel" /><span className="mt-1 block text-xs text-muted">Buyers are sent here when they tap “Buy”. Empty = the main support number.</span></label>
+        <fieldset className="space-y-3 border-t border-border pt-4">
+          <legend className="font-semibold">Game icons</legend>
+          <p className="text-xs text-muted">Upload the official icon of a game (square PNG/WebP, about 256×256). Empty = the icon shown on the left.</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {PLATFORMS.map((p) => (
+              <div key={p.key} className="flex items-start gap-3">
+                <PlatformIcon platform={p.key} size={44} />
+                <div className="min-w-0 flex-1"><ImageField name={`icon_${p.key}`} label={p.label} value={settings.marketIcons?.[p.key] ?? ""} folder="brand" aspect="aspect-square" /></div>
+              </div>
+            ))}
+          </div>
+        </fieldset>
         <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="vendorIdRequired" defaultChecked={settings.marketVendorIdRequired} className="mt-1" /> <span>Vendor applications must include a photo of an ID <span className="text-muted">(off = optional: applicants can still add one)</span></span></label>
         <fieldset className="space-y-3 border-t border-border pt-4">
           <legend className="font-semibold">Market rules</legend>

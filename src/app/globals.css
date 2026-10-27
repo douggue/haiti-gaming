@@ -463,3 +463,20 @@ body[data-chat] .wa-float { display: none; }
 @media (max-width: 767px) {
   body[data-chat] { overflow: hidden; }
 }
+/* Market "Inspect" button: a light sweep passes over it every few seconds */
+.inspect-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.45) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: inspect-shine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes inspect-shine {
+  0%, 60% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inspect-btn::after { animation: none; }
+}

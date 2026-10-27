@@ -5,6 +5,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { getDisplaySettings } from "@/lib/settings";
+import { PlatformIconsProvider } from "@/components/market/PlatformIcon";
 import { getDisplayCurrency } from "@/lib/prefs";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { Header } from "@/components/Header";
@@ -79,6 +80,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           {t("skipToContent")}
         </a>
         <NextIntlClientProvider>
+          <PlatformIconsProvider icons={settings.marketIcons ?? {}}>
           <CartProvider currency={currency} htgPerUsd={settings.htgPerUsd} signedIn={!!user}>
             <AnnouncementBar settings={settings} locale={locale} />
             <Header />
@@ -92,6 +94,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <ServiceWorker />
             <InstallPrompt />
           </CartProvider>
+          </PlatformIconsProvider>
         </NextIntlClientProvider>
       </body>
     </html>

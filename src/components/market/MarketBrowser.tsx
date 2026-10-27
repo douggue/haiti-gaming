@@ -152,7 +152,17 @@ export function MarketBrowser({ items, initialPlatform, initialQuery }: { items:
                     {l.rating ? <span className="shrink-0 text-amber-500">★ {l.rating.toFixed(1)}</span> : null}
                   </p>
                   <div className="mt-auto flex items-center gap-1.5 pt-1">
-                    <Link href={`/market/${l.id}`} className="btn-primary min-h-9 flex-1 px-2 text-xs">{t("inspect")}</Link>
+                    <Link
+                      href={`/market/${l.id}`}
+                      className="inspect-btn group/btn relative inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 overflow-hidden rounded-xl bg-gradient-to-r from-primary via-indigo-500 to-fuchsia-500 px-2 text-xs font-extrabold text-white shadow-lg shadow-primary/30 transition-all hover:shadow-fuchsia-500/40 active:scale-95"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      {t("inspect")}
+                      <span aria-hidden className="transition-transform group-hover/btn:translate-x-1">→</span>
+                    </Link>
                     <ShareButton compact iconOnly url={l.shareUrl} text={l.shareText} />
                   </div>
                   <p className="text-[10px] text-muted">👁 {t("views", { n: l.views })}</p>
