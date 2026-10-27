@@ -989,6 +989,7 @@
     "unreadCount": "{n} unread",
     "newMessages": "New messages",
     "sent": "Sent",
-    "seen": "Seen"
+    "seen": "Seen",
+    "typing": "{name} is typing…"
   }
 }

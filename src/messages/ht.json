@@ -989,6 +989,7 @@
     "unreadCount": "{n} poko li",
     "newMessages": "Nouvo mesaj",
     "sent": "Voye",
-    "seen": "Wè"
+    "seen": "Wè",
+    "typing": "{name} ap ekri…"
   }
 }

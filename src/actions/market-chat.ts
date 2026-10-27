@@ -7,6 +7,7 @@ import { notify } from "@/lib/notify";
 import { parseAmount } from "@/lib/money";
 import { redactContacts } from "@/lib/market-chat";
 import { savePrivateImage, uploadsEnabled, UploadError } from "@/lib/storage";
+import { chatChannel, publish, userChannel } from "@/lib/realtime";
 
 type R<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 const fail = (e: unknown): { ok: false; error: string } => ({ ok: false, error: e instanceof Error && /^[a-z_]+$/.test(e.message) ? e.message : "error" });
@@ -63,6 +64,8 @@ function toDto(m: { id: string; kind: string; body: string; imagePath: string | 
  */
 async function ping(chat: { id: string; listing: { title: string } }, to: { id: string; readAt: Date | null }[]) {
   const link = `/account/messages/${chat.id}`;
+  // Instant: the open chat redraws, and the recipients' header counters update on any page.
+  await publish([chatChannel(chat.id), ...to.map((r) => userChannel(r.id))], "update");
   for (const r of to) {
     if (r.readAt && Date.now() - r.readAt.getTime() < 12_000) continue;
     if (await prisma.notification.findFirst({ where: { userId: r.id, link, readAt: null }, select: { id: true } })) continue;
@@ -71,12 +74,14 @@ async function ping(chat: { id: string; listing: { title: string } }, to: { id: 
 }
 
 /** Opening a chat also clears its notifications. */
-async function markSeen(chatId: string, role: "buyer" | "seller", userId: string) {
+async function markSeen(chatId: string, role: "buyer" | "seller", userId: string, before?: { readAt: Date | null; lastAt: Date }) {
   const now = new Date();
   await prisma.$transaction([
     prisma.marketChat.update({ where: { id: chatId }, data: role === "buyer" ? { buyerReadAt: now } : { sellerReadAt: now } }),
     prisma.notification.updateMany({ where: { userId, link: `/account/messages/${chatId}`, readAt: null }, data: { readAt: now } }),
   ]);
+  // The other side's ✓ turns into ✓✓ right away (only when there was something new to read; after saving).
+  if (before && (!before.readAt || before.lastAt > before.readAt)) await publish(chatChannel(chatId), "read", { role });
 }
 
 /** "Ekri machann nan": opens (or reopens) the buyer's chat with the seller about a listing. */
@@ -105,7 +110,7 @@ export async function chatUpdates(chatId: string, after?: string): Promise<R<{ m
       orderBy: { createdAt: "asc" },
       take: 300,
     });
-    await markSeen(chat.id, role, user.id);
+    await markSeen(chat.id, role, user.id, { readAt: role === "buyer" ? chat.buyerReadAt : chat.sellerReadAt, lastAt: chat.lastAt });
     const other = role === "buyer" ? chat.sellerReadAt : chat.buyerReadAt;
     return { ok: true, messages: rows.map((m) => toDto(m, user.id)), agreedPrice: chat.agreedPrice, listingStatus: chat.listing.status, otherReadAt: other?.toISOString() ?? null };
   } catch (e) {
@@ -177,12 +182,21 @@ export async function answerOffer(messageId: string, accept: boolean): Promise<R
       ...(accept ? [prisma.marketChat.update({ where: { id: m.chatId }, data: { agreedPrice: m.offerAmount } })] : []),
       prisma.marketChat.update({ where: { id: m.chatId }, data: { lastAt: new Date(), sellerReadAt: new Date() } }),
     ]);
+    await publish([chatChannel(m.chatId), userChannel(m.chat.buyerId)], "update");
     await notify(m.chat.buyerId, accept ? "market_offer_accepted" : "market_offer_declined", { title: m.chat.listing.title }, `/account/messages/${m.chatId}`);
     await audit(user.id, accept ? "market.offer.accept" : "market.offer.decline", "MarketMessage", m.id, { amount: m.offerAmount });
     return { ok: true };
   } catch (e) {
     return fail(e);
   }
+}
+
+/** "… is typing": shown to the other side for a few seconds (the browser sends it at most every 3 s). */
+export async function chatTyping(chatId: string): Promise<void> {
+  try {
+    const { role } = await myChat(chatId);
+    await publish(chatChannel(chatId), "typing", { role });
+  } catch {}
 }
 
 /** Staff writes in a chat as the Haiti Gaming agent. */

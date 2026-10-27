@@ -9,6 +9,8 @@ import { formatPhone, waNumber } from "@/lib/phone";
 import { staffChatMessage } from "@/actions/market-chat";
 import { ActionForm } from "@/components/admin/ActionButton";
 import { PageTitle } from "@/components/admin/ui";
+import { LiveRefresh } from "@/components/LiveRefresh";
+import { realtimeConfig } from "@/lib/realtime";
 
 export const metadata = { title: "Market chat" };
 
@@ -29,8 +31,10 @@ export default async function AdminChat({ params }: { params: Promise<{ id: stri
   const money = (n: number) => formatMoney(n, chat.listing.currency, "en");
   const who = (authorId: string | null, fromStaff: boolean, name?: string) => (fromStaff ? `Agent (${name ?? "staff"})` : authorId === chat.buyerId ? "Buyer" : "Seller");
   const sellerPhone = chat.seller.marketVendor?.whatsapp ?? chat.seller.phone;
+  const live = realtimeConfig();
   return (
     <>
+      {live && <LiveRefresh config={live} channel={`private-chat-${chat.id}`} />}
       <PageTitle
         title={`${platformOf(chat.listing.platform).icon} ${chat.listing.title}`}
         sub={`Listed ${money(chat.listing.price)}${chat.agreedPrice ? ` · offer accepted at ${money(chat.agreedPrice)}` : ""} · ${chat.listing.status}`}

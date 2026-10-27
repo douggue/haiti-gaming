@@ -10,6 +10,8 @@ import { Avatar } from "./Avatar";
 import { PriorityNav } from "./NavMore";
 import { BellIcon, ChatIcon, SearchIcon, UserIcon } from "./Icons";
 import { unreadChats } from "@/lib/market-data";
+import { realtimeConfig } from "@/lib/realtime";
+import { LiveRefresh } from "./LiveRefresh";
 import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } from "./HeaderClient";
 
 export async function Header() {
@@ -53,6 +55,8 @@ export async function Header() {
           <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex" aria-label={t("search")}>
             <SearchIcon />
           </Link>
+          {/* New chat messages update the counter at once (Pusher); without it, on the next page load. */}
+          {user && settings.marketEnabled && realtimeConfig() && <LiveRefresh config={realtimeConfig()!} channel={`private-user-${user.id}`} />}
           {hasChats && (
             <Link href="/account/messages" className="btn-ghost relative min-h-10 px-2 sm:px-2.5" aria-label={`${t("messages")} (${unreadMessages})`} data-testid="header-messages">
               <ChatIcon />

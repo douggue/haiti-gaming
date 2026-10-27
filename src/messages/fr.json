@@ -989,6 +989,7 @@
     "unreadCount": "{n} non lus",
     "newMessages": "Nouveaux messages",
     "sent": "Envoyé",
-    "seen": "Vu"
+    "seen": "Vu",
+    "typing": "{name} écrit…"
   }
 }

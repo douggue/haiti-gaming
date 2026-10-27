@@ -989,6 +989,7 @@
     "unreadCount": "{n} sin leer",
     "newMessages": "Mensajes nuevos",
     "sent": "Enviado",
-    "seen": "Visto"
+    "seen": "Visto",
+    "typing": "{name} está escribiendo…"
   }
 }

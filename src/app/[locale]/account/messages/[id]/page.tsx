@@ -7,6 +7,7 @@ import { shortName } from "@/lib/trust";
 import { listingImages } from "@/lib/market-data";
 import { rulesAccepted } from "@/lib/market-rules";
 import { ChatRoom } from "@/components/market/ChatRoom";
+import { chatChannel, publish, realtimeConfig } from "@/lib/realtime";
 
 export default async function ChatPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
@@ -32,6 +33,8 @@ export default async function ChatPage({ params }: { params: Promise<{ locale: s
     prisma.marketChat.update({ where: { id }, data: role === "buyer" ? { buyerReadAt: now } : { sellerReadAt: now } }),
     prisma.notification.updateMany({ where: { userId: user.id, link: `/account/messages/${id}`, readAt: null }, data: { readAt: now } }),
   ]);
+  // After saving, so the other side reads the new time when it redraws its ✓✓.
+  if (firstUnread) await publish(chatChannel(id), "read", { role });
   const [settings, me] = await Promise.all([getSettings(), prisma.user.findUnique({ where: { id: user.id }, select: { marketRulesAt: true } })]);
   return (
     <ChatRoom
@@ -42,6 +45,7 @@ export default async function ChatPage({ params }: { params: Promise<{ locale: s
       agreedPrice={chat.agreedPrice}
       firstUnreadId={firstUnread?.id ?? null}
       otherReadAt={otherReadAt?.toISOString() ?? null}
+      realtime={realtimeConfig()}
       rulesAccepted={rulesAccepted(me?.marketRulesAt, settings)}
       initial={chat.messages.map((m) => ({
         id: m.id,

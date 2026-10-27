@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
-import { answerOffer, chatUpdates, makeOffer, sendChatMessage, type ChatMessage } from "@/actions/market-chat";
+import { answerOffer, chatTyping, chatUpdates, makeOffer, sendChatMessage, type ChatMessage } from "@/actions/market-chat";
+import { connect } from "@/lib/realtime-client";
 import { formatMoney } from "@/lib/money";
 import { compressImage } from "@/lib/compress-image";
 import { BuyButton } from "./MarketClient";
@@ -20,13 +21,15 @@ type Props = {
   firstUnreadId: string | null;
   /** When the other side last had the chat open (for ✓✓ "seen") */
   otherReadAt: string | null;
+  /** Pusher settings for instant updates; null = check every few seconds instead */
+  realtime?: { key: string; cluster: string; host?: string; port?: number } | null;
 };
 
 const ImageIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 9" /></svg>
 );
 
-export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted, firstUnreadId, otherReadAt: otherRead0 }: Props) {
+export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted, firstUnreadId, otherReadAt: otherRead0, realtime }: Props) {
   const t = useTranslations("chat");
   const tm = useTranslations("market");
   const locale = useLocale();
@@ -68,16 +71,57 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
     setOtherRead(r.otherReadAt);
   }, [chatId, merge]);
 
-  // New messages every 4 seconds while the page is on screen.
+  // Instant updates through Pusher when it's set up; the timer below stays as a safety net.
+  const [live, setLive] = useState(false);
+  const [typing, setTyping] = useState(false);
   useEffect(() => {
-    const id = setInterval(() => document.visibilityState === "visible" && refresh(), 4000);
+    if (!realtime) return;
+    let stop = () => {};
+    let typingTimer: ReturnType<typeof setTimeout>;
+    connect(realtime).then((p) => {
+      const ch = p.subscribe(`private-chat-${chatId}`);
+      ch.bind("update", () => {
+        setTyping(false);
+        refresh();
+      });
+      ch.bind("read", (d: { role?: string }) => d.role !== role && refresh());
+      ch.bind("typing", (d: { role?: string }) => {
+        if (d.role === role) return;
+        setTyping(true);
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => setTyping(false), 4000);
+      });
+      ch.bind("pusher:subscription_succeeded", () => setLive(true));
+      const state = ({ current }: { current: string }) => setLive(current === "connected");
+      p.connection.bind("state_change", state);
+      stop = () => {
+        p.connection.unbind("state_change", state);
+        p.unsubscribe(`private-chat-${chatId}`);
+        clearTimeout(typingTimer);
+      };
+    });
+    return () => stop();
+  }, [realtime, chatId, role, refresh]);
+
+  // Tells the other side "… is typing", at most every 3 seconds.
+  const lastTyping = useRef(0);
+  const onType = (v: string) => {
+    setText(v);
+    if (!realtime || !v.trim() || Date.now() - lastTyping.current < 3000) return;
+    lastTyping.current = Date.now();
+    chatTyping(chatId);
+  };
+
+  // Checks for new messages every 4 seconds while the page is on screen (every 30 s when instant updates work).
+  useEffect(() => {
+    const id = setInterval(() => document.visibilityState === "visible" && refresh(), live ? 30_000 : 4000);
     const onShow = () => document.visibilityState === "visible" && refresh();
     document.addEventListener("visibilitychange", onShow);
     return () => {
       clearInterval(id);
       document.removeEventListener("visibilitychange", onShow);
     };
-  }, [refresh]);
+  }, [refresh, live]);
 
   // The header's unread counter was drawn before this chat was marked as read: redraw it once.
   const router = useRouter();
@@ -232,6 +276,12 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
             ) : null;
           return <div key={m.id}>{line}{bubble(m)}</div>;
         })}
+        {typing && (
+          <p className="flex items-center gap-1.5 px-1 text-xs text-muted" data-testid="typing" aria-live="polite">
+            <span className="inline-flex gap-0.5"><span className="size-1.5 animate-bounce rounded-full bg-muted" /><span className="size-1.5 animate-bounce rounded-full bg-muted [animation-delay:150ms]" /><span className="size-1.5 animate-bounce rounded-full bg-muted [animation-delay:300ms]" /></span>
+            {t("typing", { name: otherName })}
+          </p>
+        )}
       </div>
 
       {role === "buyer" && ["ACTIVE"].includes(status) && (
@@ -274,7 +324,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
           {uploading ? <span className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" /> : <ImageIcon />}
         </button>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => sendPhoto(e.target.files?.[0])} data-testid="chat-photo" />
-        <input value={text} onChange={(e) => setText(e.target.value)} maxLength={1000} placeholder={t("placeholder")} aria-label={t("placeholder")} className="input min-h-11 flex-1 rounded-full" />
+        <input value={text} onChange={(e) => onType(e.target.value)} maxLength={1000} placeholder={t("placeholder")} aria-label={t("placeholder")} className="input min-h-11 flex-1 rounded-full" />
         <button disabled={!text.trim() || pending} aria-label={t("send")} className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-white disabled:opacity-50"><SendIcon width={18} height={18} /></button>
       </form>
     </div>
