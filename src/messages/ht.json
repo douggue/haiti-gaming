@@ -983,7 +983,7 @@
     "credNote": "Lòt enfo pou ajan an (si w vle)",
     "credNotePh": "Kòd sekou, kesyon sekirite…",
     "err_credentials": "Mete koneksyon an ak modpas la pou ajan an.",
-    "allSold": "Tout {n, plural, one {# kont} other {# kont}} yo vann! Nouvo kont ap vini byento.",
+    "allSold": "Nou pa gen kont disponib kounye a. Tcheke pita.",
     "pendingMine": "{n, plural, one {Kont ou a} other {# nan kont ou yo}} ap tcheke pa ekip nou an",
     "memberSince": "Manm depi",
     "similar": "Lòt kont {game}"
