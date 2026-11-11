@@ -11,7 +11,7 @@ import { t } from "@/lib/text";
 import { contentSeo } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
 import { ProductCard } from "@/components/ProductCard";
-import { ProductGallery } from "@/components/ProductGallery";
+import { ProductHero } from "@/components/ProductHero";
 import { ProductPurchase } from "@/components/ProductPurchase";
 import { BoltIcon, ShieldIcon } from "@/components/Icons";
 import type { FieldDef } from "@/lib/orders";
@@ -96,39 +96,38 @@ export default async function ProductPage({ params }: { params: P }) {
   return (
     <div className="container-page py-6 sm:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, crumbs]) }} />
-      <nav className="text-sm text-muted" aria-label="Breadcrumb">
-        <Link href="/store" className="hover:text-text">{tc("store")}</Link> /{" "}
+      <nav className="flex items-center gap-1.5 text-xs font-semibold text-muted" aria-label="Breadcrumb">
+        <Link href="/store" className="hover:text-text">{tc("store")}</Link> <span aria-hidden>›</span>
         <Link href={`/categories/${product.category.slug}`} className="hover:text-text">{t(product.category.name, locale)}</Link>
       </nav>
-      <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="space-y-4">
-          <ProductGallery name={name} accent={product.accent} images={[product.image, ...((product.gallery ?? []) as string[])].filter((x): x is string => !!x)} />
-          {/* Three promises under the picture */}
-          <ul className="grid grid-cols-3 gap-2 text-center text-[11px] sm:text-xs">
-            <li className="rounded-xl border border-border bg-surface/80 px-2 py-3">
-              <BoltIcon width={18} height={18} className="mx-auto text-emerald-400" />
-              <b className="mt-1 block">{tp("delivery")}</b>
-              <span className="text-muted">{t(product.deliveryEstimate, locale)}</span>
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-10">
+        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+          <ProductHero
+            name={name}
+            accent={product.accent}
+            images={[product.image, ...((product.gallery ?? []) as string[])].filter((x): x is string => !!x)}
+            eyebrow={t(product.category.name, locale)}
+            badge={product.fulfillmentType === "CODE_INVENTORY" ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-emerald-300"><BoltIcon width={11} height={11} /> {tp("instantShort")}</span>
+            ) : undefined}
+          />
+          <p className="text-sm text-muted sm:text-base">{t(product.description, locale)}</p>
+          {/* Three promises as small chips */}
+          <ul className="flex flex-wrap gap-2 text-xs">
+            <li className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/80 px-3 py-1.5">
+              <BoltIcon width={14} height={14} className="text-emerald-400" />
+              <b>{tp("delivery")}</b> <span className="text-muted">{t(product.deliveryEstimate, locale)}</span>
             </li>
-            <li className="rounded-xl border border-border bg-surface/80 px-2 py-3">
-              <ShieldIcon width={18} height={18} className="mx-auto text-[#60a5fa]" />
-              <b className="mt-1 block">{tp("safe")}</b>
-              <span className="text-muted">{product.fulfillmentType === "CODE_INVENTORY" ? tp("instantShort") : tp("checkedByTeam")}</span>
+            <li className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/80 px-3 py-1.5">
+              <ShieldIcon width={14} height={14} className="text-[#60a5fa]" />
+              <b>{tp("safe")}</b> <span className="text-muted">{product.fulfillmentType === "CODE_INVENTORY" ? tp("instantShort") : tp("checkedByTeam")}</span>
             </li>
-            <li className="rounded-xl border border-border bg-surface/80 px-2 py-3">
-              <span className="block text-lg leading-[18px]" aria-hidden>🇭🇹</span>
-              <b className="mt-1 block">{tp("localPay")}</b>
-              <span className="text-muted">MonCash · NatCash</span>
+            <li className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/80 px-3 py-1.5">
+              <span aria-hidden>🇭🇹</span> <b>{tp("localPay")}</b> <span className="text-muted">MonCash · NatCash</span>
             </li>
           </ul>
         </div>
         <div>
-          <p className="eyebrow flex flex-wrap items-center gap-2 text-[#60a5fa]">
-            {t(product.category.name, locale)}
-            {product.fulfillmentType === "CODE_INVENTORY" && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-400"><BoltIcon width={11} height={11} /> {tp("instantShort")}</span>}
-          </p>
-          <h1 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{name}</h1>
-          <p className="mt-2 text-sm text-muted sm:text-base">{t(product.description, locale)}</p>
           <ProductPurchase
             product={{
               id: product.id,
@@ -155,8 +154,8 @@ export default async function ProductPage({ params }: { params: P }) {
       </div>
       {sales.length > 0 && <SalesPopup sales={sales} product={{ name, image: product.image, accent: product.accent }} perVisit={Math.min(5, Math.max(1, settings.salesPopupPerVisit))} />}
       {related.length > 0 && (
-        <section className="mt-16">
-          <h2 className="text-xl font-bold">{tp("related")}</h2>
+        <section className="mt-14">
+          <h2 className="display text-xl font-extrabold tracking-tight">{tp("related")}</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             {related.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>

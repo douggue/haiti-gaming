@@ -27,21 +27,24 @@ export default async function GiftPage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="container-page max-w-lg py-10">
-      <div className="card overflow-hidden">
-        <div className="bg-[radial-gradient(circle_at_50%_0%,color-mix(in_srgb,var(--primary)_35%,transparent),transparent_70%)] px-6 pb-6 pt-10 text-center">
-          <p className="text-5xl" aria-hidden>🎁</p>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight">{tg("pageTitle", { name: from })}</h1>
-          {order.recipientNote && <p className="mx-auto mt-4 max-w-sm whitespace-pre-wrap rounded-2xl bg-surface-2 px-5 py-4 text-lg italic">“{order.recipientNote}”</p>}
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-surface/90 shadow-[0_30px_60px_-30px_rgba(29,78,216,.8)]">
+        <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[#1d4ed8] via-[#7c3aed] to-[#dc2626]" />
+        <div className="relative overflow-hidden bg-[linear-gradient(140deg,#1e3a8a_0%,#1d4ed8_45%,#6d28d9_100%)] px-6 pb-7 pt-9 text-center text-white">
+          <span aria-hidden className="ds-hide pointer-events-none absolute -right-14 -top-16 size-48 rounded-full bg-[#38bdf8]/35 blur-3xl" />
+          <span aria-hidden className="ds-hide pointer-events-none absolute -bottom-20 -left-10 size-48 rounded-full bg-[#f472b6]/30 blur-3xl" />
+          <span className="relative mx-auto grid size-16 place-items-center rounded-2xl bg-white/15 text-4xl shadow-lg backdrop-blur" aria-hidden>🎁</span>
+          <h1 className="display relative mt-4 text-2xl font-extrabold tracking-tight">{tg("pageTitle", { name: from })}</h1>
+          {order.recipientNote && <p className="relative mx-auto mt-4 max-w-sm whitespace-pre-wrap rounded-2xl bg-black/25 px-5 py-4 text-lg italic">“{order.recipientNote}”</p>}
         </div>
-        <div className="space-y-4 p-6">
+        <div className="space-y-4 p-5 sm:p-6">
           {items.map((i) => (
             <GiftReveal key={i.id} title={i.title} codes={i.codes} />
           ))}
-          <p className="text-xs text-muted">{tg("privateNote")}</p>
+          <p className="flex items-start gap-2 rounded-xl bg-[#0b0f19]/60 px-3 py-2.5 text-xs text-muted"><span aria-hidden>🔒</span> {tg("privateNote")}</p>
         </div>
       </div>
       <p className="mt-6 text-center text-sm">
-        <Link href="/store" className="font-semibold text-primary">{tg("shopToo")} →</Link>
+        <Link href="/store" className="btn-secondary min-h-11 px-5">{tg("shopToo")} →</Link>
       </p>
     </div>
   );

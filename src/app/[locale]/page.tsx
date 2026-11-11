@@ -18,8 +18,10 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { HaitiEyebrow } from "@/components/HaitiEyebrow";
 import { ReviewsSection } from "@/components/ReviewsSection";
-import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon, WhatsAppIcon } from "@/components/Icons";
+import { ArrowRightIcon, BoltIcon, ChatIcon, HelpIcon, PinIcon, PlusIcon, ShieldIcon, WalletIcon, WhatsAppIcon } from "@/components/Icons";
 import { PayLogo } from "@/components/PayLogo";
+import { getBalances } from "@/lib/ledger";
+import { formatMoney } from "@/lib/money";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -56,7 +58,10 @@ export default async function HomePage({ params, searchParams }: { params: Promi
   const viewer = sp.preview ? await getUser() : null;
   const preview = !!viewer && isStaff(viewer.role) && !!viewer.twoFactorEnabled;
   // The closing band offers "Create account" only to visitors who aren't signed in
-  const signedIn = !!(viewer ?? (await getUser()));
+  const me = viewer ?? (await getUser());
+  const signedIn = !!me;
+  // Signed-in visitors see their real wallet balance on the wallet card
+  const walletHtg = me ? (await getBalances(prisma, me.id)).HTG.available : null;
   const [th, tc, tf, featured, categories, settings, news] = await Promise.all([
     getTranslations("home"),
     getTranslations("common"),
@@ -124,36 +129,67 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     howItWorks: (
       <>
 <section className="container-page mt-16">
-        <div className="card overflow-hidden p-6 sm:p-10">
-          <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("howToPayTitle")}</h2>
-          <p className="mt-1 text-muted">{th("howToPaySubtitle")}</p>
-          <ol className="mt-8 grid gap-8 sm:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <li key={i} className="flex flex-col gap-2">
-                <span className="display text-4xl font-bold text-primary" aria-hidden>0{i}</span>
-                <h3 className="text-lg font-bold">{th(`step${i}Title`)}</h3>
-                <p className="text-sm text-muted">{th(`step${i}Body`)}</p>
-              </li>
-            ))}
-          </ol>
-          <Link href="/guides" className="mt-8 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-            {th("payGuideLink")} <ArrowRightIcon width={16} height={16} />
-          </Link>
-        </div>
+        <p className="eyebrow text-[#60a5fa]">{th("howEyebrow")}</p>
+        <h2 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{th("howToPayTitle")}</h2>
+        <p className="mt-1 text-muted">{th("howToPaySubtitle")}</p>
+        <ol className="mt-6 grid gap-3 sm:grid-cols-3 sm:gap-4">
+          {[
+            [1, "bg-[#1d4ed8]/25 text-[#93c5fd]"],
+            [2, "bg-[#be123c]/25 text-[#fda4af]"],
+            [3, "bg-emerald-500/20 text-emerald-300"],
+          ].map(([i, tone]) => (
+            <li key={i} className="flex gap-4 rounded-2xl border border-border bg-surface/90 p-5 sm:flex-col">
+              <span className={`display grid size-14 shrink-0 place-items-center rounded-2xl text-2xl font-extrabold ${tone}`} aria-hidden>0{i}</span>
+              <span>
+                <h3 className="display text-lg font-bold">{th(`step${i}Title`)}</h3>
+                <p className="mt-1 text-sm text-muted">{th(`step${i}Body`)}</p>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <Link href="/guides" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#60a5fa]">
+          {th("payGuideLink")} <ArrowRightIcon width={16} height={16} />
+        </Link>
       </section>
       </>
     ),
     wallet: (
       <>
-<section className="container-page mt-6">
-        <div className="relative flex flex-col items-start gap-5 overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#3b7dff,#1f56d8_45%,#0d2a78)] p-6 text-white shadow-[0_26px_50px_-24px_var(--glow)] sm:flex-row sm:items-center sm:p-8">
-          <span aria-hidden className="ds-hide pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-[#46d8ff]/40 blur-3xl" />
-          <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20"><WalletIcon /></span>
-          <div className="relative flex-1">
-            <h2 className="display text-xl font-bold sm:text-2xl">{th("walletTitle")}</h2>
-            <p className="mt-1 text-sm text-[#dbe7ff]">{th("walletBody")}</p>
+<section className="container-page mt-8">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(140deg,#1e293b_0%,#111827_55%,#1e2a4a_100%)] p-5 shadow-[0_26px_50px_-30px_rgba(29,78,216,.9)] sm:p-7">
+          <span aria-hidden className="ds-hide pointer-events-none absolute -right-16 -top-20 size-60 rounded-full bg-[#3b82f6]/20 blur-3xl" />
+          <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
+            <div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="eyebrow flex items-center gap-2 text-amber-300"><WalletIcon width={20} height={20} /> {th("walletEyebrow")}</span>
+                <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-300">{th("walletChip")}</span>
+              </div>
+              <h2 className="display mt-4 text-2xl font-extrabold tracking-tight sm:text-3xl">{th("walletTitle")}</h2>
+              <p className="mt-2 text-sm text-muted sm:text-base">{th("walletBody")}</p>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#0b0f19]/70 px-4 py-4">
+                {walletHtg != null ? (
+                  <span>
+                    <span className="block text-xs font-semibold text-muted">{th("walletAvailable")}</span>
+                    <span className="display text-3xl font-extrabold tracking-tight">{formatMoney(walletHtg, "HTG", locale).replace(/\s*HTG$/, "")}<span className="ml-1 text-base font-bold text-[#60a5fa]">HTG</span></span>
+                  </span>
+                ) : (
+                  <span className="text-sm font-semibold text-muted">{th("walletPayWith")}</span>
+                )}
+                <span className="flex shrink-0 flex-col items-end gap-1.5">
+                  <PayLogo brand="moncash" height={20} />
+                  <PayLogo brand="natcash" height={20} />
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Link href={signedIn ? "/account/wallet/deposit" : "/auth/login?next=/account/wallet/deposit"} className="btn-primary min-h-12 flex-1 !bg-amber-400 text-base !text-black hover:!bg-amber-300">
+                  <PlusIcon width={18} height={18} /> {th("walletDeposit")}
+                </Link>
+                <Link href="/account/wallet" className="btn-secondary min-h-12 px-5">{th("walletDetails")}</Link>
+              </div>
+            </div>
           </div>
-          <Link href="/account/wallet" className="btn relative bg-white text-[#0d2a78] hover:bg-[#e6efff]">{th("walletCta")}</Link>
         </div>
       </section>
       </>
@@ -218,18 +254,21 @@ export default async function HomePage({ params, searchParams }: { params: Promi
     faq: (
       <>
 <section className="container-page mt-16">
-        <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("faqTitle")}</h2>
-        <div className="mt-6 divide-y divide-border rounded-2xl border border-border bg-surface">
+        <h2 className="display flex items-center gap-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
+          <HelpIcon width={30} height={30} className="text-[#60a5fa]" /> {th("faqTitle")}
+        </h2>
+        <div className="mt-6 grid gap-3 lg:grid-cols-2">
           {[1, 2, 3, 4].map((i) => (
-            <details key={i} className="group p-5">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
+            <details key={i} className="group h-fit rounded-2xl border border-border bg-surface/90 px-5 py-4 transition-colors open:border-[#3b82f6]/40">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold">
                 {tf(`q${i}`)}
-                <span className="text-muted transition-transform group-open:rotate-45" aria-hidden>+</span>
+                <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted transition-transform group-open:rotate-180" aria-hidden><path d="m6 9 6 6 6-6" /></svg>
               </summary>
               <p className="mt-3 text-sm text-muted">{tf(`a${i}`)}</p>
             </details>
           ))}
         </div>
+        <Link href="/faq" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#60a5fa]">{tc("viewAll")} <ArrowRightIcon width={16} height={16} /></Link>
       </section>
       </>
     ),
