@@ -663,3 +663,6 @@ html[data-style="cyber"].dark .auth-card {
   .cel-ring, .cel-check { stroke-dasharray: none }
   .cel-confetti { display: none }
 }
+
+/* Nothing may make the page wider than the phone (long links, codes): clip instead of side-scrolling */
+html, body { overflow-x: clip; }
