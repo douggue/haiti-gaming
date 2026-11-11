@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ContentPage } from "@/components/ContentPage";
+import { ContentPage, NumberedCards } from "@/components/ContentPage";
+import { FileIcon } from "@/components/Icons";
 import { pageSeo } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -14,10 +15,8 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const t = await getTranslations("pages");
   const paragraphs = t.raw("termsBody") as string[];
   return (
-    <ContentPage title={t("termsTitle")}>
-      <ol className="list-decimal space-y-3 pl-5">
-        {paragraphs.map((p, i) => <li key={i}>{p}</li>)}
-      </ol>
+    <ContentPage title={t("termsTitle")} eyebrow="Haiti Gaming" icon={<FileIcon />}>
+      <NumberedCards items={paragraphs} />
     </ContentPage>
   );
 }

@@ -8,7 +8,7 @@ import { t as txt } from "@/lib/text";
 import { Logo } from "./Logo";
 import { Avatar } from "./Avatar";
 import { PriorityNav } from "./NavMore";
-import { BellIcon, ChatIcon, SearchIcon, UserIcon, WalletIcon } from "./Icons";
+import { BellIcon, ChatIcon, PlusIcon, SearchIcon, UserIcon, WalletIcon } from "./Icons";
 import { getBalances } from "@/lib/ledger";
 import { formatMoney } from "@/lib/money";
 import { unreadChats } from "@/lib/market-data";
@@ -18,6 +18,7 @@ import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } fro
 
 export async function Header() {
   const t = await getTranslations("common");
+  const ta = await getTranslations("account");
   const locale = await getLocale();
   const [user, settings] = await Promise.all([getUser(), getDisplaySettings()]);
   const unread = user ? await prisma.notification.count({ where: { userId: user.id, readAt: null } }) : 0;
@@ -61,16 +62,22 @@ export async function Header() {
           {/* Wide screens: a real search box (opens the Store with the results); tablets: the icon */}
           <form action={`/${locale}/store`} className="relative hidden xl:block" role="search">
             <SearchIcon width={16} height={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-            <input name="q" type="search" placeholder={t("searchPlaceholder")} aria-label={t("search")} className="input min-h-10 w-56 rounded-xl pl-9 text-sm" />
+            <input name="q" type="search" placeholder={t("searchPlaceholder")} aria-label={t("search")} className="input min-h-10 w-60 rounded-full border-border/80 bg-surface-2/70 pl-9 text-sm" />
           </form>
           <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex xl:hidden" aria-label={t("search")}>
             <SearchIcon />
           </Link>
+          {/* Wallet chip: balance (opens the wallet) and "+" to add money */}
           {user && (
-            <Link href="/account/wallet" className="hidden min-h-10 items-center gap-1.5 rounded-xl border border-border bg-surface-2 px-3 text-sm font-bold lg:inline-flex" data-testid="header-wallet">
-              <WalletIcon width={16} height={16} className="text-primary" />
-              {formatMoney(balance, "HTG", locale)}
-            </Link>
+            <span className="hidden min-h-10 items-center rounded-full border border-border bg-surface-2/70 p-1 text-sm font-bold lg:inline-flex" data-testid="header-wallet">
+              <Link href="/account/wallet" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 hover:text-[#93c5fd]">
+                <WalletIcon width={16} height={16} className="text-amber-300" />
+                {formatMoney(balance, "HTG", locale)}
+              </Link>
+              <Link href="/account/wallet/deposit" aria-label={ta("deposit")} title={ta("deposit")} className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-white shadow-[0_0_12px_-2px_rgba(59,130,246,.8)] hover:brightness-110">
+                <PlusIcon width={15} height={15} />
+              </Link>
+            </span>
           )}
           {/* New chat messages update the counter at once (Pusher); without it, on the next page load. */}
           {user && settings.marketEnabled && realtimeConfig() && <LiveRefresh config={realtimeConfig()!} channel={`private-user-${user.id}`} />}
