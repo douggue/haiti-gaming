@@ -310,6 +310,16 @@ export function MobileMenu({ nav, signedIn, name, image, showUsd = false }: { na
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   useEffect(() => setOpen(false), [pathname]);
+  // The bottom bar already has these places: the drawer lists the others, help and support first
+  const inBar = (href: string) => ["/", "/store", "/market", "/account", "/account/wallet", "/cart"].includes(href.split("?")[0]);
+  const fixed = [
+    { href: "/faq", label: t("helpCenter") },
+    { href: signedIn ? "/account/support" : "/contact", label: t("support") },
+    { href: "/categories", label: t("categories") },
+    { href: "/guides", label: t("guides") },
+    { href: "/news", label: t("news") },
+  ];
+  const secondary = [...fixed, ...nav.filter((n) => !inBar(n.href))].filter((n, i, all) => all.findIndex((x) => x.href === n.href) === i);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -338,23 +348,16 @@ export function MobileMenu({ nav, signedIn, name, image, showUsd = false }: { na
                 <span className="sr-only">{t("close")}</span>
               </button>
             </div>
-            {nav.map((n) => <MenuLink key={n.href} href={n.href} label={n.label} />)}
-            <div className="my-3 border-t border-border" />
-            {signedIn ? (
-              <>
-                <MenuLink href="/account" label={t("account")} />
-                <MenuLink href="/account/wallet" label={t("wallet")} />
-                <MenuLink href="/account/orders" label={t("orders")} />
-                <SignOutButton className="btn-secondary mt-2" />
-              </>
-            ) : (
-              <div className="grid gap-2">
+            {/* Only what the bottom bar doesn't already offer (home, store, wallet, Market, account): help first */}
+            {secondary.map((n) => <MenuLink key={n.href} href={n.href} label={n.label} />)}
+            {!signedIn && (
+              <div className="mt-3 grid gap-2">
                 <Link href="/auth/login" className="btn-secondary"><LoginIcon width={18} height={18} aria-hidden />{t("signIn")}</Link>
                 <Link href="/auth/register" className="btn-primary"><UserPlusIcon width={18} height={18} aria-hidden />{t("signUp")}</Link>
               </div>
             )}
+            {/* Language is the flag in the header; here only the look (and currency when dollars are on) */}
             <div className="mt-auto space-y-3 rounded-2xl border border-border bg-surface-2/60 p-3">
-              <LanguageFlags className="justify-between" />
               <div className="flex items-center justify-between gap-2">
                 {showUsd && <CurrencySwitch />}
                 <ThemeToggle withLabel />
@@ -433,7 +436,7 @@ export function BottomNav({ signedIn, market = false }: { signedIn: boolean; mar
           { href: "/market", label: t("market"), icon: StorefrontIcon, active: pathname.startsWith("/market") || pathname.startsWith("/account/market") || pathname.startsWith("/account/messages"), badge: 0 },
         ]
       : [{ href: "/cart", label: t("cart"), icon: CartIcon, active: pathname.startsWith("/cart") || pathname.startsWith("/checkout"), badge: ready ? count : 0 }, wallet]),
-    { href: signedIn ? "/account" : "/auth/login", label: t("tabAccount"), icon: UserGearIcon, active: (pathname.startsWith("/account") && !pathname.startsWith("/account/wallet") && !pathname.startsWith("/account/market") && !pathname.startsWith("/account/messages")) || pathname.startsWith("/auth"), badge: 0 },
+    { href: signedIn ? "/account" : "/auth/login", label: t("tabAccount"), icon: UserGearIcon, active: (pathname.startsWith("/account") && !pathname.startsWith("/account/wallet") && !(market && (pathname.startsWith("/account/market") || pathname.startsWith("/account/messages")))) || pathname.startsWith("/auth"), badge: 0 },
   ];
   return (
     <nav

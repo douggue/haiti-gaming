@@ -43,11 +43,16 @@ test("dark mode stays on after changing language on the sign-in page", async ({ 
   await p.goto("/ht/auth/login");
   await p.waitForLoadState("networkidle");
   await expect(p.locator("html")).toHaveClass(/dark/);
-  await p.getByRole("radio", { name: "Français" }).click();
+  // Language is picked from the flag in the header (the sign-in page no longer repeats the flags)
+  const pick = async (name: string) => {
+    await p.locator('header button[aria-haspopup="listbox"]:visible').click();
+    await p.getByRole("option", { name }).click();
+  };
+  await pick("Français");
   await p.waitForURL("**/fr/auth/login");
   await p.waitForLoadState("networkidle");
   await expect(p.locator("html")).toHaveClass(/dark/);
-  await p.getByRole("radio", { name: "English" }).click();
+  await pick("English");
   await p.waitForURL("**/en/auth/login");
   await expect(p.locator("html")).toHaveClass(/dark/);
 });

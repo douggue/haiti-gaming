@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { getDisplaySettings } from "@/lib/settings";
-import { BagIcon, BookIcon, ChatIcon, TagIcon, WhatsAppIcon } from "./Icons";
+import { BagIcon, BookIcon, ChatIcon, PinIcon, TagIcon, WhatsAppIcon } from "./Icons";
 
 type S = Awaited<ReturnType<typeof getDisplaySettings>>;
 
@@ -14,6 +14,7 @@ export async function HelpChannels({ settings }: { settings: S }) {
     { href: "/account/support", icon: ChatIcon, title: t("ticketTitle"), body: t("ticketBody"), tone: "bg-violet-500/20 text-violet-300" },
     { href: "/guides", icon: BookIcon, title: t("guideTitle"), body: t("guideBody"), tone: "bg-amber-500/20 text-amber-300" },
     ...(settings.marketEnabled ? [{ href: "/market", icon: TagIcon, title: t("marketTitle"), body: t("marketBody"), tone: "bg-red-500/20 text-red-300" }] : []),
+    { href: "/contact", icon: PinIcon, title: tc("contact"), body: t("contactBody"), tone: "bg-emerald-500/20 text-emerald-300" },
   ];
   return (
     <section className="mt-12">

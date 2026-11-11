@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
 import { BoltIcon, ShieldIcon, WalletIcon } from "./Icons";
-import { LanguageFlags } from "./HeaderClient";
 
 /** Sign-in pages: dark welcome panel beside the form on wide screens; the form alone on phones. */
 export async function AuthShell({ children }: { children: React.ReactNode }) {
@@ -33,8 +32,8 @@ export async function AuthShell({ children }: { children: React.ReactNode }) {
           </ul>
         </div>
       </section>
+      {/* Language: the flag in the header (not repeated here) */}
       <div className="flex flex-col items-center justify-center gap-5">
-        <LanguageFlags className="justify-center" />
         {children}
       </div>
     </div>

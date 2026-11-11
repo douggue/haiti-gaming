@@ -5,11 +5,11 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createTicket, replyTicket } from "@/actions/customer";
 
-export function NewTicketForm({ orders, defaultOrder }: { orders: { id: string; number: number }[]; defaultOrder?: string }) {
+export function NewTicketForm({ orders, defaultOrder, defaultSubject, defaultMessage }: { orders: { id: string; number: number }[]; defaultOrder?: string; defaultSubject?: string; defaultMessage?: string }) {
   const t = useTranslations("support");
   const tc = useTranslations("common");
   const router = useRouter();
-  const [open, setOpen] = useState(!!defaultOrder);
+  const [open, setOpen] = useState(!!defaultOrder || !!defaultSubject);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
   if (!open) return <button type="button" className="btn-primary" onClick={() => setOpen(true)}>{t("new")}</button>;
@@ -26,14 +26,14 @@ export function NewTicketForm({ orders, defaultOrder }: { orders: { id: string; 
       }
     >
       <h2 className="font-semibold">{t("new")}</h2>
-      <label className="block"><span className="label">{t("subject")}</span><input name="subject" required minLength={3} maxLength={120} className="input" /></label>
+      <label className="block"><span className="label">{t("subject")}</span><input name="subject" required minLength={3} maxLength={120} defaultValue={defaultSubject} className="input" /></label>
       <label className="block"><span className="label">{t("order")}</span>
         <select name="orderId" defaultValue={defaultOrder ?? ""} className="input">
           <option value="">{t("noOrder")}</option>
           {orders.map((o) => <option key={o.id} value={o.id}>#{o.number}</option>)}
         </select>
       </label>
-      <label className="block"><span className="label">{t("message")}</span><textarea name="message" required minLength={5} maxLength={5000} rows={5} className="input py-2" /></label>
+      <label className="block"><span className="label">{t("message")}</span><textarea name="message" required minLength={5} maxLength={5000} rows={5} defaultValue={defaultMessage} className="input py-2" /></label>
       <PhotoPicker name="attachment" label={t("attach")} />
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger">{error}</p>}
       <button className="btn-primary" disabled={pending}>{pending ? tc("loading") : t("send")}</button>

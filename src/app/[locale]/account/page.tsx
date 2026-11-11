@@ -6,6 +6,9 @@ import { requireUser } from "@/lib/session";
 import { getBalances } from "@/lib/ledger";
 import { getDisplayCurrency } from "@/lib/prefs";
 import { formatMoney } from "@/lib/money";
+import { t as txt } from "@/lib/text";
+import { ledgerDetail, transferNames } from "@/lib/ledger-text";
+import { DepositRow } from "@/components/account/DepositRow";
 import { WalletCard } from "@/components/WalletCard";
 import { VerifyEmailBanner } from "@/components/VerifyEmailBanner";
 import { emailEnabled } from "@/lib/email";
@@ -50,14 +53,28 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
     settings.marketEnabled ? prisma.marketListing.count({ where: { sellerId: user.id, status: { in: ["PENDING", "ACTIVE", "RESERVED"] } } }) : Promise.resolve(0),
     prisma.notification.count({ where: { userId: user.id, readAt: null } }).catch(() => 0),
   ]);
+  // Deposits the team is checking (or refused recently): shown with the activity, and on the wallet card
+  const deposits = await prisma.paymentIntent.findMany({
+    where: {
+      userId: user.id,
+      orderId: null,
+      OR: [{ status: "REVIEW" }, { status: "REJECTED", updatedAt: { gte: new Date(Date.now() - 7 * 86_400_000) } }],
+    },
+    orderBy: { createdAt: "desc" },
+    take: 3,
+    include: { manualMethod: { select: { name: true } } },
+  });
+  const reviewing = deposits.filter((p) => p.status === "REVIEW" && p.currency === "HTG").reduce((s, p) => s + p.amount, 0);
+  const names = await transferNames(activity);
   const n = (s?: readonly string[]) => groups.filter((g) => !s || s.includes(g.status)).reduce((x, g) => x + g._count, 0);
   const counts = { all: n(), active: n(ACTIVE_STATUSES), done: n(["FULFILLED"]) };
   const stats = [
     { value: String(counts.done), label: tu("ordersDone"), tone: "" },
-    { value: formatMoney(balances.HTG.available, "HTG", locale).replace(/\s?HTG/, ""), label: tu("htgWallet"), tone: "text-amber-400" },
+    // The balance already has its own card just below: this tile counts orders in progress instead
+    { value: String(counts.active), label: tu("activeOrders"), tone: "text-amber-400" },
     settings.marketEnabled
       ? { value: String(listings), label: tu("listings"), tone: "text-emerald-400" }
-      : { value: String(counts.active), label: ta("statsPending"), tone: "text-emerald-400" },
+      : { value: String(deposits.filter((p) => p.status === "REVIEW").length), label: tu("depositsChecking"), tone: "text-emerald-400" },
   ];
   const curLocale = (await getLocale()) as Locale;
 
@@ -120,17 +137,33 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
       {!user.emailVerified && emailEnabled() && <VerifyEmailBanner email={user.email} />}
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-        <WalletCard balances={balances} initial={currency} showUsd={settings.showUsd} />
+        <WalletCard balances={balances} initial={currency} showUsd={settings.showUsd} reviewing={reviewing} />
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="display flex items-center gap-2 text-lg font-bold"><WalletCardIcon width={20} height={20} className="text-[#60a5fa]" /> {tu("ledgerTitle")}</h2>
-            <Link href="/account/wallet" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
+            <Link href="/account/wallet" className="inline-flex min-h-11 items-center px-1 text-sm font-semibold text-primary">{tc("viewAll")}</Link>
           </div>
-          {activity.length === 0 ? (
+          {activity.length === 0 && deposits.length === 0 ? (
             <p className="rounded-2xl border border-border bg-surface/80 py-8 text-center text-sm text-muted">{ta("noActivity")}</p>
           ) : (
             <ul className="space-y-2">
-              {activity.map((e) => (
+              {deposits.map((p) => (
+                <DepositRow
+                  key={p.id}
+                  intent={{ ...p, methodName: p.manualMethod ? txt(p.manualMethod.name, locale) : undefined }}
+                  locale={locale}
+                  when={fmt.dateTime(p.createdAt, { dateStyle: "medium", timeStyle: "short" })}
+                  labels={{
+                    title: tw("tx.DEPOSIT"),
+                    status: tw(`depositStatus.${p.status}`),
+                    again: tw("sendAgain"),
+                    support: tw("contactSupport"),
+                    supportSubject: tw("supportSubject", { amount: formatMoney(p.amount, p.currency, locale) }),
+                    supportMessage: tw("supportMessage", { amount: formatMoney(p.amount, p.currency, locale), ref: p.providerRef ?? p.id }),
+                  }}
+                />
+              ))}
+              {activity.slice(0, Math.max(1, 4 - deposits.length)).map((e) => (
                 <LedgerRow
                   key={e.id}
                   type={e.transaction.type}
@@ -139,7 +172,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
                   locale={locale}
                   title={tw(`tx.${e.transaction.type}`)}
                   when={fmt.dateTime(e.createdAt, { dateStyle: "medium", timeStyle: "short" })}
-                  detail={e.transaction.description?.replace(/^Order #(\d+)$/, (_, n) => tOrder("title", { number: n }))}
+                  detail={ledgerDetail(e.transaction, e.amount, names, tw, tOrder)}
                   held={e.account.type === "CUSTOMER_HELD"}
                   heldLabel={tw("onHoldLabel")}
                   doneLabel={tw("done")}
@@ -154,7 +187,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="display flex items-center gap-2 text-lg font-bold sm:text-xl"><ReceiptIcon width={22} height={22} className="text-[#60a5fa]" /> {tu("orderHistory")}</h2>
-          <Link href="/account/orders" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
+          <Link href="/account/orders" className="inline-flex min-h-11 items-center px-1 text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
         <InstantTabs
           label={tu("orderHistory")}

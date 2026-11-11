@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
@@ -37,7 +37,26 @@ export default async function ChatPage({ params }: { params: Promise<{ locale: s
   if (firstUnread) await publish(chatChannel(id), "read", { role });
   await prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } });
   const otherSeen = await prisma.user.findUnique({ where: { id: role === "buyer" ? chat.sellerId : chat.buyerId }, select: { lastSeenAt: true } });
-  const [settings, me] = await Promise.all([getSettings(), prisma.user.findUnique({ where: { id: user.id }, select: { marketRulesAt: true } })]);
+  const [settings, me, deal, tm] = await Promise.all([
+    getSettings(),
+    prisma.user.findUnique({ where: { id: user.id }, select: { marketRulesAt: true } }),
+    // The deal for this account between these two people, so the chat shows where it stands
+    prisma.marketDeal.findFirst({ where: { listingId: chat.listingId, buyerId: chat.buyerId }, orderBy: { createdAt: "desc" } }),
+    getTranslations("market"),
+  ]);
+  const STEPS = ["REQUESTED", "PAID", "DELIVERED", "COMPLETED"] as const;
+  const st = (s: string) => (tm.has(`s_${s}`) ? tm(`s_${s}` as "s_ACTIVE") : s);
+  const dealView = deal
+    ? {
+        number: deal.number,
+        status: deal.status,
+        statusLabel: st(deal.status),
+        steps: STEPS.map((s) => st(s)),
+        at: STEPS.indexOf(deal.status as (typeof STEPS)[number]),
+        next: tm.has(`${role}Step_${deal.status}`) ? tm(`${role}Step_${deal.status}` as "buyerStep_REQUESTED") : "",
+        href: `/account/market?tab=${role === "buyer" ? "purchases" : "sales"}`,
+      }
+    : null;
   return (
     <ChatRoom
       chatId={chat.id}
@@ -50,6 +69,7 @@ export default async function ChatPage({ params }: { params: Promise<{ locale: s
       realtime={realtimeConfig()}
       state={{ closed: !!chat.closedAt, reopenPending: !!chat.reopenAt, agentCalled: !!chat.agentCalledAt, otherSeenAt: otherSeen?.lastSeenAt?.toISOString() ?? null }}
       rulesAccepted={rulesAccepted(me?.marketRulesAt, settings)}
+      deal={dealView}
       initial={chat.messages.map((m) => ({
         id: m.id,
         kind: m.kind as "TEXT",

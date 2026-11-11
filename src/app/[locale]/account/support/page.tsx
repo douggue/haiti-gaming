@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { NewTicketForm } from "@/components/SupportForms";
 import { WhatsAppIcon } from "@/components/Icons";
 
-export default async function SupportPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ order?: string }> }) {
+export default async function SupportPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ order?: string; subject?: string; message?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireUser(locale);
@@ -28,7 +28,7 @@ export default async function SupportPage({ params, searchParams }: { params: Pr
         <p className="mt-1 text-sm text-muted">{t("intro")}</p>
         <a href={`https://wa.me/${settings.whatsappNumber}`} target="_blank" rel="noopener" className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1fa855]"><WhatsAppIcon width={16} height={16} /> {t("orWhatsapp")}</a>
       </div>
-      <NewTicketForm orders={orders} defaultOrder={sp.order} />
+      <NewTicketForm orders={orders} defaultOrder={sp.order} defaultSubject={sp.subject?.slice(0, 120)} defaultMessage={sp.message?.slice(0, 1000)} />
       {tickets.length === 0 ? (
         <p className="card p-8 text-center text-sm text-muted">{t("empty")}</p>
       ) : (

@@ -15,7 +15,7 @@ import { mustVerifyEmail } from "@/lib/verify-email";
 import { siteUrl } from "@/lib/site-url";
 import { notify } from "@/lib/notify";
 
-type R = { ok: true; id?: string; whatsapp?: string } | { ok: false; error: string };
+type R = { ok: true; id?: string; whatsapp?: string; number?: number } | { ok: false; error: string };
 /**
  * Known problems come back as a short code (shown translated). Anything unexpected is logged with a reference
  * that is also shown to the customer, so it can be found in the Vercel logs.
@@ -203,7 +203,7 @@ export async function requestDeal(listingId: string, locale: string): Promise<R>
     const number = (settings.marketWhatsapp || settings.whatsappNumber).replace(/\D/g, "");
     const text = `Bonjou! Mwen vle achte kont sa a sou Market Haiti Gaming (peman jele):\n${platformOf(deal.platform).label} · ${deal.title}\n${formatMoney(deal.price, deal.currency, locale)}\nDeal #${deal.number}\n${siteUrl()}/${locale}/market/${listingId}`;
     revalidatePath("/[locale]/market", "layout");
-    return { ok: true, id: deal.id, whatsapp: `https://wa.me/${number}?text=${encodeURIComponent(text)}` };
+    return { ok: true, id: deal.id, number: deal.number, whatsapp: `https://wa.me/${number}?text=${encodeURIComponent(text)}` };
   } catch (e) {
     return fail(e);
   }

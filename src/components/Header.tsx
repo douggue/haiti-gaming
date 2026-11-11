@@ -14,6 +14,7 @@ import { formatMoney } from "@/lib/money";
 import { unreadChats } from "@/lib/market-data";
 import { realtimeConfig } from "@/lib/realtime";
 import { LiveRefresh } from "./LiveRefresh";
+import { HiddenMoney } from "./HiddenMoney";
 import { CartButton, CurrencySwitch, LocaleSwitch, MobileMenu, ThemeToggle } from "./HeaderClient";
 
 export async function Header() {
@@ -37,7 +38,9 @@ export async function Header() {
   // The Market link shows even with a custom menu, until staff adds it themselves or turns the Market off.
   const withMarket: { href: string; label: string; badge?: string }[] = settings.marketEnabled && !base.some((l) => l.href.startsWith("/market")) ? [base[0], { href: "/market", label: t("market") }, ...base.slice(1)] : base;
   // Red "HOT" pill on the Market link
-  const nav = withMarket.map((l) => (settings.marketEnabled && l.href.startsWith("/market") ? { ...l, badge: "HOT" } : l));
+  // Help stays reachable even when staff's custom menu forgot it
+  const withHelp = withMarket.some((l) => l.href.startsWith("/faq")) ? withMarket : [...withMarket, { href: "/faq", label: t("faqShort") }];
+  const nav = withHelp.map((l) => (settings.marketEnabled && l.href.startsWith("/market") ? { ...l, badge: "HOT" } : l));
   // Wallet balance chip (computers, signed-in customers)
   const balance = user ? (await getBalances(prisma, user.id)).HTG.available : 0;
 
@@ -72,7 +75,7 @@ export async function Header() {
             <span className="hidden min-h-10 items-center rounded-full border border-border bg-surface-2/70 p-1 text-sm font-bold lg:inline-flex" data-testid="header-wallet">
               <Link href="/account/wallet" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 hover:text-[#93c5fd]">
                 <WalletIcon width={16} height={16} className="text-amber-300" />
-                {formatMoney(balance, "HTG", locale)}
+                <HiddenMoney text={formatMoney(balance, "HTG", locale)} />
               </Link>
               <Link href="/account/wallet/deposit" aria-label={ta("deposit")} title={ta("deposit")} className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-white shadow-[0_0_12px_-2px_rgba(59,130,246,.8)] hover:brightness-110">
                 <PlusIcon width={15} height={15} />

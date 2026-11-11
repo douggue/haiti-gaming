@@ -42,6 +42,13 @@ type Props = {
   minHtg: number;
   maxHtg: number;
   htgPerUsd: number;
+  /** Gourdes-only store: no USD (USDT) methods */
+  usd?: boolean;
+  /** "Send again" after a refused deposit: same amount and method */
+  initialAmount?: string;
+  initialMethod?: string;
+  /** The customer's phone from their profile */
+  defaultPhone?: string;
 };
 
 export function DepositForm(p: Props) {
@@ -56,7 +63,7 @@ export function DepositForm(p: Props) {
   const methods: Method[] = [
     ...(p.moncash ? [{ key: "MONCASH", kind: "moncash" as const, name: "MonCash", brand: "moncash" as const, mark: "MC", markBg: "#e30613", markFg: "#fff", recipientName: "", recipientNumber: "" }] : []),
     ...(p.natcash ? [{ key: "NATCASH", kind: "mobile" as const, name: "NatCash", brand: "natcash" as const, mark: "NC", markBg: "#f7a400", markFg: "#060b1a", recipientName: p.natcashName, recipientNumber: p.natcashPhone, qr: p.natcashQr || null }] : []),
-    ...p.manual.map((m) => ({
+    ...p.manual.filter((m) => p.usd !== false || m.kind !== "crypto").map((m) => ({
       key: `MANUAL:${m.id}`,
       kind: m.kind,
       name: m.name,
@@ -72,11 +79,14 @@ export function DepositForm(p: Props) {
       manualId: m.id,
     })),
   ];
-  const [key, setKey] = useState(methods[0]?.key ?? "");
+  const start0 = methods.find((x) => x.key === p.initialMethod || x.manualId === p.initialMethod) ?? methods[0];
+  const [key, setKey] = useState(start0?.key ?? "");
   const m = methods.find((x) => x.key === key) ?? methods[0];
   const crypto = m?.kind === "crypto";
-  const [amount, setAmount] = useState("1000");
+  const [amount, setAmount] = useState(p.initialAmount && /^\d+(\.\d+)?$/.test(p.initialAmount) ? p.initialAmount : "1000");
   const [error, setError] = useState("");
+  // Field errors in our own words (the browser's bubbles are in English and hide under the keyboard)
+  const [fieldErr, setFieldErr] = useState<{ amount?: string; reference?: string }>({});
   const [done, setDone] = useState(false);
   const [captchaKey, setCaptchaKey] = useState(0);
   const [pending, start] = useTransition();
@@ -108,6 +118,7 @@ export function DepositForm(p: Props) {
     if (next && (next.kind === "crypto") !== crypto) setAmount(next.kind === "crypto" ? "25" : "1000");
     setKey(k);
     setError("");
+    setFieldErr({});
   };
 
   const minor = parseAmount(amount);
@@ -170,9 +181,25 @@ export function DepositForm(p: Props) {
   return (
     <form
       className="space-y-5"
+      noValidate
       action={(fd) =>
         start(async () => {
           setError("");
+          // Check the fields first, in Kreyòl, under each field
+          const bad: { amount?: string; reference?: string } = {};
+          const val = parseAmount(String(fd.get("amount") ?? ""));
+          const lo = crypto ? minUsd : p.minHtg;
+          const hi = crypto ? maxUsd : p.maxHtg;
+          if (!val || val < lo || val > hi) bad.amount = hint;
+          if (m.kind !== "moncash") {
+            const ref = String(fd.get("reference") ?? "").trim();
+            if (crypto ? !/^(0x)?[0-9a-fA-F]{64}$/.test(ref) : ref.length < 4) bad.reference = crypto ? tw("txHashError") : tw("refMissing");
+          }
+          setFieldErr(bad);
+          if (bad.amount || bad.reference) {
+            document.getElementById(bad.amount ? "amount" : "reference")?.focus();
+            return;
+          }
           fd.set("method", m.manualId ? "MANUAL" : m.key);
           if (m.manualId) fd.set("manualMethodId", m.manualId);
           fd.delete("evidence");
@@ -214,9 +241,9 @@ export function DepositForm(p: Props) {
           <label htmlFor="amount" className="label">{crypto ? tw("cryptoAmount") : tw("amount")}</label>
           <div className="relative">
             <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted">{crypto ? "$" : "HTG"}</span>
-            <input id="amount" name="amount" inputMode="decimal" className={`input h-14 text-xl font-bold ${crypto ? "pl-9" : "pl-14"}`} value={amount} onChange={(e) => setAmount(e.target.value.replace(",", "."))} required />
+            <input id="amount" name="amount" inputMode="decimal" aria-invalid={!!fieldErr.amount} aria-describedby="amount-hint" className={`input h-14 text-xl font-bold ${crypto ? "pl-9" : "pl-14"} ${fieldErr.amount ? "!border-danger" : ""}`} value={amount} onChange={(e) => { setAmount(e.target.value.replace(",", ".")); setFieldErr((f) => ({ ...f, amount: undefined })); }} required />
           </div>
-          <p className="mt-1.5 text-xs text-muted">{hint}</p>
+          <p id="amount-hint" className={`mt-1.5 text-xs ${fieldErr.amount ? "font-semibold text-danger" : "text-muted"}`} role={fieldErr.amount ? "alert" : undefined}>{hint}</p>
         </div>
       </section>
 
@@ -255,7 +282,7 @@ export function DepositForm(p: Props) {
                     {x.kind === "moncash" ? tu("moncashSub") : x.kind === "crypto" ? tw("cryptoCredit") : x.recipientName ? `${tw("sendTo")} ${x.recipientName}` : "HTG"}
                   </span>
                 </span>
-                <span className={`grid size-7 shrink-0 place-items-center rounded-full ${on ? "bg-[#c7d2fe] text-[#1e1b4b]" : "bg-surface-2"}`} aria-hidden>
+                <span className={`grid size-7 shrink-0 place-items-center rounded-full ${on ? "bg-[#c7d2fe] text-[#1e1b4b]" : "border-2 border-muted/60 bg-surface-2"}`} aria-hidden>
                   {on && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}
                 </span>
               </button>
@@ -325,8 +352,11 @@ export function DepositForm(p: Props) {
                 {...(crypto
                   ? { pattern: "(0x)?[0-9a-fA-F]{64}", maxLength: 66, placeholder: "0x…" }
                   : { minLength: 4, maxLength: 40, placeholder: to("referencePlaceholder"), inputMode: "text" as const })}
-                className={`input h-12 font-mono ${crypto ? "text-sm" : "text-base tracking-wider"}`}
+                aria-invalid={!!fieldErr.reference}
+                onChange={() => fieldErr.reference && setFieldErr((f) => ({ ...f, reference: undefined }))}
+                className={`input h-12 font-mono ${crypto ? "text-sm" : "text-base tracking-wider"} ${fieldErr.reference ? "!border-danger" : ""}`}
               />
+              {fieldErr.reference && <p className="mt-1.5 text-xs font-semibold text-danger" role="alert">{fieldErr.reference}</p>}
               {crypto ? (
                 <p className="mt-1.5 text-xs text-muted">{tw("txHashHint")}</p>
               ) : (
@@ -340,7 +370,7 @@ export function DepositForm(p: Props) {
             {!crypto && (
               <div>
                 <label className="label" htmlFor="payerPhone">{to("payerPhone")}</label>
-                <PhoneInput id="payerPhone" name="payerPhone" className="input h-12" />
+                <PhoneInput id="payerPhone" name="payerPhone" className="input h-12" defaultValue={p.defaultPhone} />
               </div>
             )}
 
@@ -378,6 +408,12 @@ export function DepositForm(p: Props) {
           </>
         )}
 
+        {m.kind !== "moncash" && (
+          <p className="flex items-center gap-2 rounded-xl bg-surface-2/70 px-3 py-2 text-xs text-muted">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+            {tw("reviewTime")}
+          </p>
+        )}
         {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
         <Turnstile key={captchaKey} locale={locale} />
         <button className="btn-primary min-h-14 w-full gap-2 text-base" disabled={pending || !minor || shotBusy}>

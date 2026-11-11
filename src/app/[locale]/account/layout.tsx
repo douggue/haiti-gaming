@@ -35,7 +35,7 @@ export default async function AccountLayout({ children, params }: { children: Re
   ];
   return (
     <div className="container-page grid grid-cols-[minmax(0,1fr)] gap-6 py-6 sm:py-10 lg:grid-cols-[220px_minmax(0,1fr)]">
-      <AccountNav items={items} />
+      <AccountNav items={items} backLabel={ta("dashboardBack")} />
       <div className="min-w-0">{children}</div>
     </div>
   );

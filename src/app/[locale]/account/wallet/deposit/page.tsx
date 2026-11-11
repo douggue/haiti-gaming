@@ -7,13 +7,25 @@ import { VerifyGate } from "@/components/VerifyGate";
 import { mustVerifyEmail } from "@/lib/verify-email";
 import { getManualMethods } from "@/lib/manual-methods";
 import { Link } from "@/i18n/navigation";
+import { prisma } from "@/lib/db";
+import { getBalances } from "@/lib/ledger";
 
-export default async function DepositPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function DepositPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ amount?: string; method?: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireUser(locale);
   if (await mustVerifyEmail(user.id)) return <VerifyGate email={user.email} />;
-  const [tw, tc, s, manual] = await Promise.all([getTranslations("wallet"), getTranslations("common"), getSettings(), getManualMethods(locale, "deposits")]);
+  const sp = await searchParams;
+  const [tw, tc, s, manual, balances, profile] = await Promise.all([
+    getTranslations("wallet"),
+    getTranslations("common"),
+    getSettings(),
+    getManualMethods(locale, "deposits"),
+    getBalances(prisma, user.id),
+    prisma.user.findUnique({ where: { id: user.id }, select: { phone: true } }),
+  ]);
+  // Gourdes-only store: no USD (USDT) deposits and no talk of HTG↔USD exchange, unless this customer holds dollars
+  const usd = s.showUsd || balances.USD.available + balances.USD.held > 0;
   return (
     <div className="max-w-2xl space-y-6">
       <div>
@@ -30,8 +42,12 @@ export default async function DepositPage({ params }: { params: Promise<{ locale
         minHtg={s.minDepositHtg}
         maxHtg={s.maxDepositHtg}
         htgPerUsd={s.htgPerUsd}
+        usd={usd}
+        initialAmount={sp.amount}
+        initialMethod={sp.method}
+        defaultPhone={profile?.phone ?? undefined}
       />
-      <p className="text-sm text-muted">{tw("storeCredit")}</p>
+      <p className="text-sm text-muted">{usd ? tw("storeCredit") : tw("storeCreditHtg")}</p>
     </div>
   );
 }
