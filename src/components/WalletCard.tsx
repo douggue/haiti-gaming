@@ -70,7 +70,7 @@ export function WalletCard({ balances, initial, showUsd = true, reviewing = 0 }:
               </span>
               <span className="block text-[11px] text-white/60">{tw("onHoldExplain")}</span>
             </span>
-            <b className={b.held > 0 ? "text-[#ffd48a]" : "text-white/70"}>{money(b.held)}</b>
+            <b className={`shrink-0 whitespace-nowrap ${b.held > 0 ? "text-[#ffd48a]" : "text-white/70"}`}>{money(b.held)}</b>
           </div>
           {showReview && (
             <div className="flex items-center justify-between gap-3 rounded-xl bg-amber-400/15 px-3 py-2 text-sm" data-testid="wallet-reviewing">
@@ -81,7 +81,7 @@ export function WalletCard({ balances, initial, showUsd = true, reviewing = 0 }:
                 </span>
                 <span className="block text-[11px] text-white/60">{tw("reviewingExplain")}</span>
               </span>
-              <b className="text-[#ffd48a]">{money(reviewing)}</b>
+              <b className="shrink-0 whitespace-nowrap text-[#ffd48a]">{money(reviewing)}</b>
             </div>
           )}
         </div>

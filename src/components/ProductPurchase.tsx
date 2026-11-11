@@ -22,6 +22,7 @@ type Props = {
 
 export function ProductPurchase({ product, saved, pricing }: Props) {
   const tp = useTranslations("product");
+  const tord = useTranslations("order");
   const locale = useLocale();
   const router = useRouter();
   const { add, lines } = useStore();
@@ -313,7 +314,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
           {error && <p className="mb-2 rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
           <div className="flex items-center gap-2 md:items-end md:justify-between md:gap-3">
             <span className="min-w-0 flex-1">
-              <span className="eyebrow block truncate whitespace-nowrap text-[10px] text-muted">{tp("totalToPay")}</span>
+              <span className="eyebrow block truncate whitespace-nowrap text-[11px] text-muted"><span className="md:hidden">{tord("total")}</span><span className="hidden md:inline">{tp("totalToPay")}</span></span>
               {total == null ? (
                 <b className="display text-xl font-extrabold md:text-2xl">—</b>
               ) : mode ? (
