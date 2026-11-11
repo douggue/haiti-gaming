@@ -1,4 +1,5 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getAppFormatter } from "@/lib/formatter";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -12,7 +13,7 @@ export default async function NotificationsPage({ params }: { params: Promise<{ 
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const [tn, fmt] = await Promise.all([getTranslations("notifications"), getFormatter()]);
+  const [tn, fmt] = await Promise.all([getTranslations("notifications"), getAppFormatter()]);
   const [items, me] = await Promise.all([
     prisma.notification.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.user.findUnique({ where: { id: user.id }, select: { notifyPrefs: true } }),

@@ -1,5 +1,6 @@
+import { getAppFormatter } from "@/lib/formatter";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { formatMoney } from "@/lib/money";
@@ -27,7 +28,7 @@ export default async function OrderStatusPage({ params, searchParams }: { params
   const { t: token = "" } = await searchParams;
   const order = await prisma.order.findUnique({ where: { id }, include: { items: true, events: { orderBy: { createdAt: "asc" } } } });
   if (!order || !token || !sameToken(token, order.accessToken)) notFound();
-  const [to, tc, fmt, settings] = await Promise.all([getTranslations("order"), getTranslations("common"), getFormatter(), getSettings()]);
+  const [to, tc, fmt, settings] = await Promise.all([getTranslations("order"), getTranslations("common"), getAppFormatter(), getSettings()]);
   const help = encodeURIComponent(`${tc("whatsappMessage")} ${to("title", { number: order.number })}`);
   return (
     <div className="container-page max-w-2xl space-y-5 py-6 sm:py-10">

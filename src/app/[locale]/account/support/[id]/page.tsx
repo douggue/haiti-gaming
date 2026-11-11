@@ -1,5 +1,6 @@
+import { getAppFormatter } from "@/lib/formatter";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -12,7 +13,7 @@ export default async function TicketPage({ params }: { params: Promise<{ locale:
   const user = await requireUser(locale);
   const ticket = await prisma.supportTicket.findFirst({ where: { id, userId: user.id }, include: { messages: { orderBy: { createdAt: "asc" } } } });
   if (!ticket) notFound();
-  const [t, fmt] = await Promise.all([getTranslations("support"), getFormatter()]);
+  const [t, fmt] = await Promise.all([getTranslations("support"), getAppFormatter()]);
   const tone = { OPEN: "PROCESSING", WAITING_CUSTOMER: "PENDING", CLOSED: "CANCELED" } as const;
   return (
     <div className="space-y-5">

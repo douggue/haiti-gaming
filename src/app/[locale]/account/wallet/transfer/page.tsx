@@ -1,4 +1,5 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getAppFormatter } from "@/lib/formatter";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -21,7 +22,7 @@ export default async function TransferPage({ params }: { params: Promise<{ local
     getTranslations("transfer"),
     getTranslations("wallet"),
     getTranslations("common"),
-    getFormatter(),
+    getAppFormatter(),
     transferCodeFor(user.id),
     getBalances(prisma, user.id),
     sentToday(user.id),

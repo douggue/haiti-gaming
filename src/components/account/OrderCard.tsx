@@ -1,6 +1,7 @@
+import { getAppFormatter } from "@/lib/formatter";
 import Image from "next/image";
 import type { Prisma } from "@prisma/client";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/money";
 import { t } from "@/lib/text";
@@ -73,7 +74,7 @@ function PayBadge({ method, walletLabel, otherLabel }: { method: string; walletL
 }
 
 export async function OrderCard({ order, locale }: { order: CardOrder; locale: string }) {
-  const [ta, to, fmt] = await Promise.all([getTranslations("accountUi"), getTranslations("order"), getFormatter()]);
+  const [ta, to, fmt] = await Promise.all([getTranslations("accountUi"), getTranslations("order"), getAppFormatter()]);
   const first = order.items[0];
   const product = first?.variant.product;
   const name = first ? `${t(first.productName, locale)} — ${t(first.variantName, locale)}` : `#${order.number}`;

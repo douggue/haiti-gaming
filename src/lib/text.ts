@@ -7,7 +7,7 @@ export function t(value: unknown, locale: string): string {
   return (v as Record<string, string | undefined>)[locale] || v.ht || v.fr || v.en || Object.values(v).find(Boolean) || "";
 }
 
-const DATE_LOCALES: Record<string, string> = { ht: "fr-HT", fr: "fr-FR", en: "en-US", es: "es-DO" };
+export const DATE_LOCALES: Record<string, string> = { ht: "fr-HT", fr: "fr-FR", en: "en-US", es: "es-DO" };
 
 /** Locale-aware date that never throws, whatever locale string reaches it. */
 export function formatDate(d: Date, locale: string, style: "medium" | "long" = "medium"): string {

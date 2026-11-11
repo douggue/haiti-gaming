@@ -1,6 +1,7 @@
+import { getAppFormatter } from "@/lib/formatter";
 import { siteUrl } from "@/lib/site-url";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -35,7 +36,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
     },
   });
   if (!order) notFound();
-  const [to, tc, fmt, settings, ts] = await Promise.all([getTranslations("order"), getTranslations("common"), getFormatter(), getSettings(), getTranslations("support")]);
+  const [to, tc, fmt, settings, ts] = await Promise.all([getTranslations("order"), getTranslations("common"), getAppFormatter(), getSettings(), getTranslations("support")]);
 
   const manual = order.manualMethodId ? await prisma.manualMethod.findUnique({ where: { id: order.manualMethodId } }) : null;
   const codes = order.items.flatMap((i) => i.codes);

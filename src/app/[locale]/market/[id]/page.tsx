@@ -1,6 +1,7 @@
+import { getAppFormatter } from "@/lib/formatter";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { getUser } from "@/lib/session";
@@ -36,7 +37,7 @@ export default async function ListingPage({ params }: { params: P }) {
   setRequestLocale(locale);
   const settings = await getSettings();
   if (!settings.marketEnabled) notFound();
-  const [user, t, fmt] = await Promise.all([getUser(), getTranslations("market"), getFormatter()]);
+  const [user, t, fmt] = await Promise.all([getUser(), getTranslations("market"), getAppFormatter()]);
   const l = await prisma.marketListing.findUnique({ where: { id }, include: { seller: { select: { name: true, createdAt: true, marketVendor: { select: { shopName: true, status: true } } } } } });
   if (!l) notFound();
   const mine = user?.id === l.sellerId;

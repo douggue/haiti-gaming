@@ -1,5 +1,6 @@
+import { getAppFormatter } from "@/lib/formatter";
 import { siteUrl } from "@/lib/site-url";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { getSettings } from "@/lib/settings";
@@ -13,7 +14,7 @@ export default async function ReferralsPage({ params }: { params: Promise<{ loca
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const [t, to, fmt, settings] = await Promise.all([getTranslations("referrals"), getTranslations("order"), getFormatter(), getSettings()]);
+  const [t, to, fmt, settings] = await Promise.all([getTranslations("referrals"), getTranslations("order"), getAppFormatter(), getSettings()]);
   if (!settings.referralEnabled) {
     return (
       <div>

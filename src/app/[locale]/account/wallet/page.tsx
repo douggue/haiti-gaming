@@ -1,4 +1,5 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getAppFormatter } from "@/lib/formatter";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { getBalances } from "@/lib/ledger";
@@ -20,7 +21,7 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
   const user = await requireUser(locale);
   const [tw, fmt, balances, currency, settings, entries, pending] = await Promise.all([
     getTranslations("wallet"),
-    getFormatter(),
+    getAppFormatter(),
     getBalances(prisma, user.id),
     getDisplayCurrency(),
     getSettings(),
@@ -37,6 +38,7 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
     }),
   ]);
   const usd = settings.showUsd || balances.USD.available + balances.USD.held > 0;
+  const tOrder = await getTranslations("order");
   return (
     <div className="space-y-6">
       <div>
@@ -91,7 +93,7 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
                 locale={locale}
                 title={tw(`tx.${e.transaction.type}`)}
                 when={fmt.dateTime(e.createdAt, { dateStyle: "medium", timeStyle: "short" })}
-                detail={e.transaction.description}
+                detail={e.transaction.description?.replace(/^Order #(\d+)$/, (_, n) => tOrder("title", { number: n }))}
                 held={e.account.type === "CUSTOMER_HELD"}
                 heldLabel={tw("onHoldLabel")}
                 doneLabel={tw("done")}

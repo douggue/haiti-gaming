@@ -1,4 +1,5 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getAppFormatter } from "@/lib/formatter";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -32,7 +33,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
   setRequestLocale(locale);
   const user = await requireUser(locale);
   const sp = await searchParams;
-  const [t, fmt, settings] = await Promise.all([getTranslations("market"), getFormatter(), getSettings()]);
+  const [t, fmt, settings] = await Promise.all([getTranslations("market"), getAppFormatter(), getSettings()]);
   const listingSel = { select: { id: true, title: true, platform: true, images: true } } as const;
   const [listings, purchases, sales, vendor] = await Promise.all([
     prisma.marketListing.findMany({ where: { sellerId: user.id, status: { not: "REMOVED" } }, orderBy: { createdAt: "desc" }, take: 50, select: { id: true, title: true, platform: true, images: true, price: true, currency: true, views: true, status: true, staffNote: true } }),

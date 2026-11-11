@@ -1,4 +1,5 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getAppFormatter } from "@/lib/formatter";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -14,7 +15,7 @@ export default async function SupportPage({ params, searchParams }: { params: Pr
   const sp = await searchParams;
   const [t, fmt, settings, tickets, orders] = await Promise.all([
     getTranslations("support"),
-    getFormatter(),
+    getAppFormatter(),
     getSettings(),
     prisma.supportTicket.findMany({ where: { userId: user.id }, orderBy: { updatedAt: "desc" }, take: 50 }),
     prisma.order.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 20, select: { id: true, number: true } }),

@@ -1,4 +1,5 @@
-import { getFormatter, getLocale, getTranslations, setRequestLocale } from "next-intl/server";
+import { getAppFormatter } from "@/lib/formatter";
+import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -33,7 +34,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
     getTranslations("common"),
     getTranslations("notifications"),
     getTranslations("dataSaver"),
-    getFormatter(),
+    getAppFormatter(),
     getBalances(prisma, user.id),
     getDisplayCurrency(),
     prisma.user.findUnique({ where: { id: user.id }, select: { phone: true, city: true } }),
@@ -75,6 +76,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
     { icon: <GlobeIcon width={20} height={20} />, tone: "text-indigo-300", title: tu("languageCurrency"), sub: `${localeNames[curLocale]} · HTG (${tu("gourdes")})`, right: <LocaleSwitch /> },
   ];
 
+  const tOrder = await getTranslations("order");
   return (
     <div className="space-y-6">
       {/* Profile: who, how to reach them, and three numbers */}
@@ -136,7 +138,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
                   locale={locale}
                   title={tw(`tx.${e.transaction.type}`)}
                   when={fmt.dateTime(e.createdAt, { dateStyle: "medium", timeStyle: "short" })}
-                  detail={e.transaction.description}
+                  detail={e.transaction.description?.replace(/^Order #(\d+)$/, (_, n) => tOrder("title", { number: n }))}
                   held={e.account.type === "CUSTOMER_HELD"}
                   heldLabel={tw("onHoldLabel")}
                   doneLabel={tw("done")}

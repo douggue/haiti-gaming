@@ -1,4 +1,5 @@
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getAppFormatter } from "@/lib/formatter";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
@@ -10,7 +11,7 @@ export default async function Messages({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   setRequestLocale(locale);
   const user = await requireUser(locale);
-  const [t, fmt] = await Promise.all([getTranslations("chat"), getFormatter()]);
+  const [t, fmt] = await Promise.all([getTranslations("chat"), getAppFormatter()]);
   const [chats, unread] = await Promise.all([
     prisma.marketChat.findMany({
       where: { OR: [{ buyerId: user.id }, { sellerId: user.id }], messages: { some: {} } },

@@ -1,11 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { WhatsAppIcon } from "./Icons";
+import { WhatsAppFloat } from "./WhatsAppFloat";
 
 export async function WhatsAppButton({ number, message }: { number: string; message?: string }) {
   const t = await getTranslations("common");
   const text = encodeURIComponent(message ?? t("whatsappMessage"));
   return (
-    <a
+    <WhatsAppFloat
       href={`https://wa.me/${number}?text=${text}`}
       target="_blank"
       rel="noopener"
@@ -15,6 +16,6 @@ export async function WhatsAppButton({ number, message }: { number: string; mess
     >
       <WhatsAppIcon />
       <span className="hidden sm:inline">{t("help")}</span>
-    </a>
+    </WhatsAppFloat>
   );
 }

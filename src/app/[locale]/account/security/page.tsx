@@ -1,5 +1,6 @@
+import { getAppFormatter } from "@/lib/formatter";
 import { headers } from "next/headers";
-import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { getSession, requireUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
@@ -19,7 +20,7 @@ export default async function SecurityPage({ params }: { params: Promise<{ local
   const user = await requireUser(locale);
   const [ts, fmt, current, sessions] = await Promise.all([
     getTranslations("security"),
-    getFormatter(),
+    getAppFormatter(),
     getSession(),
     // A failure here must not break the whole page
     auth.api.listSessions({ headers: await headers() }).catch((e) => {
