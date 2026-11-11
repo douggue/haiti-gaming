@@ -6,7 +6,6 @@ import { PinIcon, WhatsAppIcon } from "./Icons";
 import { DataSaverToggle } from "./DataSaverToggle";
 import { PayLogo } from "./PayLogo";
 import { InstallLink } from "./InstallPrompt";
-import { NewsletterForm } from "./NewsletterForm";
 import { footerPages } from "@/lib/footer-pages";
 import { t as txt } from "@/lib/text";
 import { getLocale } from "next-intl/server";
@@ -96,7 +95,6 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
           <InstallLink />
         </div>
       </div>
-      {settings.newsletterEnabled && <div className="container-page hidden pb-6 sm:block"><NewsletterForm /></div>}
       <div className="border-t border-border">
         <div className="container-page flex flex-col items-center justify-between gap-2 py-5 text-center text-xs text-muted sm:flex-row sm:text-left">
           <span>© {new Date().getFullYear()} {settings.businessName}. {t("rights")}</span>
