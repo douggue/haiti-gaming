@@ -10,6 +10,7 @@ import { setCurrency, saveLocalePreference } from "@/actions/prefs";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "./cart/CartProvider";
 import { BagIcon, BookIcon, CartIcon, CloseIcon, FileIcon, HelpIcon, HomeIcon, LoginIcon, LogoutIcon, MenuIcon, MoonIcon, NewsIcon, StoreIcon, SunIcon, TagIcon, UserIcon, UserPlusIcon, WalletIcon } from "./Icons";
+import { GamepadIcon, StorefrontIcon, UserGearIcon, WalletCardIcon } from "./account/AccountIcons";
 import { Avatar } from "./Avatar";
 
 /**
@@ -420,15 +421,19 @@ export function BottomNav({ signedIn, market = false }: { signedIn: boolean; mar
   const pathname = usePathname();
   const { count, ready } = useStore();
   useKeyboardFlag();
+  const wallet = { href: signedIn ? "/account/wallet" : "/auth/login?next=/account/wallet", label: t("wallet"), icon: WalletCardIcon, active: pathname.startsWith("/account/wallet"), badge: 0 };
   const items = [
-    { href: "/", label: t("home"), icon: HomeIcon, active: pathname === "/" },
-    { href: "/store", label: t("store"), icon: StoreIcon, active: pathname.startsWith("/store") || pathname.startsWith("/categories") || pathname.startsWith("/products") },
-    // With the Market on, it takes the cart's place (the cart is then in the header)
-    market
-      ? { href: "/market", label: t("market"), icon: TagIcon, active: pathname.startsWith("/market") || pathname.startsWith("/account/market") || pathname.startsWith("/account/messages"), badge: 0 }
-      : { href: "/cart", label: t("cart"), icon: CartIcon, active: pathname.startsWith("/cart") || pathname.startsWith("/checkout"), badge: ready ? count : 0 },
-    { href: signedIn ? "/account/wallet" : "/auth/login?next=/account/wallet", label: t("wallet"), icon: WalletIcon, active: pathname.startsWith("/account/wallet") },
-    { href: signedIn ? "/account" : "/auth/login", label: t("tabAccount"), icon: UserIcon, active: (pathname.startsWith("/account") && !pathname.startsWith("/account/wallet") && !pathname.startsWith("/account/market") && !pathname.startsWith("/account/messages")) || pathname.startsWith("/auth") },
+    { href: "/", label: t("home"), icon: HomeIcon, active: pathname === "/", badge: 0 },
+    { href: "/store", label: t("store"), icon: GamepadIcon, active: pathname.startsWith("/store") || pathname.startsWith("/categories") || pathname.startsWith("/products"), badge: 0 },
+    // With the Market on: Home, Store, Wallet, Market, Account (the cart is then in the header).
+    // Without it the cart keeps its place in the bar.
+    ...(market
+      ? [
+          wallet,
+          { href: "/market", label: t("market"), icon: StorefrontIcon, active: pathname.startsWith("/market") || pathname.startsWith("/account/market") || pathname.startsWith("/account/messages"), badge: 0 },
+        ]
+      : [{ href: "/cart", label: t("cart"), icon: CartIcon, active: pathname.startsWith("/cart") || pathname.startsWith("/checkout"), badge: ready ? count : 0 }, wallet]),
+    { href: signedIn ? "/account" : "/auth/login", label: t("tabAccount"), icon: UserGearIcon, active: (pathname.startsWith("/account") && !pathname.startsWith("/account/wallet") && !pathname.startsWith("/account/market") && !pathname.startsWith("/account/messages")) || pathname.startsWith("/auth"), badge: 0 },
   ];
   return (
     <nav
@@ -442,10 +447,10 @@ export function BottomNav({ signedIn, market = false }: { signedIn: boolean; mar
             <Link
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex h-full flex-col items-center justify-center gap-0.5 text-[11px] font-semibold transition-colors ${active ? "text-primary" : "text-muted hover:text-text"}`}
+              className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] font-bold transition-colors ${active ? "text-[#60a5fa] [text-shadow:0_0_12px_rgba(59,130,246,.75)]" : "text-muted hover:text-text"}`}
             >
-              <span className={`relative grid h-7 w-12 place-items-center rounded-full transition-colors ${active ? "bg-primary-soft" : ""}`}>
-                <Icon width={20} height={20} />
+              <span className={`relative grid h-7 w-12 place-items-center transition-all ${active ? "drop-shadow-[0_0_8px_rgba(59,130,246,.9)]" : ""}`}>
+                <Icon width={22} height={22} />
                 {!!badge && (
                   <CountBadge count={badge} className="absolute -right-0.5 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-white" />
                 )}

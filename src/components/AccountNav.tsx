@@ -9,7 +9,7 @@ export function AccountNav({ items }: { items: { href: string; label: string; ic
   const pathname = usePathname();
   const active = (href: string) => (href === "/account" ? pathname === "/account" : pathname.startsWith(href));
   return (
-    <nav aria-label="Account" className="min-w-0 lg:sticky lg:top-24 lg:h-fit">
+    <nav aria-label="Account" className={`min-w-0 lg:sticky lg:top-24 lg:h-fit ${pathname === "/account" ? "hidden lg:block" : ""}`}>
       <ul className="-mx-4 flex gap-1 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:px-0">
         {items.map((i) => {
           const Icon = ICONS[i.icon as keyof typeof ICONS] ?? HomeIcon;
@@ -18,7 +18,7 @@ export function AccountNav({ items }: { items: { href: string; label: string; ic
               <Link
                 href={i.href}
                 aria-current={active(i.href) ? "page" : undefined}
-                className={`flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-sm font-medium ${active(i.href) ? "bg-primary text-white" : "text-muted hover:bg-surface-2 hover:text-text"}`}
+                className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition-colors ${active(i.href) ? "border-[#3b82f6]/50 bg-[#1d4ed8]/20 text-[#93c5fd] shadow-[0_0_16px_-6px_rgba(59,130,246,.8)]" : "border-transparent text-muted hover:bg-surface-2 hover:text-text"}`}
               >
                 <Icon width={17} height={17} />
                 {i.label}

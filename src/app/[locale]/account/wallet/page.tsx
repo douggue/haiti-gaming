@@ -7,16 +7,8 @@ import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
 import { WalletCard } from "@/components/WalletCard";
 import { StatusBadge } from "@/components/StatusBadge";
+import { LedgerRow } from "@/components/account/LedgerRow";
 
-const TX_ICON: Record<string, [string, string]> = {
-  DEPOSIT: ["⬇️", "bg-emerald-500/15"],
-  PURCHASE: ["🎮", "bg-[#3b82f6]/15"],
-  REFUND: ["↩️", "bg-sky-500/15"],
-  EXCHANGE: ["💱", "bg-violet-500/15"],
-  ADJUSTMENT: ["🛠️", "bg-slate-500/15"],
-  HOLD_RELEASE: ["🔓", "bg-amber-500/15"],
-  TRANSFER: ["📤", "bg-indigo-500/15"],
-};
 const FILTERS = { all: null, deposits: ["DEPOSIT", "HOLD_RELEASE"], purchases: ["PURCHASE", "REFUND"], transfers: ["TRANSFER"] } as const;
 type Filter = keyof typeof FILTERS;
 
@@ -77,9 +69,9 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
         </div>
       </div>
 
-      <section className="rounded-3xl border border-border bg-surface/80 p-4 sm:p-5">
+      <section>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="display text-lg font-bold">{tw("history")}</h2>
+          <h2 className="display text-lg font-bold sm:text-xl">{tw("history")}</h2>
           <nav className="flex gap-1 overflow-x-auto rounded-full bg-surface-2 p-1 text-xs font-bold" aria-label={tw("history")}>
             {(Object.keys(FILTERS) as Filter[]).map((k) => (
               <a key={k} href={`?f=${k}`} aria-current={filter === k ? "page" : undefined} className={`shrink-0 rounded-full px-3 py-1.5 ${filter === k ? "bg-primary text-white" : "text-muted hover:text-text"}`}>{tw(`f_${k}`)}</a>
@@ -89,27 +81,22 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
         {entries.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted"><span className="block text-3xl" aria-hidden>🪙</span>{tw("noHistory")}</p>
         ) : (
-          <ul className="divide-y divide-border">
-            {entries.map((e) => {
-              const [icon, bg] = TX_ICON[e.transaction.type] ?? ["•", "bg-surface-2"];
-              const incoming = e.amount > 0;
-              return (
-                <li key={e.id} className="flex items-center gap-3 py-3">
-                  <span className={`grid size-11 shrink-0 place-items-center rounded-2xl text-lg ${bg}`} aria-hidden>{incoming && e.transaction.type === "TRANSFER" ? "📥" : icon}</span>
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5 text-sm font-semibold">
-                      {tw(`tx.${e.transaction.type}`)}
-                      {e.account.type === "CUSTOMER_HELD" && <span className="rounded-full bg-amber-500/15 px-1.5 text-[10px] font-bold text-amber-500">⏳ {tw("onHoldLabel")}</span>}
-                    </span>
-                    <span className="block truncate text-xs text-muted">{fmt.dateTime(e.createdAt, { dateStyle: "medium", timeStyle: "short" })} · {e.transaction.description}</span>
-                  </span>
-                  <span className="text-right">
-                    <b className={`display block text-sm tabular-nums ${incoming ? "text-emerald-400" : ""}`}>{incoming ? "+" : "−"}{formatMoney(Math.abs(e.amount), e.currency, locale)}</b>
-                    <span className="text-[10px] font-semibold text-emerald-500">✓ {tw("done")}</span>
-                  </span>
-                </li>
-              );
-            })}
+          <ul className="space-y-2">
+            {entries.map((e) => (
+              <LedgerRow
+                key={e.id}
+                type={e.transaction.type}
+                amount={e.amount}
+                currency={e.currency}
+                locale={locale}
+                title={tw(`tx.${e.transaction.type}`)}
+                when={fmt.dateTime(e.createdAt, { dateStyle: "medium", timeStyle: "short" })}
+                detail={e.transaction.description}
+                held={e.account.type === "CUSTOMER_HELD"}
+                heldLabel={tw("onHoldLabel")}
+                doneLabel={tw("done")}
+              />
+            ))}
           </ul>
         )}
       </section>
