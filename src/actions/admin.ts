@@ -428,7 +428,6 @@ export async function saveSettings(form: FormData): Promise<R> {
       approvalThresholdHtg: money("approvalThresholdHtg"),
       autoRefundHours: Math.max(0, Math.min(720, Math.round(num("autoRefundHours")))),
       referralEnabled: form.get("referralEnabled") === "on",
-      newsletterEnabled: form.get("newsletterEnabled") === "on",
       requireEmailVerification: form.get("requireEmailVerification") === "on",
       maxAccountsPerDevice: Math.max(1, Math.min(50, Math.round(num("maxAccountsPerDevice")) || 3)),
       referralRewardHtg: money("referralRewardHtg"),

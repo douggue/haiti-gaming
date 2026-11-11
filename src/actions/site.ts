@@ -7,7 +7,6 @@ import { audit } from "@/lib/audit";
 import { setSetting, type NavLink } from "@/lib/settings";
 import { blocksSchema } from "@/lib/pages";
 import { isOwnImageUrl } from "@/lib/storage";
-import { randomToken } from "@/lib/crypto";
 
 type R = { ok: true; message?: string; id?: string } | { ok: false; error: string };
 const fail = (e: unknown): R => ({ ok: false, error: e instanceof Error ? e.message : "Unexpected error" });
@@ -71,24 +70,6 @@ export async function saveNavigation(nav: { header: NavLink[]; footer: NavLink[]
   } catch (e) {
     return fail(e);
   }
-}
-
-// ───────────── Newsletter (public) ─────────────
-
-export async function subscribeNewsletter(email: string, locale: string, captcha?: string): Promise<R> {
-  const { verifyTurnstile } = await import("@/lib/turnstile");
-  const { headers } = await import("next/headers");
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim();
-  if (!(await verifyTurnstile(captcha, ip))) return { ok: false, error: "captcha" };
-  const e = email.trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) || e.length > 200) return { ok: false, error: "invalid" };
-  const l = LOCALES.includes(locale) ? locale : "ht";
-  await prisma.newsletterSubscriber.upsert({
-    where: { email: e },
-    create: { email: e, locale: l, token: randomToken(18) },
-    update: { unsubscribedAt: null, consentAt: new Date(), locale: l },
-  });
-  return { ok: true };
 }
 
 // ───────────── Manual payment methods ─────────────

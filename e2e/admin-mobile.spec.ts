@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { staffLogin } from "./helpers";
 
 /** Every admin screen must fit a phone: no sideways scrolling of the page itself. */
-const PAGES = ["", "orders", "payments", "reconciliation", "risk", "approvals", "support", "products", "codes", "media", "customers", "wallet", "referrals", "analytics", "homepage", "news", "pages", "navigation", "newsletter", "appearance", "translations", "seo", "staff", "security", "payment-methods", "email", "settings", "audit"];
+const PAGES = ["", "orders", "payments", "reconciliation", "risk", "approvals", "support", "products", "codes", "media", "customers", "wallet", "referrals", "analytics", "homepage", "news", "pages", "navigation", "appearance", "translations", "seo", "staff", "security", "payment-methods", "email", "settings", "audit"];
 
 test("admin pages fit a phone screen", async ({ page }) => {
   test.setTimeout(240_000);

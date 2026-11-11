@@ -73,7 +73,6 @@ export default async function SettingsPage() {
             <input type="checkbox" name="requireEmailVerification" defaultChecked={s.requireEmailVerification} className="mt-1" />
             <span>Require email confirmation before buying, depositing or exchanging. <span className="text-muted">Customers can still browse, fill their cart and contact support. Turns itself off while email sending is off.</span></span>
           </label>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="newsletterEnabled" defaultChecked={s.newsletterEnabled} /> Newsletter sign-up form in the footer (subscribers are listed in Admin → Newsletter)</label>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field name="referralRewardHtg" label="Reward to the referrer (HTG, store credit)" value={m(s.referralRewardHtg)} />
             <Field name="transferDailyLimitHtg" label="Money transfers: most a customer can send per 24 h (HTG)" value={m(s.transferDailyLimitHtg)} />

@@ -118,7 +118,6 @@ test("admin: manual method, subcategory, page, menu, announcement, media, securi
   await a.goto("/admin/settings");
   await a.waitForLoadState("networkidle");
   await a.getByLabel("Show announcement").check();
-  await a.getByLabel(/Newsletter sign-up form/).check();
   await a.getByLabel("Text (HT)").fill(announcement);
   await a.getByLabel("Show from (optional)").fill("");
   await a.getByLabel("Hide after (optional)").fill("");
