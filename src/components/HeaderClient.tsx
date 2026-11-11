@@ -324,17 +324,30 @@ export function MobileMenu({
   // The bottom bar already has these places: the drawer lists the others, help and support first
   const inBar = (href: string) => ["/", "/store", "/market", "/account", "/account/wallet", "/cart"].includes(href.split("?")[0]);
   // Help first, then other places, then legal (what the phone footer used to list); no duplicates
+  // Modern drawer order: browse first, then help, then settings; legal as small links at the very bottom
+  const seen = new Set<string>();
+  const once = (n: { href: string }) => !seen.has(n.href) && (seen.add(n.href), true);
   const help = [
     { href: "/faq", label: t("helpCenter") },
-    ...(signedIn ? [{ href: "/account/support", label: t("support") }] : []),
     { href: "/guides", label: t("guides") },
-    { href: "/contact", label: t("contact") },
+    // Signed in: support tickets; signed out: the contact page (never both)
+    signedIn ? { href: "/account/support", label: t("support") } : { href: "/contact", label: t("contact") },
     { href: "/about", label: t("about") },
-  ];
-  const seen = new Set(help.map((h) => h.href));
-  const more = [{ href: "/categories", label: t("categories") }, { href: "/news", label: t("news") }, ...nav.filter((n) => !inBar(n.href))]
-    .filter((n) => !seen.has(n.href) && (seen.add(n.href), true));
-  const legalLinks = legal.filter((n) => !seen.has(n.href) && (seen.add(n.href), true));
+  ].filter(once);
+  // Help links are claimed first so a custom menu link to the same page doesn't show twice (or in the wrong group)
+  const isHelp = (href: string) => ["/faq", "/help", "/guides", "/contact", "/about", "/account/support"].some((h) => href.split("?")[0] === h);
+  const browse = [{ href: "/categories", label: t("categories") }, { href: "/news", label: t("news") }, ...nav.filter((n) => !inBar(n.href) && !isHelp(n.href))].filter(once);
+  const legalLinks = legal.filter(once);
+  const row = (n: { href: string; label: string }) =>
+    n.href.startsWith("https://") ? (
+      <a key={n.href} href={n.href} rel="noopener" target="_blank" className="group flex items-center gap-3 rounded-2xl px-2 py-2 font-semibold hover:bg-surface-2">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary"><FileIcon width={20} height={20} /></span>
+        <span className="flex-1">{n.label}</span>
+        <span className="text-muted" aria-hidden>↗</span>
+      </a>
+    ) : (
+      <MenuLink key={n.href} href={n.href} label={n.label} />
+    );
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -364,33 +377,41 @@ export function MobileMenu({
               </button>
             </div>
             {/* Only what the bottom bar doesn't already offer (home, store, wallet, Market, account): help first */}
-            {/* One plain list: help, other places, then legal (what the phone footer used to show). WhatsApp already has its own button. */}
-            {help.map((n) => <MenuLink key={n.href} href={n.href} label={n.label} />)}
-            {[...more, ...legalLinks].map((n) =>
-              n.href.startsWith("https://") ? (
-                <a key={n.href} href={n.href} rel="noopener" target="_blank" className="group flex items-center gap-3 rounded-2xl px-2 py-2 font-semibold hover:bg-surface-2">
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary"><FileIcon width={20} height={20} /></span>
-                  <span className="flex-1">{n.label}</span>
-                  <span className="text-muted" aria-hidden>↗</span>
-                </a>
-              ) : (
-                <MenuLink key={n.href} href={n.href} label={n.label} />
-              ),
-            )}
+            {/* Signed out: sign in / sign up first, where people look */}
             {!signedIn && (
-              <div className="mt-3 grid gap-2">
-                <Link href="/auth/login" className="btn-secondary"><LoginIcon width={18} height={18} aria-hidden />{t("signIn")}</Link>
-                <Link href="/auth/register" className="btn-primary"><UserPlusIcon width={18} height={18} aria-hidden />{t("signUp")}</Link>
+              <div className="mb-2 grid grid-cols-2 gap-2">
+                <Link href="/auth/login" className="btn-secondary min-h-11 whitespace-nowrap px-2 text-sm"><LoginIcon width={17} height={17} aria-hidden />{t("signIn")}</Link>
+                <Link href="/auth/register" className="btn-primary min-h-11 whitespace-nowrap px-2 text-sm"><UserPlusIcon width={17} height={17} aria-hidden />{t("signUp")}</Link>
               </div>
             )}
+            {browse.map(row)}
+            <div className="my-1.5 h-px bg-border" aria-hidden />
+            {help.map(row)}
             {/* Language is the flag in the header; here only the look (and currency when dollars are on) */}
-            <div className="mt-auto space-y-3 rounded-2xl border border-border bg-surface-2/60 p-3">
+            <div className="mt-3 space-y-3 rounded-2xl border border-border bg-surface-2/60 p-3">
+              {/* Look on the left, sign out in the opposite corner, nothing in between */}
               <div className="flex items-center justify-between gap-2">
-                {showUsd && <CurrencySwitch />}
-                <ThemeToggle withLabel />
+                <span className="flex items-center gap-2">
+                  <ThemeToggle withLabel />
+                  {showUsd && <CurrencySwitch />}
+                </span>
+                {signedIn && <SignOutButton className="btn-ghost min-h-10 px-2.5 text-sm text-danger" />}
               </div>
               <DataSaverToggle />
             </div>
+            {legalLinks.length > 0 && (
+              <ul className="mt-auto flex flex-wrap gap-x-4 gap-y-1 px-2 pt-4 text-xs text-muted">
+                {legalLinks.map((n) => (
+                  <li key={n.href}>
+                    {n.href.startsWith("https://") ? (
+                      <a href={n.href} rel="noopener" target="_blank" className="inline-block py-2 hover:text-text">{n.label}</a>
+                    ) : (
+                      <Link href={n.href} className="inline-block py-2 hover:text-text">{n.label}</Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>,
         document.body,
