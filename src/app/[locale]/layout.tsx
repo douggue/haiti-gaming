@@ -92,7 +92,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         </a>
         <NextIntlClientProvider>
           <PlatformIconsProvider icons={settings.marketIcons ?? {}}>
-          <CartProvider currency={currency} htgPerUsd={settings.htgPerUsd} signedIn={!!user}>
+          <CartProvider currency={currency} htgPerUsd={settings.htgPerUsd} signedIn={!!user} userId={user?.id ?? null}>
             <AnnouncementBar settings={settings} locale={locale} />
             <Header />
             <main id="main">{children}</main>

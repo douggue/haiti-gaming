@@ -51,3 +51,52 @@ test("a removed item doesn't come back", async ({ browser }) => {
   await a.waitForLoadState("networkidle");
   await expect(a.getByText("Panye ou vid.")).toBeVisible({ timeout: 10_000 });
 });
+
+/** Shared phone: one account's cart never shows up (or gets merged) into another account's cart. */
+test("switching accounts on the same phone keeps each cart separate", async ({ browser }) => {
+  const stamp = Date.now();
+  const page = await newPage(browser);
+  const signIn = async (email: string, password: string) => {
+    await page.goto("/ht/auth/login");
+    await page.waitForLoadState("networkidle");
+    await page.getByLabel("Imèl").fill(email);
+    await page.getByLabel("Modpas").fill(password);
+    await page.getByRole("button", { name: "Konekte" }).last().click();
+    await page.waitForURL("**/ht/account");
+  };
+  const signOut = async () => {
+    // Clears the sign-in only; whatever the phone stored stays, like a real shared phone
+    await page.context().clearCookies();
+  };
+  const cartLines = () => page.locator("main li", { hasText: "Retire" });
+
+  const a = { email: `kontA.${stamp}@example.com`, pw: "Kont-A-Panye-2026!" };
+  const b = { email: `kontB.${stamp}@example.com`, pw: "Kont-B-Panye-2026!" };
+  await registerCustomer(page, "Kont A", a.email, a.pw);
+  await page.goto("/ht/products/google-play-gift-card");
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: "Achte kounye a" }).first().click();
+  await page.waitForURL("**/ht/cart");
+  await expect(cartLines()).toHaveCount(1);
+  await page.waitForTimeout(1500); // the cart reaches account A
+
+  // Signed out: A's items are not shown to whoever uses the phone next
+  await signOut();
+  await page.goto("/ht/cart");
+  await page.waitForLoadState("networkidle");
+  await expect(cartLines()).toHaveCount(0);
+
+  // Account B signs in on the same phone: empty cart, nothing from A
+  await registerCustomer(page, "Kont B", b.email, b.pw);
+  await page.goto("/ht/cart");
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(1000);
+  await expect(cartLines()).toHaveCount(0);
+
+  // A signs back in: A's cart comes back
+  await signOut();
+  await signIn(a.email, a.pw);
+  await page.goto("/ht/cart");
+  await page.waitForLoadState("networkidle");
+  await expect(cartLines()).toHaveCount(1);
+});

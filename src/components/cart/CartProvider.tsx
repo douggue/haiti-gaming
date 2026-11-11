@@ -45,15 +45,18 @@ const Ctx = createContext<StoreCtx | null>(null);
 const STORAGE_KEY = "hg_cart_v2";
 const OLD_KEY = "hg_cart_v1";
 
-/** What this device keeps: the lines, when they last changed, and whether they were added while signed out. */
-type Stored = { lines: CartLine[]; updatedAt: number; guest: boolean };
+/**
+ * What this device keeps: the lines, when they last changed, whether they were added while signed out,
+ * and which account they belong to (so one person's cart never shows up for someone else on a shared phone).
+ */
+type Stored = { lines: CartLine[]; updatedAt: number; guest: boolean; owner?: string | null };
 
 function readLocal(): Stored {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const v = JSON.parse(raw) as Partial<Stored>;
-      return { lines: Array.isArray(v.lines) ? v.lines : [], updatedAt: Number(v.updatedAt) || 0, guest: !!v.guest };
+      return { lines: Array.isArray(v.lines) ? v.lines : [], updatedAt: Number(v.updatedAt) || 0, guest: !!v.guest, owner: typeof v.owner === "string" ? v.owner : v.owner === null ? null : undefined };
     }
     const old = localStorage.getItem(OLD_KEY);
     if (old) return { lines: JSON.parse(old), updatedAt: 0, guest: true };
@@ -72,7 +75,7 @@ export function lineKey(variantId: string, fields: Record<string, string>, amoun
  * (so items removed on one device don't come back from another). A cart filled while signed out is added to
  * the account's cart once, at sign-in.
  */
-export function CartProvider({ children, currency, htgPerUsd, signedIn = false }: { children: ReactNode; currency: "HTG" | "USD"; htgPerUsd: number; signedIn?: boolean }) {
+export function CartProvider({ children, currency, htgPerUsd, signedIn = false, userId = null }: { children: ReactNode; currency: "HTG" | "USD"; htgPerUsd: number; signedIn?: boolean; userId?: string | null }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [ready, setReady] = useState(false);
   const synced = useRef(false);
@@ -87,7 +90,10 @@ export function CartProvider({ children, currency, htgPerUsd, signedIn = false }
   }, []);
 
   useEffect(() => {
-    const local = readLocal();
+    let local = readLocal();
+    // This device's cart belongs to another account (shared phone, or signed out): don't show or merge it.
+    // That account's cart is safe on its account and comes back when it signs in again.
+    if (local.owner && local.owner !== userId) local = { lines: [], updatedAt: 0, guest: false, owner: userId };
     updatedAt.current = local.updatedAt;
     setLines(local.lines);
     setReady(true);
@@ -115,7 +121,7 @@ export function CartProvider({ children, currency, htgPerUsd, signedIn = false }
       // The cart may not change on screen (this device was newer): still send it to the account.
       setTimeout(() => pending.current && push(pending.current), 0);
     });
-  }, [signedIn, push]);
+  }, [signedIn, userId, push]);
 
   useEffect(() => {
     if (!ready) return;
@@ -125,13 +131,13 @@ export function CartProvider({ children, currency, htgPerUsd, signedIn = false }
       if (signedIn && synced.current) pending.current = lines;
     }
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ lines, updatedAt: updatedAt.current, guest: !signedIn } satisfies Stored));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ lines, updatedAt: updatedAt.current, guest: !signedIn, owner: signedIn ? userId : null } satisfies Stored));
       localStorage.removeItem(OLD_KEY);
     } catch {}
     if (!pending.current) return;
     const id = setTimeout(() => pending.current && push(pending.current), 300);
     return () => clearTimeout(id);
-  }, [lines, ready, signedIn, push]);
+  }, [lines, ready, signedIn, userId, push]);
 
   // Leaving the page (or the app going to the background): save now instead of waiting.
   useEffect(() => {
