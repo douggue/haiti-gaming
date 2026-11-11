@@ -67,7 +67,9 @@
     "messages": "Mesaj",
     "sellerCallout": "Ou gen yon kont Free Fire, PUBG oswa TikTok w pa itilize? Fè kòb ak li 💸",
     "sellerCalloutCta": "Vin vandè sou Market la →",
-    "acceptedPayments": "Peman aksepte"
+    "acceptedPayments": "Peman aksepte",
+    "helpCenter": "Sant èd",
+    "support": "Sipò"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -117,9 +119,19 @@
     "q2": "Ki mwayen peman nou aksepte?",
     "a2": "MonCash (otomatik) ak NatCash (ekip nou an verifye l). Ou ka peye tou ak bous Haiti Gaming ou.",
     "q3": "Èske m ka retire lajan nan bous mwen?",
-    "a3": "Non. Bous la se kredi boutik: ou ka mete lajan ladan l, chanje ant HTG ak USD, epi depanse l sou Haiti Gaming.",
+    "a3": "Non. Bous la se kredi boutik an goud: ou ka mete lajan ladan l, voye l bay yon lòt kliyan epi depanse l sou Haiti Gaming.",
     "q4": "E si kòmand mwen an pa pase?",
-    "a4": "Si nou pa ka livre, nou remèt tout lajan an nan bous ou epi nou avèti w."
+    "a4": "Si nou pa ka livre, nou remèt tout lajan an nan bous ou epi nou avèti w.",
+    "q5": "Kijan Market la pwoteje m lè m achte yon kont?",
+    "a5": "Ou pa janm peye vandè a dirèkteman. Ou peye ajan Haiti Gaming nan; li kenbe lajan an jiskaske ou resevwa kont lan epi ou konfime tout bagay anfòm. Se apre sa sèlman li peye vandè a.",
+    "q6": "Konbyen komisyon Market la pran?",
+    "a6": "{pct}% sou pri vant lan. Se sou lajan vandè a ajan an retire l lè tranzaksyon an fini; achtè a peye pri ki afiche a (oswa pri yo te dakò nan chat la).",
+    "q7": "Kijan vandè yo resevwa lajan yo?",
+    "a7": "Lè achtè a konfime li resevwa kont lan, ajan an peye vandè a sou MonCash oswa NatCash, mwens komisyon an. Vandè a ka swiv sa nan Kont → Market → Vant mwen.",
+    "q8": "Konbyen tan yon tranzaksyon Market pran?",
+    "a8": "Sa depann de kilè achtè a peye ajan an ak kilè vandè a remèt kont lan. Ou ka swiv chak etap (Mande → Peye ajan an → Remèt → Fini) nan chat la ak nan Kont → Market.",
+    "q9": "E si m gen yon pwoblèm ak kont lan apre m fin achte l?",
+    "a9": "Pa konfime tranzaksyon an si kont lan pa bon. Si yon pwoblèm parèt apre (pa egzanp ansyen mèt la eseye reprann li), kontakte sipò touswit oswa rele ajan an nan chat la: ajan an ap egzamine ka a."
   },
   "store": {
     "title": "Boutik",
@@ -197,7 +209,12 @@
     "checkedByTeam": "Ekip la verifye",
     "localPay": "Peye lokal",
     "playerInfo": "Enfòmasyon jwè",
-    "whereId": "Ki kote ID mwen ye?"
+    "whereId": "Ki kote ID mwen ye?",
+    "fieldMissing": "Mete {label} ou pou nou ka voye l ba ou.",
+    "examplePrefix": "Egz:",
+    "toastAdded": "Ajoute nan panye",
+    "toastMore": "Kantite a monte: {n} nan panye",
+    "toastCta": "Wè panye"
   },
   "cart": {
     "title": "Panye ou",
@@ -208,7 +225,10 @@
     "remove": "Retire",
     "continueShopping": "Kontinye achte",
     "priceNote": "Pri yo konfime lè w ap peye.",
-    "itemsCount": "{n, plural, one {# atik} other {# atik}}"
+    "itemsCount": "{n, plural, one {# atik} other {# atik}}",
+    "editDetails": "ID jwè / enfòmasyon",
+    "save": "Anrejistre",
+    "cancel": "Anile"
   },
   "checkout": {
     "title": "Peman",
@@ -265,7 +285,11 @@
     "tagChecked": "Ekip la verifye",
     "tagInstant": "Touswit",
     "messageStep": "Mesaj (si w vle)",
-    "totalDue": "Total pou peye"
+    "totalDue": "Total pou peye",
+    "walletShort": "pa ase pou kòmand sa a",
+    "deliveryMissing": "Ranpli enfòmasyon livrezon an (zòn, non ak adrès) pou n ka voye l ba ou.",
+    "addNote": "Ajoute yon mesaj (si w vle)",
+    "change": "Chanje"
   },
   "order": {
     "title": "Kòmand #{number}",
@@ -311,7 +335,12 @@
     "shareStatus": "Kopye lyen swivi a",
     "referenceBad": "Referans lan pa bon. Mete referans tranzaksyon an jan li ye nan mesaj NatCash la (omwen 4 karaktè).",
     "deliveryTitle": "Livrezon",
-    "codWaiting": "Kòmand ou anrejistre. Yon ajan ap kontakte w sou WhatsApp pou fikse livrezon an. Ou peye an kach lè w resevwa l."
+    "codWaiting": "Kòmand ou anrejistre. Yon ajan ap kontakte w sou WhatsApp pou fikse livrezon an. Ou peye an kach lè w resevwa l.",
+    "payFailedTitle": "Peman an pa pase",
+    "payFailedBody": "Ou anile peman MonCash la oswa li pa rive fini. Pa gen lajan ki soti. Eseye ankò, oswa chwazi yon lòt mwayen peman.",
+    "changeMethod": "Chanje mwayen peman",
+    "otherMethodHint": "Ou prefere peye yon lòt jan?",
+    "details": "Enfòmasyon"
   },
   "account": {
     "dashboard": "Tablo bò",
@@ -338,7 +367,8 @@
     "privacy": "Konfidansyalite",
     "transfer": "Voye kòb",
     "market": "Market",
-    "messages": "Mesaj"
+    "messages": "Mesaj",
+    "dashboardBack": "Kont"
   },
   "wallet": {
     "title": "Bous",
@@ -388,7 +418,7 @@
     "sendTo": "Voye bay",
     "stepScan": "Eskane QR la oswa voye sou nimewo a.",
     "stepSend": "Voye lajan an nan aplikasyon {name}.",
-    "stepAmount": "Ekri montan ou voye a anba a.",
+    "stepAmount": "Ekri menm montan ou voye a nan bwat «Montan» ki anwo a.",
     "stepRef": "Mete referans tranzaksyon an epi voye.",
     "refHelp": "Kote pou m jwenn referans lan?",
     "refHelpTitle": "Kote referans lan ye?",
@@ -426,7 +456,22 @@
     "f_deposits": "Depo",
     "f_purchases": "Acha",
     "f_transfers": "Transfè",
-    "done": "Fini"
+    "done": "Fini",
+    "d_from": "Soti nan {name}",
+    "d_to": "Voye bay {name}",
+    "d_released": "Lajan ki te an atant la disponib",
+    "d_refund": "Ranbousman kòmand #{number}",
+    "d_referral": "Bonis parennaj",
+    "d_adjustment": "Koreksyon ekip la fè",
+    "refMissing": "Mete referans tranzaksyon an (omwen 4 karaktè).",
+    "reviewTime": "Ekip la verifye depo yo anjeneral nan 30 minit.",
+    "sendAgain": "Voye ankò",
+    "contactSupport": "Kontakte sipò",
+    "supportSubject": "Depo {amount} refize",
+    "supportMessage": "Bonjou, depo {amount} mwen an (referans {ref}) refize. Èske nou ka ede m?",
+    "onHoldExplain": "Depo ki apwouve deja, men ou poko ka depanse l (tan sekirite).",
+    "reviewingLabel": "N ap verifye",
+    "reviewingExplain": "Depo ou voye ke ekip la poko apwouve."
   },
   "auth": {
     "loginTitle": "Konekte",
@@ -819,7 +864,11 @@
     "err_funds": "Ou pa gen ase kòb nan bous ou.",
     "err_verify_email": "Konfime imèl ou anvan.",
     "err_disabled": "Transfè yo fèmen pou kounye a.",
-    "err_error": "Gen yon pwoblèm. Eseye ankò."
+    "err_error": "Gen yon pwoblèm. Eseye ankò.",
+    "receiptTitle": "Lajan an voye",
+    "receiptAmount": "Montan",
+    "receiptTo": "Bay",
+    "receiptWhen": "Lè"
   },
   "market": {
     "eyebrow": "Kont ant jwè",
@@ -844,7 +893,7 @@
     "sold": "Vann",
     "verified": "Vandè apwouve",
     "views": "{n, plural, one {# vizit} other {# vizit}}",
-    "inspect": "Enspekte",
+    "inspect": "Wè detay",
     "share": "Pataje",
     "shareTitle": "Pataje kont sa a",
     "copyLink": "Kopye lyen an",
@@ -895,7 +944,7 @@
     "titlePlaceholder": "egz. Kont nivo 70, 12 skin ra",
     "priceLabel": "Pri",
     "currency": "Lajan",
-    "commissionHint": "Lè li vann, ajan an kenbe {pct}% epi li peye w rès la.",
+    "commissionHint": "Lè li vann, ajan an kenbe {pct}% epi li peye w rès la sou MonCash oswa NatCash, apre achtè a konfime li resevwa kont lan.",
     "detailsLabel": "Detay",
     "detailName": "Non",
     "detailValue": "Valè",
@@ -1043,7 +1092,13 @@
     "similar": "Lòt kont {game}",
     "escrowEyebrow": "Pwoteksyon Haiti Gaming",
     "sellerBandEyebrow": "Fè kòb ak kont ou",
-    "sellerBandTitle": "Yon kont ou pa jwe ankò? Vann li an sekirite."
+    "sellerBandTitle": "Yon kont ou pa jwe ankò? Vann li an sekirite.",
+    "dealRequested": "Demann voye! Kont sa a rezève pou ou (tranzaksyon #{number}).",
+    "dealRequestedNext": "Etap ki vini an: ekri ajan an sou WhatsApp epi peye l. Lajan an rete jele jiskaske ou resevwa kont lan.",
+    "dealWriteAgent": "Ekri ajan an sou WhatsApp",
+    "dealFollow": "Swiv tranzaksyon an",
+    "payoutTitle": "Komisyon Market la: {pct}% sou chak vant",
+    "payoutBody": "Achtè a peye ajan Haiti Gaming nan, pa ou. Lè achtè a konfime li resevwa kont lan, ajan an peye w pri a mwens komisyon an sou MonCash oswa NatCash."
   },
   "chat": {
     "title": "Mesaj",
@@ -1102,7 +1157,7 @@
     "offline": "Pa an liy",
     "lastSeen": "Pa an liy · dènye fwa {time}",
     "callAgent": "Rele ajan",
-    "agentComing": "Ajan an rele",
+    "agentComing": "Ou rele yon ajan – l ap antre nan chat la byento",
     "closedTitle": "Konvèsasyon sa a fèmen",
     "closedHint": "Tranzaksyon an fini. Ou bezwen yon bagay? Mande ekip la relouvri l.",
     "reopenPending": "Demann ou voye. Ekip la ap reponn ou byento.",
@@ -1113,7 +1168,10 @@
     "err_agent_already": "Yo deja rele yon ajan. L ap vini byento.",
     "err_reopen_pending": "Gen yon demann k ap tann deja.",
     "err_reason": "Ekri kèk mo (5 karaktè oswa plis).",
-    "err_not_closed": "Konvèsasyon an deja louvri."
+    "err_not_closed": "Konvèsasyon an deja louvri.",
+    "dealTitle": "Tranzaksyon #{number}",
+    "dealOpen": "Wè detay",
+    "openChat": "Ouvri chat la"
   },
   "accountUi": {
     "orderHistory": "Istorik kòmand",
@@ -1129,7 +1187,7 @@
     "items": "atik",
     "viewDetails": "Wè detay",
     "seeCodes": "Wè kòd yo",
-    "reorder": "Rekòmande",
+    "reorder": "Achte ankò",
     "ordersDone": "Kòmand fini",
     "htgWallet": "HTG nan bous",
     "listings": "Kont an vant",
@@ -1150,7 +1208,9 @@
     "chatWhatsApp": "Chat sou WhatsApp kounye a",
     "pickAmount": "Chwazi montan an",
     "teamCheck": "Ekip la verifye",
-    "moncashSub": "Peye nan aplikasyon MonCash, lajan an antre touswit"
+    "moncashSub": "Peye nan aplikasyon MonCash, lajan an antre touswit",
+    "activeOrders": "Kòmand aktif",
+    "depositsChecking": "Depo an verifikasyon"
   },
   "footer": {
     "madeWithPride": "Fèt ak fyète an Ayiti"
@@ -1179,7 +1239,9 @@
     "tagDelivery": "Livrezon",
     "tagPayment": "Peman",
     "tagWallet": "Bous",
-    "tagOrder": "Kòmand"
+    "tagOrder": "Kòmand",
+    "contactBody": "Adrès, lè travay ak tout fason pou jwenn nou.",
+    "tagMarket": "Market"
   },
   "guides": {
     "eyebrow": "Peye an goud, san kat bank",
@@ -1205,8 +1267,8 @@
     "placedSub": "Ekip la ap verifye peman an. N ap avize w depi l fini.",
     "depositTitle": "Lajan an rantre!",
     "depositSub": "Li disponib nan bous ou kounye a.",
-    "depositPendingTitle": "Depo a resevwa!",
-    "depositPendingSub": "Ekip la ap verifye l. Lajan an ap parèt nan bous ou depi l fini.",
+    "depositPendingTitle": "Depo voye – n ap verifye l",
+    "depositPendingSub": "Anjeneral sa pran 30 minit. Lajan an ap parèt nan bous ou depi l apwouve.",
     "transferTitle": "Lajan an pati!",
     "transferSub": "{name} resevwa l touswit.",
     "continue": "Kontinye"

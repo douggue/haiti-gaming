@@ -67,7 +67,9 @@
     "messages": "Messages",
     "sellerCallout": "Un compte Free Fire, PUBG ou TikTok qui dort ? Transformez-le en argent 💸",
     "sellerCalloutCta": "Devenez vendeur sur le Market →",
-    "acceptedPayments": "Paiements acceptés"
+    "acceptedPayments": "Paiements acceptés",
+    "helpCenter": "Centre d’aide",
+    "support": "Support"
   },
   "home": {
     "eyebrow": "Fait en Haïti, pour les joueurs",
@@ -117,9 +119,19 @@
     "q2": "Quels moyens de paiement acceptez-vous ?",
     "a2": "MonCash (automatique) et NatCash (vérifié par notre équipe). Vous pouvez aussi payer avec votre portefeuille Haiti Gaming.",
     "q3": "Puis-je retirer l'argent de mon portefeuille ?",
-    "a3": "Non. Le portefeuille est un crédit boutique : vous pouvez le recharger, convertir entre HTG et USD et le dépenser sur Haiti Gaming.",
+    "a3": "Non. Le portefeuille est un crédit boutique en gourdes : vous pouvez le recharger, l’envoyer à un autre client et le dépenser sur Haiti Gaming.",
     "q4": "Et si ma commande échoue ?",
-    "a4": "Si nous ne pouvons pas livrer, le montant total est remis sur votre portefeuille et vous êtes averti."
+    "a4": "Si nous ne pouvons pas livrer, le montant total est remis sur votre portefeuille et vous êtes averti.",
+    "q5": "Comment le Market me protège-t-il quand j’achète un compte ?",
+    "a5": "Vous ne payez jamais le vendeur directement. Vous payez l’agent Haiti Gaming ; il garde l’argent jusqu’à ce que vous receviez le compte et confirmiez que tout va bien. Ce n’est qu’ensuite qu’il paie le vendeur.",
+    "q6": "Quelle est la commission du Market ?",
+    "a6": "{pct} % du prix de vente. L’agent la retire de l’argent du vendeur à la fin de la transaction ; l’acheteur paie le prix affiché (ou celui convenu dans la discussion).",
+    "q7": "Comment les vendeurs sont-ils payés ?",
+    "a7": "Quand l’acheteur confirme avoir reçu le compte, l’agent paie le vendeur sur MonCash ou NatCash, moins la commission. Le vendeur peut suivre cela dans Compte → Market → Mes ventes.",
+    "q8": "Combien de temps dure une transaction Market ?",
+    "a8": "Cela dépend du moment où l’acheteur paie l’agent et où le vendeur remet le compte. Vous pouvez suivre chaque étape (Demande → Agent payé → Remis → Terminé) dans la discussion et dans Compte → Market.",
+    "q9": "Et si j’ai un problème avec le compte après l’achat ?",
+    "a9": "Ne confirmez pas la transaction si le compte ne va pas. Si un problème apparaît ensuite (par exemple l’ancien propriétaire tente de le récupérer), contactez vite le support ou appelez l’agent dans la discussion : l’agent examinera le cas."
   },
   "store": {
     "title": "Boutique",
@@ -197,7 +209,12 @@
     "checkedByTeam": "Vérifié par l'équipe",
     "localPay": "Paiement local",
     "playerInfo": "Infos du joueur",
-    "whereId": "Où trouver mon ID ?"
+    "whereId": "Où trouver mon ID ?",
+    "fieldMissing": "Indiquez {label} pour que nous puissions livrer.",
+    "examplePrefix": "Ex :",
+    "toastAdded": "Ajouté au panier",
+    "toastMore": "Quantité augmentée : {n} dans le panier",
+    "toastCta": "Voir le panier"
   },
   "cart": {
     "title": "Votre panier",
@@ -208,7 +225,10 @@
     "remove": "Retirer",
     "continueShopping": "Continuer vos achats",
     "priceNote": "Les prix sont confirmés au paiement.",
-    "itemsCount": "{n, plural, one {# article} other {# articles}}"
+    "itemsCount": "{n, plural, one {# article} other {# articles}}",
+    "editDetails": "ID joueur / informations",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
   },
   "checkout": {
     "title": "Paiement",
@@ -265,7 +285,11 @@
     "tagChecked": "Vérifié par l'équipe",
     "tagInstant": "Immédiat",
     "messageStep": "Message (facultatif)",
-    "totalDue": "Total à payer"
+    "totalDue": "Total à payer",
+    "walletShort": "insuffisant pour cette commande",
+    "deliveryMissing": "Complétez la livraison (zone, nom et adresse) pour que nous puissions vous l’envoyer.",
+    "addNote": "Ajouter un message (facultatif)",
+    "change": "Modifier"
   },
   "order": {
     "title": "Commande n° {number}",
@@ -311,7 +335,12 @@
     "shareStatus": "Copier le lien de suivi",
     "referenceBad": "Référence invalide. Saisissez la référence telle qu'elle apparaît dans le message NatCash (au moins 4 caractères).",
     "deliveryTitle": "Livraison",
-    "codWaiting": "Commande enregistrée. Un agent vous contacte sur WhatsApp pour la livraison. Vous payez en espèces à la réception."
+    "codWaiting": "Commande enregistrée. Un agent vous contacte sur WhatsApp pour la livraison. Vous payez en espèces à la réception.",
+    "payFailedTitle": "Le paiement n’est pas passé",
+    "payFailedBody": "Vous avez annulé le paiement MonCash ou il n’a pas abouti. Aucun argent n’a été débité. Réessayez ou choisissez un autre moyen de paiement.",
+    "changeMethod": "Changer de moyen de paiement",
+    "otherMethodHint": "Vous préférez payer autrement ?",
+    "details": "Informations"
   },
   "account": {
     "dashboard": "Tableau de bord",
@@ -338,7 +367,8 @@
     "privacy": "Confidentialité",
     "transfer": "Envoyer",
     "market": "Market",
-    "messages": "Messages"
+    "messages": "Messages",
+    "dashboardBack": "Compte"
   },
   "wallet": {
     "title": "Portefeuille",
@@ -388,7 +418,7 @@
     "sendTo": "Envoyer à",
     "stepScan": "Scannez le QR ou envoyez au numéro.",
     "stepSend": "Envoyez l'argent dans l'application {name}.",
-    "stepAmount": "Indiquez le montant envoyé ci-dessous.",
+    "stepAmount": "Indiquez le montant exact envoyé dans la case « Montant » ci-dessus.",
     "stepRef": "Saisissez la référence de la transaction et envoyez.",
     "refHelp": "Où trouver la référence ?",
     "refHelpTitle": "Où est la référence ?",
@@ -426,7 +456,22 @@
     "f_deposits": "Dépôts",
     "f_purchases": "Achats",
     "f_transfers": "Transferts",
-    "done": "Terminé"
+    "done": "Terminé",
+    "d_from": "De {name}",
+    "d_to": "Envoyé à {name}",
+    "d_released": "Argent en attente débloqué",
+    "d_refund": "Remboursement commande n°{number}",
+    "d_referral": "Bonus de parrainage",
+    "d_adjustment": "Correction de l’équipe",
+    "refMissing": "Indiquez la référence de la transaction (au moins 4 caractères).",
+    "reviewTime": "L’équipe vérifie les dépôts en général en 30 minutes.",
+    "sendAgain": "Renvoyer",
+    "contactSupport": "Contacter le support",
+    "supportSubject": "Dépôt de {amount} refusé",
+    "supportMessage": "Bonjour, mon dépôt de {amount} (référence {ref}) a été refusé. Pouvez-vous m’aider ?",
+    "onHoldExplain": "Dépôts déjà approuvés, pas encore utilisables (délai de sécurité).",
+    "reviewingLabel": "En vérification",
+    "reviewingExplain": "Dépôts envoyés que l’équipe n’a pas encore approuvés."
   },
   "auth": {
     "loginTitle": "Se connecter",
@@ -819,7 +864,11 @@
     "err_funds": "Solde insuffisant.",
     "err_verify_email": "Confirmez d'abord votre e-mail.",
     "err_disabled": "Les transferts sont fermés pour le moment.",
-    "err_error": "Un problème est survenu. Réessayez."
+    "err_error": "Un problème est survenu. Réessayez.",
+    "receiptTitle": "Argent envoyé",
+    "receiptAmount": "Montant",
+    "receiptTo": "À",
+    "receiptWhen": "Date"
   },
   "market": {
     "eyebrow": "Comptes entre joueurs",
@@ -844,7 +893,7 @@
     "sold": "Vendu",
     "verified": "Vendeur approuvé",
     "views": "{n, plural, one {# visite} other {# visites}}",
-    "inspect": "Inspecter",
+    "inspect": "Voir le détail",
     "share": "Partager",
     "shareTitle": "Partager ce compte",
     "copyLink": "Copier le lien",
@@ -895,7 +944,7 @@
     "titlePlaceholder": "ex. Compte niveau 70, 12 skins rares",
     "priceLabel": "Prix",
     "currency": "Devise",
-    "commissionHint": "À la vente, l'agent garde {pct} % et vous verse le reste.",
+    "commissionHint": "Une fois vendu, l’agent garde {pct} % et vous paie le reste sur MonCash ou NatCash, après que l’acheteur a confirmé la réception du compte.",
     "detailsLabel": "Détails",
     "detailName": "Nom",
     "detailValue": "Valeur",
@@ -1043,7 +1092,13 @@
     "similar": "Autres comptes {game}",
     "escrowEyebrow": "Protection Haiti Gaming",
     "sellerBandEyebrow": "Transformez votre compte en argent",
-    "sellerBandTitle": "Un compte que vous n'utilisez plus ? Vendez-le en sécurité."
+    "sellerBandTitle": "Un compte que vous n'utilisez plus ? Vendez-le en sécurité.",
+    "dealRequested": "Demande envoyée ! Ce compte est réservé pour vous (transaction n°{number}).",
+    "dealRequestedNext": "Étape suivante : écrivez à l’agent sur WhatsApp et payez-le. L’argent reste bloqué jusqu’à ce que vous receviez le compte.",
+    "dealWriteAgent": "Écrire à l’agent sur WhatsApp",
+    "dealFollow": "Suivre la transaction",
+    "payoutTitle": "Commission du Market : {pct} % par vente",
+    "payoutBody": "L’acheteur paie l’agent Haiti Gaming, pas vous. Quand l’acheteur confirme avoir reçu le compte, l’agent vous paie le prix moins la commission sur MonCash ou NatCash."
   },
   "chat": {
     "title": "Messages",
@@ -1102,7 +1157,7 @@
     "offline": "Hors ligne",
     "lastSeen": "Hors ligne · vu à {time}",
     "callAgent": "Appeler l'agent",
-    "agentComing": "Agent appelé",
+    "agentComing": "Agent appelé – il rejoint la discussion bientôt",
     "closedTitle": "Cette discussion est fermée",
     "closedHint": "La transaction est terminée. Besoin de quelque chose ? Demandez à l'équipe de la rouvrir.",
     "reopenPending": "Votre demande est envoyée. L'équipe va répondre bientôt.",
@@ -1113,7 +1168,10 @@
     "err_agent_already": "Un agent a déjà été appelé. Il arrive bientôt.",
     "err_reopen_pending": "Une demande est déjà en attente.",
     "err_reason": "Écrivez quelques mots (5 caractères ou plus).",
-    "err_not_closed": "Cette discussion est déjà ouverte."
+    "err_not_closed": "Cette discussion est déjà ouverte.",
+    "dealTitle": "Transaction n°{number}",
+    "dealOpen": "Voir le détail",
+    "openChat": "Ouvrir la discussion"
   },
   "accountUi": {
     "orderHistory": "Historique des commandes",
@@ -1129,7 +1187,7 @@
     "items": "article(s)",
     "viewDetails": "Voir le détail",
     "seeCodes": "Voir les codes",
-    "reorder": "Commander à nouveau",
+    "reorder": "Racheter",
     "ordersDone": "Commandes livrées",
     "htgWallet": "HTG au portefeuille",
     "listings": "Comptes en vente",
@@ -1150,7 +1208,9 @@
     "chatWhatsApp": "Écrire sur WhatsApp",
     "pickAmount": "Choisissez le montant",
     "teamCheck": "Vérifié par l'équipe",
-    "moncashSub": "Payez dans l'app MonCash, l'argent arrive tout de suite"
+    "moncashSub": "Payez dans l'app MonCash, l'argent arrive tout de suite",
+    "activeOrders": "Commandes en cours",
+    "depositsChecking": "Dépôts en vérification"
   },
   "footer": {
     "madeWithPride": "Fait avec fierté en Haïti"
@@ -1179,7 +1239,9 @@
     "tagDelivery": "Livraison",
     "tagPayment": "Paiement",
     "tagWallet": "Portefeuille",
-    "tagOrder": "Commande"
+    "tagOrder": "Commande",
+    "contactBody": "Adresse, horaires et tous les moyens de nous joindre.",
+    "tagMarket": "Market"
   },
   "guides": {
     "eyebrow": "Payez en gourdes, sans carte bancaire",
@@ -1205,8 +1267,8 @@
     "placedSub": "L’équipe vérifie le paiement. Vous serez averti dès que c’est fait.",
     "depositTitle": "Argent reçu !",
     "depositSub": "Il est disponible dans votre portefeuille.",
-    "depositPendingTitle": "Dépôt reçu !",
-    "depositPendingSub": "L’équipe le vérifie. L’argent apparaîtra dans votre portefeuille ensuite.",
+    "depositPendingTitle": "Dépôt envoyé – nous le vérifions",
+    "depositPendingSub": "Cela prend en général 30 minutes. L’argent apparaîtra dans votre portefeuille dès qu’il sera approuvé.",
     "transferTitle": "Argent envoyé !",
     "transferSub": "{name} l’a reçu tout de suite.",
     "continue": "Continuer"
