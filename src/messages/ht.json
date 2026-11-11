@@ -102,7 +102,14 @@
     "helpBody": "Ekip nou an Ayiti reponn sou WhatsApp an Kreyòl, Franse oswa Angle ({hours}).",
     "ctaEyebrow": "Pare pou jwe",
     "ctaTitle": "Monte nivo jwèt ou jodi a.",
-    "ctaBody": "Rechaje, achte kat kado epi vann oswa achte kont, peye an goud ak MonCash oswa NatCash."
+    "ctaBody": "Rechaje, achte kat kado epi vann oswa achte kont, peye an goud ak MonCash oswa NatCash.",
+    "howEyebrow": "Ou pa bezwen kat bank",
+    "walletEyebrow": "Bous Haiti Gaming",
+    "walletChip": "Peye an 1 klik",
+    "walletAvailable": "Lajan disponib",
+    "walletPayWith": "Mete lajan ak MonCash oswa NatCash",
+    "walletDeposit": "Mete lajan",
+    "walletDetails": "Detay"
   },
   "faq": {
     "q1": "Konbyen tan livrezon an pran?",
@@ -148,7 +155,8 @@
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
     "promiseInstant": "Kòd yo livre touswit",
     "promisePay": "Peye ak MonCash oswa NatCash",
-    "promiseHelp": "Èd sou WhatsApp an Kreyòl"
+    "promiseHelp": "Èd sou WhatsApp an Kreyòl",
+    "quickPicks": "Chwa rapid"
   },
   "product": {
     "chooseOption": "Chwazi yon opsyon",
@@ -187,7 +195,9 @@
     "securePay": "Peman an sekirite ak MonCash, NatCash oswa bous",
     "safe": "An sekirite",
     "checkedByTeam": "Ekip la verifye",
-    "localPay": "Peye lokal"
+    "localPay": "Peye lokal",
+    "playerInfo": "Enfòmasyon jwè",
+    "whereId": "Ki kote ID mwen ye?"
   },
   "cart": {
     "title": "Panye ou",
@@ -197,7 +207,8 @@
     "checkout": "Peye",
     "remove": "Retire",
     "continueShopping": "Kontinye achte",
-    "priceNote": "Pri yo konfime lè w ap peye."
+    "priceNote": "Pri yo konfime lè w ap peye.",
+    "itemsCount": "{n, plural, one {# atik} other {# atik}}"
   },
   "checkout": {
     "title": "Peman",
@@ -249,7 +260,12 @@
     "stepCart": "Panye",
     "stepPay": "Peman",
     "stepDelivery": "Livrezon",
-    "secureNote": "Nou verifye peman ou anvan nou voye anyen."
+    "secureNote": "Nou verifye peman ou anvan nou voye anyen.",
+    "tagAuto": "Otomatik",
+    "tagChecked": "Ekip la verifye",
+    "tagInstant": "Touswit",
+    "messageStep": "Mesaj (si w vle)",
+    "totalDue": "Total pou peye"
   },
   "order": {
     "title": "Kòmand #{number}",
@@ -660,7 +676,7 @@
     "heroBody": "Kreye kont ou nan mwens pase yon minit pou achte, swiv kòmand ou yo epi kenbe lajan nan bous ou.",
     "b1t": "Kòd ou touswit",
     "b1b": "Li parèt nan kont ou, menm si ou fèmen paj la.",
-    "b2t": "Bous an HTG ak USD",
+    "b2t": "Bous an goud",
     "b2b": "Mete lajan yon fwa, achte plizyè fwa.",
     "b3t": "Ranbousman nan bous ou",
     "b3b": "Si yon kòmand pa livre, lajan ou retounen.",
@@ -674,7 +690,8 @@
     "loginSub": "Konekte pou wè kòmand ou ak bous ou.",
     "registerSub": "Gratis. Ou ka achte touswit apre.",
     "welcomeBack": "Bon retou!",
-    "madeInHaiti": "Fèt an Ayiti, pou jwè yo"
+    "madeInHaiti": "Fèt an Ayiti, pou jwè yo",
+    "orQuick": "Oswa konekte rapid avèk"
   },
   "verifyGate": {
     "title": "Konfime imèl ou pou kontinye",
@@ -1097,5 +1114,87 @@
     "err_reopen_pending": "Gen yon demann k ap tann deja.",
     "err_reason": "Ekri kèk mo (5 karaktè oswa plis).",
     "err_not_closed": "Konvèsasyon an deja louvri."
+  },
+  "accountUi": {
+    "orderHistory": "Istorik kòmand",
+    "tab_all": "Tout",
+    "tab_active": "Aktif",
+    "tab_done": "Fini",
+    "noneInTab": "Pa gen kòmand isit la.",
+    "walletShort": "Bous",
+    "cashShort": "Kach",
+    "otherShort": "Lòt",
+    "codesReady": "{n, plural, one {# kòd pare} other {# kòd pare}}",
+    "deliveredTo": "Livre sou:",
+    "items": "atik",
+    "viewDetails": "Wè detay",
+    "seeCodes": "Wè kòd yo",
+    "reorder": "Rekòmande",
+    "ordersDone": "Kòmand fini",
+    "htgWallet": "HTG nan bous",
+    "listings": "Kont an vant",
+    "emailVerified": "Imèl verifye",
+    "ledgerTitle": "Aktivite bous la",
+    "settingsTitle": "Kont & paramèt",
+    "securitySub": "Modpas, verifikasyon 2 etap, aparèy",
+    "marketSub": "Anons ou yo, chat ak achtè, peman",
+    "activeCount": "{n} aktif",
+    "messagesSub": "Chat Market ou yo",
+    "notificationsSub": "Depo, kòmand ak mesaj",
+    "referralsSub": "Envite zanmi ou",
+    "privacySub": "Done ou ak kont ou",
+    "languageCurrency": "Lang & lajan",
+    "gourdes": "Goud",
+    "supportTitle": "Sipò dirèk Ayiti",
+    "supportBody": "Ekip nou an Ayiti ka verifye yon rechaj, yon depo oswa yon tranzaksyon MonCash/NatCash pou ou.",
+    "chatWhatsApp": "Chat sou WhatsApp kounye a",
+    "pickAmount": "Chwazi montan an",
+    "teamCheck": "Ekip la verifye",
+    "moncashSub": "Peye nan aplikasyon MonCash, lajan an antre touswit"
+  },
+  "footer": {
+    "madeWithPride": "Fèt ak fyète an Ayiti"
+  },
+  "help": {
+    "heroEyebrow": "Sant èd",
+    "heroTitle": "Kouman nou ka ede w jodi a?",
+    "heroBody": "Jwenn repons rapid sou peman, livrezon ak bous ou, oswa pale dirèkteman ak ekip nou an.",
+    "searchPlaceholder": "Tape kesyon ou… (egz. livrezon, NatCash, bous)",
+    "clear": "Efase rechèch la",
+    "noResults": "Nou pa jwenn repons pou sa. Ekri nou sou WhatsApp, n ap ede w.",
+    "faqEyebrow": "Kesyon yo poze souvan",
+    "channelsEyebrow": "Chanèl èd",
+    "channelsTitle": "Pale ak ekip nou an",
+    "waBody": "Ekip nou an Ayiti reponn ou an Kreyòl, Franse oswa Angle.",
+    "chatNow": "Ekri sou WhatsApp kounye a",
+    "ordersTitle": "Kòmand mwen yo",
+    "ordersBody": "Gade kote kòmand ou ye epi jwenn kòd ou yo.",
+    "ticketTitle": "Ouvri yon demann sipò",
+    "ticketBody": "Ekri nou nan kont ou, epi swiv repons lan la.",
+    "guideTitle": "Gid peman",
+    "guideBody": "Etap pa etap pou peye ak MonCash oswa NatCash.",
+    "marketTitle": "Market kont jwèt",
+    "marketBody": "Kijan ajan nou an kenbe lajan an jiskaske tout bagay anfòm.",
+    "open": "Ouvri",
+    "tagDelivery": "Livrezon",
+    "tagPayment": "Peman",
+    "tagWallet": "Bous",
+    "tagOrder": "Kòmand"
+  },
+  "guides": {
+    "eyebrow": "Peye an goud, san kat bank",
+    "intro": "Gid etap pa etap pou peye ak MonCash oswa NatCash epi jwenn ID jwè ou.",
+    "noPin": "Nou pa janm mande PIN ou",
+    "chooseMethod": "Chwazi mwayen peman ou",
+    "moncashSub": "Otomatik · konfime nan kèk segonn",
+    "natcashSub": "Ekip nou an verifye referans lan",
+    "playerIdSub": "Jwenn ID ou nan jwèt la",
+    "exPhone": "Nimewo MonCash",
+    "exPin": "PIN MonCash",
+    "exConfirmed": "Peman konfime",
+    "exSendTo": "Voye montan egzak la bay",
+    "exReference": "Referans tranzaksyon",
+    "exChecked": "Ekip la verifye l",
+    "exPlayerId": "ID jwè"
   }
 }

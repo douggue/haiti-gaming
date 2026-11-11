@@ -157,9 +157,9 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
               return (
                 <label
                   key={o.id}
-                  className={`flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-all sm:p-4 ${on ? "border-[#3b82f6] bg-gradient-to-r from-[#1d4ed8]/20 to-[#111827] shadow-[0_0_0_1px_#3b82f6,0_16px_32px_-18px_rgba(59,130,246,.9)]" : "border-border bg-surface/90 hover:border-[#3b82f6]/50"}`}
+                  className={`relative flex cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#60a5fa] items-center gap-3 rounded-2xl border p-3.5 transition-all sm:p-4 ${on ? "border-[#3b82f6] bg-gradient-to-r from-[#1d4ed8]/20 to-[#111827] shadow-[0_0_0_1px_#3b82f6,0_16px_32px_-18px_rgba(59,130,246,.9)]" : "border-border bg-surface/90 hover:border-[#3b82f6]/50"}`}
                 >
-                  <input type="radio" name="method" className="sr-only" checked={on} onChange={() => setMethod(o.id)} />
+                  <input type="radio" name="method" className="absolute inset-0 z-10 cursor-pointer opacity-0" checked={on} onChange={() => setMethod(o.id)} />
                   <span className={`grid size-12 shrink-0 place-items-center rounded-xl ${o.tone}`} aria-hidden>{o.icon}</span>
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
@@ -264,17 +264,18 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
 
       {/* Phones and tablets: total and pay button stay at the bottom of the screen */}
       <div className="kb-hide sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-30 md:bottom-4 lg:hidden">
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#111827]/95 p-4 shadow-[0_-10px_40px_-12px_rgba(0,0,0,.8)] backdrop-blur">
+        <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#111827]/95 px-3 py-2.5 shadow-[0_-10px_40px_-12px_rgba(0,0,0,.8)] backdrop-blur">
           <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[#1d4ed8] via-[#7c3aed] to-[#dc2626]" />
-          {error && <p className="mb-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
-          <div className="flex items-end justify-between gap-3">
-            <span>
-              <span className="eyebrow block text-[10px] text-muted">{tc("totalDue")}</span>
-              <MoneySplit minor={total} currency={currency} locale={locale} className="display block text-[1.7rem] font-extrabold leading-tight tracking-tight" />
+          {error && <p className="mb-2 rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
+          <div className="flex items-center gap-3">
+            <span className="min-w-0 flex-1">
+              <span className="eyebrow block truncate text-[10px] text-muted">{tc("totalDue")}{chosen ? ` · ${chosen.title}` : ""}</span>
+              <MoneySplit minor={total} currency={currency} locale={locale} className="display block whitespace-nowrap text-xl font-extrabold leading-tight tracking-tight" />
             </span>
-            {chosen && <span className="truncate text-right text-xs font-semibold text-muted">{chosen.title}</span>}
+            <button type="button" className="btn-primary min-h-11 shrink-0 px-4 text-sm" onClick={submit} disabled={blocked}>
+              {pending ? tc("placing") : <><LockIcon width={15} height={15} /> {tc("placeOrder")}</>}
+            </button>
           </div>
-          {payButton("mt-3")}
         </div>
       </div>
     </div>

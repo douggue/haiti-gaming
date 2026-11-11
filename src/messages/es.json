@@ -102,7 +102,14 @@
     "helpBody": "Nuestro equipo en Haití responde por WhatsApp en criollo, francés o inglés ({hours}).",
     "ctaEyebrow": "Listo para jugar",
     "ctaTitle": "Sube de nivel hoy.",
-    "ctaBody": "Recarga, compra tarjetas de regalo e intercambia cuentas, pagando en gourdes con MonCash o NatCash."
+    "ctaBody": "Recarga, compra tarjetas de regalo e intercambia cuentas, pagando en gourdes con MonCash o NatCash.",
+    "howEyebrow": "No necesitas tarjeta bancaria",
+    "walletEyebrow": "Billetera Haiti Gaming",
+    "walletChip": "Paga en 1 toque",
+    "walletAvailable": "Saldo disponible",
+    "walletPayWith": "Recarga con MonCash o NatCash",
+    "walletDeposit": "Recargar",
+    "walletDetails": "Detalles"
   },
   "faq": {
     "q1": "¿Cuánto tarda la entrega?",
@@ -148,7 +155,8 @@
     "eyebrow": "Hecho en Haití, para jugadores",
     "promiseInstant": "Códigos entregados al instante",
     "promisePay": "Paga con MonCash o NatCash",
-    "promiseHelp": "Ayuda por WhatsApp en criollo"
+    "promiseHelp": "Ayuda por WhatsApp en criollo",
+    "quickPicks": "Selección rápida"
   },
   "product": {
     "chooseOption": "Elige una opción",
@@ -187,7 +195,9 @@
     "securePay": "Pago seguro con MonCash, NatCash o monedero",
     "safe": "Seguro",
     "checkedByTeam": "Revisado por el equipo",
-    "localPay": "Pago local"
+    "localPay": "Pago local",
+    "playerInfo": "Datos del jugador",
+    "whereId": "¿Dónde está mi ID?"
   },
   "cart": {
     "title": "Tu carrito",
@@ -197,7 +207,8 @@
     "checkout": "Pagar",
     "remove": "Quitar",
     "continueShopping": "Seguir comprando",
-    "priceNote": "Los precios se confirman al pagar."
+    "priceNote": "Los precios se confirman al pagar.",
+    "itemsCount": "{n, plural, one {# artículo} other {# artículos}}"
   },
   "checkout": {
     "title": "Pago",
@@ -249,7 +260,12 @@
     "stepCart": "Carrito",
     "stepPay": "Pago",
     "stepDelivery": "Entrega",
-    "secureNote": "Verificamos tu pago antes de enviar nada."
+    "secureNote": "Verificamos tu pago antes de enviar nada.",
+    "tagAuto": "Automático",
+    "tagChecked": "Verificado por el equipo",
+    "tagInstant": "Inmediato",
+    "messageStep": "Mensaje (opcional)",
+    "totalDue": "Total a pagar"
   },
   "order": {
     "title": "Pedido #{number}",
@@ -660,7 +676,7 @@
     "heroBody": "Crea tu cuenta en menos de un minuto para comprar, seguir tus pedidos y guardar dinero en tu billetera.",
     "b1t": "Tu código al instante",
     "b1b": "Aparece en tu cuenta, aunque cierres la página.",
-    "b2t": "Billetera en HTG y USD",
+    "b2t": "Billetera en gourdes",
     "b2b": "Recarga una vez, compra muchas veces.",
     "b3t": "Reembolsos a tu billetera",
     "b3b": "Si un pedido no se entrega, tu dinero vuelve.",
@@ -674,7 +690,8 @@
     "loginSub": "Inicia sesión para ver tus pedidos y tu billetera.",
     "registerSub": "Gratis. Puedes comprar enseguida.",
     "welcomeBack": "¡Hola de nuevo!",
-    "madeInHaiti": "Hecho en Haití, para jugadores"
+    "madeInHaiti": "Hecho en Haití, para jugadores",
+    "orQuick": "O inicia sesión rápido con"
   },
   "verifyGate": {
     "title": "Confirma tu correo para continuar",
@@ -1097,5 +1114,87 @@
     "err_reopen_pending": "Ya hay una solicitud en espera.",
     "err_reason": "Escribe unas palabras (5 caracteres o más).",
     "err_not_closed": "Este chat ya está abierto."
+  },
+  "accountUi": {
+    "orderHistory": "Historial de pedidos",
+    "tab_all": "Todos",
+    "tab_active": "Activos",
+    "tab_done": "Terminados",
+    "noneInTab": "No hay pedidos aquí.",
+    "walletShort": "Monedero",
+    "cashShort": "Efectivo",
+    "otherShort": "Otro",
+    "codesReady": "{n, plural, one {# código listo} other {# códigos listos}}",
+    "deliveredTo": "Entregado a:",
+    "items": "artículo(s)",
+    "viewDetails": "Ver detalles",
+    "seeCodes": "Ver códigos",
+    "reorder": "Volver a pedir",
+    "ordersDone": "Pedidos entregados",
+    "htgWallet": "HTG en el monedero",
+    "listings": "Cuentas en venta",
+    "emailVerified": "Correo verificado",
+    "ledgerTitle": "Actividad del monedero",
+    "settingsTitle": "Cuenta y ajustes",
+    "securitySub": "Contraseña, verificación en 2 pasos, dispositivos",
+    "marketSub": "Tus anuncios, chats con compradores, pagos",
+    "activeCount": "{n} activo(s)",
+    "messagesSub": "Tus chats del Market",
+    "notificationsSub": "Depósitos, pedidos y mensajes",
+    "referralsSub": "Invita a tus amigos",
+    "privacySub": "Tus datos y tu cuenta",
+    "languageCurrency": "Idioma y moneda",
+    "gourdes": "Gourdes",
+    "supportTitle": "Soporte directo en Haití",
+    "supportBody": "Nuestro equipo en Haití puede revisar una recarga, un depósito o una transacción MonCash/NatCash por ti.",
+    "chatWhatsApp": "Escribir por WhatsApp",
+    "pickAmount": "Elige el monto",
+    "teamCheck": "Revisado por el equipo",
+    "moncashSub": "Paga en la app MonCash, el dinero llega al instante"
+  },
+  "footer": {
+    "madeWithPride": "Hecho con orgullo en Haití"
+  },
+  "help": {
+    "heroEyebrow": "Centro de ayuda",
+    "heroTitle": "¿Cómo podemos ayudarte hoy?",
+    "heroBody": "Encuentra respuestas rápidas sobre pagos, entregas y tu billetera, o habla directamente con nuestro equipo.",
+    "searchPlaceholder": "Escribe tu pregunta… (ej. entrega, NatCash, billetera)",
+    "clear": "Borrar búsqueda",
+    "noResults": "No encontramos una respuesta. Escríbenos por WhatsApp y te ayudamos.",
+    "faqEyebrow": "Preguntas frecuentes",
+    "channelsEyebrow": "Canales de ayuda",
+    "channelsTitle": "Habla con nuestro equipo",
+    "waBody": "Nuestro equipo en Haití responde en criollo, francés o inglés.",
+    "chatNow": "Escribir por WhatsApp",
+    "ordersTitle": "Mis pedidos",
+    "ordersBody": "Mira el estado de tu pedido y encuentra tus códigos.",
+    "ticketTitle": "Abrir una solicitud de soporte",
+    "ticketBody": "Escríbenos desde tu cuenta y sigue la respuesta ahí.",
+    "guideTitle": "Guía de pago",
+    "guideBody": "Paso a paso para pagar con MonCash o NatCash.",
+    "marketTitle": "Market de cuentas",
+    "marketBody": "Cómo nuestro agente guarda el dinero hasta que todo esté en orden.",
+    "open": "Abrir",
+    "tagDelivery": "Entrega",
+    "tagPayment": "Pago",
+    "tagWallet": "Billetera",
+    "tagOrder": "Pedido"
+  },
+  "guides": {
+    "eyebrow": "Paga en gourdes, sin tarjeta bancaria",
+    "intro": "Guías paso a paso para pagar con MonCash o NatCash y encontrar tu ID de jugador.",
+    "noPin": "Nunca pedimos tu PIN",
+    "chooseMethod": "Elige tu método de pago",
+    "moncashSub": "Automático · confirmado en segundos",
+    "natcashSub": "Nuestro equipo verifica la referencia",
+    "playerIdSub": "Encuentra tu ID en el juego",
+    "exPhone": "Número MonCash",
+    "exPin": "PIN MonCash",
+    "exConfirmed": "Pago confirmado",
+    "exSendTo": "Envía el monto exacto a",
+    "exReference": "Referencia de transacción",
+    "exChecked": "Verificado por el equipo",
+    "exPlayerId": "ID de jugador"
   }
 }
