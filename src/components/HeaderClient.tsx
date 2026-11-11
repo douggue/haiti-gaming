@@ -9,7 +9,7 @@ import { localeNames, locales, type Locale } from "@/i18n/routing";
 import { setCurrency, saveLocalePreference } from "@/actions/prefs";
 import { authClient } from "@/lib/auth-client";
 import { useStore } from "./cart/CartProvider";
-import { WhatsAppIcon, BagIcon, BookIcon, CartIcon, CloseIcon, FileIcon, HelpIcon, HomeIcon, LoginIcon, LogoutIcon, MenuIcon, MoonIcon, NewsIcon, StoreIcon, SunIcon, TagIcon, UserIcon, UserPlusIcon, WalletIcon } from "./Icons";
+import { BagIcon, BookIcon, CartIcon, CloseIcon, FileIcon, HelpIcon, HomeIcon, LoginIcon, LogoutIcon, MenuIcon, MoonIcon, NewsIcon, StoreIcon, SunIcon, TagIcon, UserIcon, UserPlusIcon, WalletIcon } from "./Icons";
 import { GamepadIcon, StorefrontIcon, UserGearIcon, WalletCardIcon } from "./account/AccountIcons";
 import { Avatar } from "./Avatar";
 import { DataSaverToggle } from "./DataSaverToggle";
@@ -305,15 +305,13 @@ function MenuLink({ href, label }: { href: string; label: string }) {
 }
 
 export function MobileMenu({
-  nav, signedIn, name, image, showUsd = false, whatsapp, legal = [],
+  nav, signedIn, name, image, showUsd = false, legal = [],
 }: {
   nav: NavItem[];
   signedIn: boolean;
   name?: string;
   image?: string | null;
   showUsd?: boolean;
-  /** WhatsApp help link and opening hours (moved here from the phone footer) */
-  whatsapp?: { href: string; hours: string };
   /** Terms, privacy, refunds and footer pages (moved here from the phone footer) */
   legal?: { href: string; label: string }[];
 }) {
@@ -366,18 +364,8 @@ export function MobileMenu({
               </button>
             </div>
             {/* Only what the bottom bar doesn't already offer (home, store, wallet, Market, account): help first */}
-            {/* One plain list: help, WhatsApp, other places, then legal (what the phone footer used to show) */}
+            {/* One plain list: help, other places, then legal (what the phone footer used to show). WhatsApp already has its own button. */}
             {help.map((n) => <MenuLink key={n.href} href={n.href} label={n.label} />)}
-            {whatsapp && (
-              <a href={whatsapp.href} target="_blank" rel="noopener" className="group flex items-center gap-3 rounded-2xl px-2 py-2 font-semibold hover:bg-surface-2">
-                <span className="bg-wa grid h-10 w-10 shrink-0 place-items-center rounded-xl"><WhatsAppIcon width={20} height={20} /></span>
-                <span className="min-w-0 flex-1">
-                  <span className="block">{t("whatsappHelp")}</span>
-                  <span className="block text-xs font-normal text-muted">{whatsapp.hours}</span>
-                </span>
-                <span className="text-muted" aria-hidden>↗</span>
-              </a>
-            )}
             {[...more, ...legalLinks].map((n) =>
               n.href.startsWith("https://") ? (
                 <a key={n.href} href={n.href} rel="noopener" target="_blank" className="group flex items-center gap-3 rounded-2xl px-2 py-2 font-semibold hover:bg-surface-2">

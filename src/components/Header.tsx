@@ -124,7 +124,6 @@ export async function Header() {
             name={user?.name}
             image={user?.image}
             showUsd={settings.showUsd}
-            whatsapp={{ href: `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(t("whatsappMessage"))}`, hours: settings.supportHours }}
             legal={[
               { href: "/terms", label: t("terms") },
               { href: "/privacy", label: t("privacy") },
