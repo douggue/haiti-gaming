@@ -20,7 +20,7 @@ export default async function ExchangePage({ params }: { params: Promise<{ local
     <div className="max-w-xl space-y-6">
       <div>
         <Link href="/account/wallet" className="text-sm text-muted hover:text-text">← {tc("wallet")}</Link>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">{tw("exchangeTitle")}</h1>
+        <h1 className="display mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">{tw("exchangeTitle")}</h1>
       </div>
       <ExchangeForm balances={{ HTG: b.HTG.available, USD: b.USD.available }} midRate={s.htgPerUsd} />
     </div>

@@ -11,7 +11,7 @@ import { Turnstile } from "./Turnstile";
 import { PayLogo } from "./PayLogo";
 import { PhoneInput } from "./PhoneInput";
 
-const HTG_PRESETS = [500, 1000, 2500, 5000];
+const HTG_PRESETS = [500, 1000, 2500, 5000, 10000];
 const USD_PRESETS = [10, 25, 50, 100];
 
 type Method = {
@@ -49,6 +49,7 @@ export function DepositForm(p: Props) {
   const to = useTranslations("order");
   const tc = useTranslations("common");
   const tco = useTranslations("checkout");
+  const tu = useTranslations("accountUi");
   const locale = useLocale();
   const router = useRouter();
 
@@ -110,6 +111,8 @@ export function DepositForm(p: Props) {
   };
 
   const minor = parseAmount(amount);
+  // Quick amounts inside the deposit limits set in Admin
+  const presets = crypto ? USD_PRESETS : HTG_PRESETS.filter((v) => v * 100 >= p.minHtg && v * 100 <= p.maxHtg);
   const currency = crypto ? "USD" : "HTG";
   const minUsd = Math.ceil(p.minHtg / p.htgPerUsd);
   const maxUsd = Math.floor(p.maxHtg / p.htgPerUsd);
@@ -184,12 +187,46 @@ export function DepositForm(p: Props) {
         })
       }
     >
-      {/* Method picker */}
-      <fieldset>
-        <legend className="label">{tw("chooseMethod")}</legend>
-        <div role="tablist" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      {/* Amount: quick tiles, then any amount */}
+      <section className="rounded-3xl border border-border bg-surface/80 p-4 sm:p-5">
+        <p className="eyebrow mb-3 flex items-center gap-2 text-muted">
+          <span className="size-2 rounded-full bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" aria-hidden />
+          {tu("pickAmount")}
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {presets.map((v, i) => {
+            const on = minor === v * 100;
+            return (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setAmount(String(v))}
+                aria-pressed={on}
+                className={`flex min-h-[4.5rem] flex-col items-center justify-center rounded-2xl border transition-all ${presets.length === 5 && i === 4 ? "col-span-2" : ""} ${on ? "border-[#3b82f6] bg-[#1d4ed8] text-white shadow-[0_0_22px_-6px_rgba(59,130,246,.9)]" : "border-border bg-surface-2/60 hover:border-[#3b82f6]/50"}`}
+              >
+                <span className="display text-xl font-extrabold tabular-nums sm:text-2xl">{crypto ? `$${v}` : v.toLocaleString(locale === "en" ? "en-US" : "fr-FR")}</span>
+                <span className={`text-[11px] font-bold ${on ? "text-white/80" : "text-muted"}`}>{crypto ? "USDT" : "HTG"}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-4">
+          <label htmlFor="amount" className="label">{crypto ? tw("cryptoAmount") : tw("amount")}</label>
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted">{crypto ? "$" : "HTG"}</span>
+            <input id="amount" name="amount" inputMode="decimal" className={`input h-14 text-xl font-bold ${crypto ? "pl-9" : "pl-14"}`} value={amount} onChange={(e) => setAmount(e.target.value.replace(",", "."))} required />
+          </div>
+          <p className="mt-1.5 text-xs text-muted">{hint}</p>
+        </div>
+      </section>
+
+      {/* Method picker: one row per method, round check on the chosen one */}
+      <fieldset className="min-w-0">
+        <legend className="eyebrow mb-3 text-muted">{tw("chooseMethod")}</legend>
+        <div role="tablist" className="space-y-2">
           {methods.map((x) => {
             const on = x.key === m.key;
+            const badge = x.kind === "moncash" ? tw("methodAuto") : x.kind === "crypto" ? `USD · ${x.network ?? ""}` : tu("teamCheck");
             return (
               <button
                 key={x.key}
@@ -197,27 +234,30 @@ export function DepositForm(p: Props) {
                 role="tab"
                 aria-selected={on}
                 onClick={() => switchTo(x.key)}
-                className={`flex min-w-0 items-center gap-2.5 rounded-2xl border-2 p-2.5 text-left transition-colors ${on ? "border-primary bg-primary-soft" : "border-border bg-surface hover:border-primary/50"}`}
+                className={`flex w-full min-w-0 items-center gap-3 rounded-2xl border p-3 text-left transition-all ${on ? "border-[#3b82f6]/70 bg-[#1d4ed8]/15 shadow-[0_0_20px_-8px_rgba(59,130,246,.9)]" : "border-border bg-surface/80 hover:border-[#3b82f6]/40"}`}
               >
-                {x.brand ? (
-                  <span className="flex min-w-0 flex-col gap-1">
-                    <PayLogo brand={x.brand} height={24} className="max-w-full object-contain object-left" />
-                    <span className="block text-[11px] text-muted">{x.kind === "moncash" ? tw("methodAuto") : "HTG"}</span>
+                {x.logo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={x.logo} alt="" className="size-12 shrink-0 rounded-xl bg-white object-contain p-1" />
+                ) : x.brand ? (
+                  <span className={`grid size-12 shrink-0 place-items-center rounded-xl ${x.brand === "moncash" ? "bg-[#7f1d1d]/60 text-[#fca5a5]" : "bg-[#1e3a8a]/60 text-[#fcd34d]"}`} aria-hidden>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></svg>
                   </span>
                 ) : (
-                  <>
-                    {x.logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={x.logo} alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-contain p-1" />
-                    ) : (
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-sm font-black" style={{ background: x.markBg, color: x.markFg }}>{x.mark}</span>
-                    )}
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{x.name}</span>
-                      <span className="block text-[11px] text-muted">{x.kind === "crypto" ? `USD · ${x.network ?? ""}` : "HTG"}</span>
-                    </span>
-                  </>
+                  <span className="grid size-12 shrink-0 place-items-center rounded-xl text-sm font-black" style={{ background: x.markBg, color: x.markFg }} aria-hidden>{x.mark}</span>
                 )}
+                <span className="min-w-0 flex-1">
+                  <span className="flex flex-wrap items-center gap-2">
+                    {x.brand ? <PayLogo brand={x.brand} height={20} className="rounded bg-white px-1 py-0.5" /> : <b className="display truncate text-base font-bold">{x.name}</b>}
+                    <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${x.kind === "moncash" ? "bg-[#7f1d1d]/60 text-amber-300" : x.kind === "crypto" ? "bg-emerald-500/15 text-emerald-300" : "bg-orange-500/15 text-orange-300"}`}>{badge}</span>
+                  </span>
+                  <span className="mt-0.5 block truncate text-xs text-muted">
+                    {x.kind === "moncash" ? tu("moncashSub") : x.kind === "crypto" ? tw("cryptoCredit") : x.recipientName ? `${tw("sendTo")} ${x.recipientName}` : "HTG"}
+                  </span>
+                </span>
+                <span className={`grid size-7 shrink-0 place-items-center rounded-full ${on ? "bg-[#c7d2fe] text-[#1e1b4b]" : "bg-surface-2"}`} aria-hidden>
+                  {on && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}
+                </span>
               </button>
             );
           })}
@@ -226,7 +266,7 @@ export function DepositForm(p: Props) {
 
       {/* Where to send */}
       {m.kind !== "moncash" && (
-        <section className="card overflow-hidden">
+        <section className="overflow-hidden rounded-3xl border border-border bg-surface/80">
           <div className={`grid gap-4 p-4 sm:p-5 ${m.qr || genQr ? "sm:grid-cols-[auto_1fr]" : ""}`}>
             {(m.qr || genQr) && (
               <div className="relative mx-auto w-44 shrink-0 rounded-2xl bg-white p-2.5 shadow-sm sm:mx-0">
@@ -257,7 +297,7 @@ export function DepositForm(p: Props) {
         </section>
       )}
 
-      {m.kind === "moncash" && <p className="card p-4 text-sm">{tw("moncashInfo")}</p>}
+      {m.kind === "moncash" && <p className="rounded-2xl border border-border bg-surface/80 p-4 text-sm">{tw("moncashInfo")}</p>}
 
       {steps.length > 0 && (
         <ol className="space-y-2">
@@ -270,29 +310,7 @@ export function DepositForm(p: Props) {
         </ol>
       )}
 
-      <div className="card space-y-5 p-4 sm:p-5">
-        {/* Amount */}
-        <div>
-          <label htmlFor="amount" className="label">{crypto ? tw("cryptoAmount") : tw("amount")}</label>
-          <div className="relative">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted">{crypto ? "$" : "HTG"}</span>
-            <input id="amount" name="amount" inputMode="decimal" className={`input h-14 text-xl font-bold ${crypto ? "pl-9" : "pl-14"}`} value={amount} onChange={(e) => setAmount(e.target.value.replace(",", "."))} required />
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {(crypto ? USD_PRESETS : HTG_PRESETS).map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => setAmount(String(v))}
-                className={`min-h-10 rounded-xl border px-3.5 text-sm font-semibold ${minor === v * 100 ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface"}`}
-              >
-                {crypto ? `$${v}` : `${v.toLocaleString(locale)} HTG`}
-              </button>
-            ))}
-          </div>
-          <p className="mt-1.5 text-xs text-muted">{hint}</p>
-        </div>
-
+      <div className="space-y-5 rounded-3xl border border-border bg-surface/80 p-4 sm:p-5">
         {m.kind !== "moncash" && (
           <>
             {/* Reference / transaction hash */}
@@ -362,7 +380,8 @@ export function DepositForm(p: Props) {
 
         {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
         <Turnstile key={captchaKey} locale={locale} />
-        <button className="btn-primary min-h-14 w-full text-base" disabled={pending || !minor || shotBusy}>
+        <button className="btn-primary min-h-14 w-full gap-2 text-base" disabled={pending || !minor || shotBusy}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></svg>
           {pending ? tc("loading") : m.kind === "moncash" ? to("payMoncash") : `${tw("submitDeposit")}${minor ? ` · ${formatMoney(minor, currency, locale)}` : ""}`}
         </button>
       </div>

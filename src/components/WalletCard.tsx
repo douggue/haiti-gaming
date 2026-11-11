@@ -58,22 +58,28 @@ export function WalletCard({ balances, initial, showUsd = true }: { balances: { 
                 ))}
               </span>
             )}
-            <button type="button" onClick={toggleHidden} aria-pressed={hidden} aria-label={hidden ? tw("showBalance") : tw("hideBalance")} className="grid size-8 place-items-center rounded-full bg-white/10 text-sm hover:bg-white/20">
-              {hidden ? "🙈" : "👁"}
+            <button type="button" onClick={toggleHidden} aria-pressed={hidden} aria-label={hidden ? tw("showBalance") : tw("hideBalance")} className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/10 px-2.5 text-xs font-bold hover:bg-white/20">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
+                {hidden ? <path d="M4 4l16 16" /> : <circle cx="12" cy="12" r="3" />}
+              </svg>
             </button>
           </span>
         </div>
         <p className="eyebrow relative mt-5 text-[#cfe0ff]">{ta("available")} · {cur}</p>
         <p className="display relative text-4xl font-extrabold tracking-tight tabular-nums sm:text-5xl" data-testid="wallet-balance">{money(b.available)}</p>
         <div className="relative mt-4 flex items-center justify-between gap-3 rounded-xl bg-black/20 px-3 py-2 text-sm">
-          <span className="flex items-center gap-2 text-[#cfe0ff]"><span aria-hidden>⏳</span> {tw("onHoldLabel")}</span>
-          <b className={b.held > 0 ? "text-[#ffd48a]" : "text-white/70"}>{money(b.held)}</b>
+          <span className="flex items-center gap-2 text-[#cfe0ff]">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3h12M6 21h12M7 3v3a5 5 0 0 0 10 0V3M7 21v-3a5 5 0 0 1 10 0v3" /></svg>
+            {tw("onHoldLabel")}
+          </span>
+          <b className={`tabular-nums ${b.held > 0 ? "text-[#ffd48a]" : "text-white/80"}`}>{money(b.held)}</b>
         </div>
       </div>
       <div className={`grid gap-2 ${actions.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}>
         {actions.map(([href, Icon, label, tone]) => (
-          <Link key={href} href={href} className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface/80 px-1 py-3 text-center text-xs font-bold transition-colors hover:border-[#3b82f6]/50">
-            <span className={`grid size-11 place-items-center rounded-full transition-transform group-hover:scale-105 ${tone}`}><Icon /></span>
+          <Link key={href} href={href} className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface/80 px-1 py-3.5 text-center text-xs font-bold transition-colors hover:border-[#3b82f6]/50">
+            <span className={`grid size-12 place-items-center rounded-full transition-transform group-hover:scale-105 ${tone}`}><Icon /></span>
             {label}
           </Link>
         ))}
