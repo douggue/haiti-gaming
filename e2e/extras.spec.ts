@@ -20,7 +20,9 @@ test("custom role, data saver, offline page and account deletion", async ({ brow
   const c = await newPage(browser);
   await c.goto("/ht");
   await c.waitForLoadState("networkidle");
-  await c.getByLabel(/Ekonomize done/).check();
+  // On phones the switch is in the side menu (☰)
+  await c.locator('button[aria-controls="mobile-menu"]').click();
+  await c.locator("#mobile-menu").getByLabel(/Ekonomize done/).check();
   await c.reload();
   await expect(c.locator("html")).toHaveClass(/data-saver/);
 

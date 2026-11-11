@@ -4,6 +4,7 @@ import { getUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { isStaff } from "@/lib/permissions";
 import { getDisplaySettings } from "@/lib/settings";
+import { footerPages } from "@/lib/footer-pages";
 import { t as txt } from "@/lib/text";
 import { Logo } from "./Logo";
 import { Avatar } from "./Avatar";
@@ -117,7 +118,21 @@ export async function Header() {
           {user && isStaff(user.role) && (
             <a href="/admin" className="btn-secondary hidden min-h-10 lg:inline-flex">{t("admin")}</a>
           )}
-          <MobileMenu nav={nav} signedIn={!!user} name={user?.name} image={user?.image} showUsd={settings.showUsd} />
+          <MobileMenu
+            nav={nav}
+            signedIn={!!user}
+            name={user?.name}
+            image={user?.image}
+            showUsd={settings.showUsd}
+            whatsapp={{ href: `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(t("whatsappMessage"))}`, hours: settings.supportHours }}
+            legal={[
+              { href: "/terms", label: t("terms") },
+              { href: "/privacy", label: t("privacy") },
+              { href: "/refunds", label: t("refunds") },
+              ...(await footerPages()).map((p) => ({ href: `/p/${p.slug}`, label: txt(p.title, locale) })),
+              ...(settings.navigation?.footer ?? []).map((l) => ({ href: l.href, label: txt(l.label, locale) })),
+            ]}
+          />
         </div>
       </div>
     </header>

@@ -55,7 +55,7 @@ export function GameCard({
             <span className="shrink-0 rounded-lg bg-surface-2 px-2.5 py-2 text-xs font-bold text-danger">{labels.soldOut}</span>
           ) : (
             /* The whole card is the link: a round arrow shows it, so the price never has to wrap beside a button */
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-white transition-transform group-hover:translate-x-0.5" title={labels.choose}>
+            <span className="arrow-btn grid size-9 shrink-0 place-items-center rounded-full text-white" title={labels.choose}>
               <span className="sr-only">{labels.choose}</span>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="m9 6 6 6-6 6" /></svg>
             </span>

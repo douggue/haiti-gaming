@@ -172,11 +172,13 @@ test("customer: announcement, menu, custom page, newsletter, manual deposit, rec
   await c.goto("/ht/categories/game-top-ups");
   await expect(c.getByRole("link", { name: new RegExp(`Sou-kat ${stamp}`) })).toBeVisible();
 
-  // Newsletter
+  // Newsletter (in the footer from tablet width up; phones keep a short footer)
+  await c.setViewportSize({ width: 800, height: 900 });
   await c.goto("/ht");
   await c.getByPlaceholder("Imèl ou").fill(`nouvel.${stamp}@example.com`);
   await c.getByRole("button", { name: "Enskri" }).click();
   await expect(c.getByText("Mèsi! Ou enskri.")).toBeVisible();
+  await c.setViewportSize({ width: 412, height: 839 });
 
   // Two accounts on the same browser
   const first = `premye.${stamp}@example.com`;

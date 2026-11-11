@@ -1,4 +1,3 @@
-import { unstable_cache } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Settings } from "@/lib/settings";
@@ -8,15 +7,9 @@ import { DataSaverToggle } from "./DataSaverToggle";
 import { PayLogo } from "./PayLogo";
 import { InstallLink } from "./InstallPrompt";
 import { NewsletterForm } from "./NewsletterForm";
-import { prisma } from "@/lib/db";
+import { footerPages } from "@/lib/footer-pages";
 import { t as txt } from "@/lib/text";
 import { getLocale } from "next-intl/server";
-
-const footerPages = unstable_cache(
-  () => prisma.page.findMany({ where: { isPublished: true, showInFooter: true }, select: { slug: true, title: true }, orderBy: { createdAt: "asc" } }),
-  ["footer-pages"],
-  { tags: ["pages"], revalidate: 300 },
-);
 
 export async function Footer({ settings, signedIn = false }: { settings: Settings; signedIn?: boolean }) {
   const t = await getTranslations("common");
@@ -37,7 +30,7 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
 
   return (
     <footer className="mt-20 border-t border-border bg-surface/80 backdrop-blur">
-      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.3fr_0.8fr_1fr_1fr_1.6fr]">
+      <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.6fr]">
         <div className="space-y-4 sm:col-span-2 lg:col-span-1">
           <Logo src={settings.logoUrl} darkSrc={settings.logoDarkUrl} alt={settings.businessName} />
           <p className="max-w-xs text-sm text-muted">{t("footerTagline")}</p>
@@ -51,17 +44,8 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
             <WhatsAppIcon width={18} height={18} /> +{settings.whatsappNumber}
           </a>
         </div>
-        <div>
-          <h2 className={head}>{t("store")}</h2>
-          <ul className="text-sm text-muted">
-            <li><Link href="/store" className={link}>{t("store")}</Link></li>
-            <li><Link href="/categories" className={link}>{t("categories")}</Link></li>
-            {settings.marketEnabled && <li><Link href="/market" className={link}>{t("market")}</Link></li>}
-            <li><Link href="/news" className={link}>{t("news")}</Link></li>
-            <li><Link href="/account/wallet" className={link}>{t("wallet")}</Link></li>
-          </ul>
-        </div>
-        <div>
+        {/* Help and legal links: on phones they are in the side menu (☰), so the bottom of the page stays short */}
+        <div className="hidden sm:block">
           <h2 className={head}>{t("help")}</h2>
           <ul className="text-sm text-muted">
             <li><Link href="/guides" className={link}>{t("guides")}</Link></li>
@@ -76,7 +60,7 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
             <li className="text-xs">{tp("hours")}: {settings.supportHours}</li>
           </ul>
         </div>
-        <div>
+        <div className="hidden sm:block">
           <h2 className={head}>Legal</h2>
           <ul className="text-sm text-muted">
             <li><Link href="/terms" className={link}>{t("terms")}</Link></li>
@@ -103,16 +87,16 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
             <PayLogo brand="moncash" height={26} />
             <PayLogo brand="natcash" height={26} />
           </div>
-          {/* Signed-in customers have this switch in Account → settings (one place per page) */}
+          {/* Signed-in customers have this switch in Account → settings; on phones it is in the side menu (☰) */}
           {!signedIn && (
-            <div className="rounded-2xl border border-border bg-surface-2/60 p-3">
+            <div className="hidden rounded-2xl border border-border bg-surface-2/60 p-3 sm:block">
               <DataSaverToggle />
             </div>
           )}
           <InstallLink />
         </div>
       </div>
-      {settings.newsletterEnabled && <div className="container-page pb-6"><NewsletterForm /></div>}
+      {settings.newsletterEnabled && <div className="container-page hidden pb-6 sm:block"><NewsletterForm /></div>}
       <div className="border-t border-border">
         <div className="container-page flex flex-col items-center justify-between gap-2 py-5 text-center text-xs text-muted sm:flex-row sm:text-left">
           <span>© {new Date().getFullYear()} {settings.businessName}. {t("rights")}</span>
