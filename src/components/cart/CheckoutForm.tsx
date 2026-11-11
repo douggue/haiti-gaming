@@ -11,6 +11,7 @@ import { MoneySplit } from "@/components/Money";
 import { LockIcon, WalletIcon } from "@/components/Icons";
 import { PhoneInput } from "@/components/PhoneInput";
 import { priceIn } from "@/lib/money";
+import { PENDING_ORDER_KEY } from "@/components/OrderPayment";
 
 type Method = string; // "WALLET" | "MONCASH" | "NATCASH" | "MANUAL:<id>"
 type Manual = { id: string; name: string; instructions: string; logo: string | null };
@@ -23,7 +24,8 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   const locale = useLocale();
   const router = useRouter();
   const store = useStore();
-  const [method, setMethod] = useState<Method>(moncashEnabled ? "MONCASH" : "WALLET");
+  const [method, setMethod] = useState<Method>(moncashEnabled ? "MONCASH" : natcashEnabled ? "NATCASH" : "WALLET");
+  const [showNote, setShowNote] = useState(false);
   const [walletCurrency, setWalletCurrency] = useState<"HTG" | "USD">(usdWallet ? store.currency : "HTG");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
@@ -41,6 +43,16 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   const fee = hasPhysical && zone ? priceIn(zone.feeHtg, currency, store.htgPerUsd) : 0;
   const total = store.lines.reduce((s, l) => s + linePrice(l, currency, store.htgPerUsd) * l.quantity, 0) + fee;
   const insufficient = method === "WALLET" && balances[walletCurrency] < total;
+  // The wallet can't cover the order in any currency it holds: show it greyed out with a "top up" link
+  const totalIn = (c: "HTG" | "USD") => store.lines.reduce((s, l) => s + linePrice(l, c, store.htgPerUsd) * l.quantity, 0) + (hasPhysical && zone ? priceIn(zone.feeHtg, c, store.htgPerUsd) : 0);
+  const walletShort = store.ready && balances.HTG < totalIn("HTG") && (!usdWallet || balances.USD < totalIn("USD"));
+  // If the wallet was picked by default but can't pay, move to the first other method
+  useEffect(() => {
+    if (walletShort && method === "WALLET") {
+      const next = moncashEnabled ? "MONCASH" : natcashEnabled ? "NATCASH" : manualMethods[0] ? `MANUAL:${manualMethods[0].id}` : null;
+      if (next) setMethod(next);
+    }
+  }, [walletShort, method, moncashEnabled, natcashEnabled, manualMethods]);
   const fmt = (n: number, c: "HTG" | "USD") => formatMoney(n, c, locale);
 
   // The total bar sticks to the bottom of the screen: hide the floating WhatsApp button under it on phones.
@@ -61,6 +73,21 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
 
   function submit() {
     setError("");
+    // Say what is missing instead of a grey button that does nothing
+    if (insufficient) {
+      setError(tc("errors.insufficient"));
+      return;
+    }
+    if (hasPhysical) {
+      const missing = !zone ? "checkout-zone" : !dName.trim() ? "checkout-dname" : dAddress.trim().length < 5 ? "checkout-daddress" : null;
+      if (missing) {
+        setError(tc("deliveryMissing"));
+        const el = document.getElementById(missing);
+        el?.scrollIntoView({ block: "center", behavior: "smooth" });
+        el?.focus({ preventScroll: true });
+        return;
+      }
+    }
     start(async () => {
       const res = await placeOrder({
         items: store.lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, fields: l.fields, ...(l.amount ? { amount: l.amount } : {}) })),
@@ -77,9 +104,16 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
         setError(tc.has(`errors.${res.error}`) ? tc(`errors.${res.error}`) : tc("errors.generic"));
         return;
       }
+      if (res.redirect) {
+        // Leaving for MonCash: keep the cart until that order is paid (canceling there must not lose it)
+        try {
+          localStorage.setItem(PENDING_ORDER_KEY, res.orderId);
+        } catch {}
+        window.location.href = res.redirect;
+        return;
+      }
       store.clear();
-      if (res.redirect) window.location.href = res.redirect;
-      else router.push(`/account/orders/${res.orderId}`);
+      router.push(`/account/orders/${res.orderId}`);
     });
   }
 
@@ -116,8 +150,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
       tone: "bg-slate-500/25 text-slate-200",
     })),
   ];
-  const chosen = options.find((o) => o.id === method);
-  const blocked = pending || insufficient || !store.ready || (hasPhysical && (!zone || !dName.trim() || dAddress.trim().length < 5));
+  const blocked = pending || !store.ready || (hasPhysical && zones.length === 0);
   let n = 1;
   const step = (title: string) => (
     <h2 className="display flex items-center gap-2.5 text-lg font-bold">
@@ -137,8 +170,8 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
       <div>
         <p className="eyebrow flex items-center gap-1.5 text-emerald-400"><LockIcon width={13} height={13} /> {tc("secureCheckout")}</p>
         <h1 className="display mt-1 text-3xl font-extrabold tracking-tight">{tc("title")}</h1>
-        <ol className="mt-4 grid grid-cols-3 gap-2 text-[11px] font-bold uppercase tracking-wide sm:text-xs">
-          {[tc("stepCart"), tc("stepPay"), tc("stepDelivery")].map((label, i) => (
+        <ol className={`mt-4 grid gap-2 text-[11px] font-bold uppercase tracking-wide sm:text-xs ${hasPhysical ? "grid-cols-3" : "grid-cols-2"}`}>
+          {[tc("stepCart"), tc("stepPay"), ...(hasPhysical ? [tc("stepDelivery")] : [])].map((label, i) => (
             <li key={label}>
               <span className={`block h-1.5 rounded-full ${i === 0 ? "bg-emerald-500" : i === 1 ? "bg-gradient-to-r from-[#1d4ed8] to-[#3b82f6]" : "bg-surface-2"}`} />
               <span className={`mt-1.5 flex items-center gap-1 ${i === 0 ? "text-emerald-400" : i === 1 ? "text-[#60a5fa]" : "text-muted"}`}>{i === 0 ? "✓" : `${i + 1}.`} {label}</span>
@@ -154,6 +187,18 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
             <legend className="sr-only">{tc("paymentMethod")}</legend>
             {options.filter((o) => o.enabled).map((o) => {
               const on = method === o.id;
+              if (o.id === "WALLET" && walletShort) {
+                return (
+                  <div key={o.id} className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-surface/50 p-3.5 opacity-80 sm:p-4" aria-disabled="true">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-surface-2 text-muted" aria-hidden>{o.icon}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="display block font-bold text-muted">{o.title}</span>
+                      <span className="mt-0.5 block text-sm text-muted">{o.hint} · {tc("walletShort")}</span>
+                    </span>
+                    <Link href="/account/wallet/deposit" className="btn-secondary min-h-11 shrink-0 px-3 text-sm">{tc("topUp")}</Link>
+                  </div>
+                );
+              }
               return (
                 <label
                   key={o.id}
@@ -165,7 +210,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
                       <span className="display font-bold">{o.title}</span>
                       {o.tag && <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide ${o.tagTone}`}>{o.tag}</span>}
                     </span>
-                    <span className={`mt-0.5 block text-sm ${o.id === "WALLET" ? "font-semibold text-emerald-400" : "text-muted"}`}>{o.hint}</span>
+                    <span className="mt-0.5 block text-sm text-muted">{o.hint}</span>
                   </span>
                   <span className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors ${on ? "border-[#93c5fd] bg-[#93c5fd] text-[#0b1a4a]" : "border-white/20 bg-[#0b0f19]/50"}`} aria-hidden>
                     {on && <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}
@@ -207,26 +252,30 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
               ) : (
                 <label className="block">
                   <span className="label">{tc("deliveryZone")}</span>
-                  <select value={zoneId} onChange={(e) => setZoneId(e.target.value)} className="input">
+                  <select id="checkout-zone" value={zoneId} onChange={(e) => setZoneId(e.target.value)} className="input">
                     {zones.map((z) => <option key={z.id} value={z.id}>{z.name} · {z.feeHtg ? fmt(z.feeHtg, "HTG") : tc("free")}{z.eta ? ` · ${z.eta}` : ""}</option>)}
                   </select>
                 </label>
               )}
-              <label className="block"><span className="label">{tc("deliveryName")}</span><input value={dName} onChange={(e) => setDName(e.target.value)} maxLength={80} autoComplete="name" className="input" /></label>
+              <label className="block"><span className="label">{tc("deliveryName")}</span><input id="checkout-dname" value={dName} onChange={(e) => { setDName(e.target.value); setError(""); }} maxLength={80} autoComplete="name" className="input" /></label>
               <div><span className="label">{tc("deliveryPhone")}</span><PhoneInput id="delivery-phone" name="phone" /></div>
-              <label className="block"><span className="label">{tc("deliveryAddress")}</span><textarea value={dAddress} onChange={(e) => setDAddress(e.target.value)} rows={2} maxLength={300} autoComplete="street-address" className="input" /></label>
+              <label className="block"><span className="label">{tc("deliveryAddress")}</span><textarea id="checkout-daddress" value={dAddress} onChange={(e) => { setDAddress(e.target.value); setError(""); }} rows={2} maxLength={300} autoComplete="street-address" className="input" /></label>
               <label className="block"><span className="label">{tc("deliveryNote")}</span><input value={dNote} onChange={(e) => setDNote(e.target.value)} maxLength={300} className="input" /></label>
             </form>
           </section>
         )}
 
-        <section className="space-y-3">
-          {step(tc("messageStep"))}
-          <div className="rounded-2xl border border-border bg-surface/80 p-4">
+        {/* Optional message for a gift: a small link, opened only by those who want it */}
+        {showNote || note ? (
+          <section className="space-y-2 rounded-2xl border border-border bg-surface/80 p-4">
             <label htmlFor="note" className="label">{tc("giftNote")}</label>
-            <input id="note" className="input" maxLength={300} placeholder={tc("giftNotePlaceholder")} value={note} onChange={(e) => setNote(e.target.value)} />
-          </div>
-        </section>
+            <input id="note" className="input" maxLength={300} placeholder={tc("giftNotePlaceholder")} value={note} onChange={(e) => setNote(e.target.value)} autoFocus={showNote && !note} />
+          </section>
+        ) : (
+          <button type="button" onClick={() => setShowNote(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-1 text-sm font-semibold text-[#60a5fa] hover:underline">
+            <span aria-hidden className="text-lg leading-none">＋</span> {tc("addNote")}
+          </button>
+        )}
       </div>
 
       <aside className="relative h-fit space-y-4 overflow-hidden rounded-2xl border border-border bg-surface/90 p-5 lg:sticky lg:top-24">
@@ -239,6 +288,12 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{t(l.productName, locale)}</span>
                 <span className="text-xs text-[#60a5fa]">{t(l.variantName, locale)} × {l.quantity}</span>
+                {Object.values(l.fields).some(Boolean) && (
+                  <span className="mt-0.5 flex min-w-0 items-center gap-2 text-xs">
+                    <span className="truncate font-mono font-semibold">{Object.values(l.fields).filter(Boolean).join(" · ")}</span>
+                    <Link href="/cart" className="shrink-0 font-semibold text-[#60a5fa] underline-offset-2 hover:underline">{tc("change")}</Link>
+                  </span>
+                )}
               </span>
               <span className="shrink-0 font-bold">{fmt(linePrice(l, currency, store.htgPerUsd) * l.quantity, currency)}</span>
             </li>
@@ -269,7 +324,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
           {error && <p className="mb-2 rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
           <div className="flex items-center gap-3">
             <span className="min-w-0 flex-1">
-              <span className="eyebrow block truncate text-[10px] text-muted">{tc("totalDue")}{chosen ? ` · ${chosen.title}` : ""}</span>
+              <span className="eyebrow block whitespace-nowrap text-[10px] text-muted">{tc("totalDue")}</span>
               <MoneySplit minor={total} currency={currency} locale={locale} className="display block whitespace-nowrap text-xl font-extrabold leading-tight tracking-tight" />
             </span>
             <button type="button" className="btn-primary min-h-11 shrink-0 px-4 text-sm" onClick={submit} disabled={blocked}>

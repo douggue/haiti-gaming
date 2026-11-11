@@ -70,6 +70,10 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
   const [favs, setFavs] = useState<string[]>([]);
   const [view, setView] = useState<"grid" | "list">("grid");
   const [open, setOpen] = useState(!!(init.tags.length || init.min || init.max));
+  // The phone header's search button opens the store with ?focus=1: put the cursor in the search box
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("focus") === "1") document.getElementById("store-search")?.focus();
+  }, []);
 
   useEffect(() => {
     setFavs(readList(FAV_KEY));
@@ -166,7 +170,7 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
   };
   const toggleTag = (tg: string) => setPicked(picked.includes(tg) ? picked.filter((x) => x !== tg) : [...picked, tg]);
 
-  const tab = (on: boolean) => `shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-bold transition-colors ${on ? "glow-btn border-transparent bg-primary text-white" : "border-border bg-surface/80 text-muted hover:text-text"}`;
+  const tab = (on: boolean) => `shrink-0 inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition-colors ${on ? "glow-btn border-transparent bg-primary text-white" : "border-border bg-surface/80 text-muted hover:text-text"}`;
   const pill = (on: boolean) => `rounded-full px-1.5 py-px text-[11px] ${on ? "bg-white/25" : "bg-surface-2"}`;
 
   return (
@@ -180,9 +184,9 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
             <h1 className="display mt-1 text-2xl font-extrabold tracking-tight sm:text-4xl">{ts("title")}</h1>
             <p className="mt-1 hidden text-sm text-muted sm:block sm:text-base">{ts("subtitle")}</p>
           </div>
-          <p className="shrink-0 rounded-full border border-border bg-surface-2/70 px-3 py-1.5 text-xs font-semibold sm:text-sm" aria-live="polite">{ts("results", { count: list.length })}</p>
+          {!searching && <p className="shrink-0 rounded-full border border-border bg-surface-2/70 px-3 py-1.5 text-xs font-semibold sm:text-sm" aria-live="polite">{ts("results", { count: list.length })}</p>}
         </div>
-        <ul className="relative -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 text-xs sm:mx-0 sm:mt-5 sm:grid sm:grid-cols-3 sm:px-0 sm:text-sm">
+        <ul className="relative mt-5 hidden grid-cols-3 gap-2 text-sm sm:grid">
           {(["promiseInstant", "promisePay", "promiseHelp"] as const).map((k, i) => (
             <li key={k} className="flex shrink-0 items-center gap-2 rounded-full bg-surface-2/60 py-1 pl-1 pr-3 sm:rounded-xl sm:px-3 sm:py-2">
               <span aria-hidden className={`grid size-6 shrink-0 place-items-center rounded-full text-xs sm:size-7 sm:rounded-lg sm:text-sm ${["bg-emerald-500/20", "bg-[#831843]/40", "bg-[#1fa855]/20"][i]}`}>{["⚡", "📱", "💬"][i]}</span>
@@ -197,6 +201,7 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
           <span className="sr-only">{tc("search")}</span>
           <SearchIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#60a5fa]" width={20} height={20} />
           <input
+            id="store-search"
             name="q"
             type="search"
             value={q}
@@ -222,6 +227,17 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
               <option value="newest">{ts("sortNewest")}</option>
             </select>
           </label>
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-controls="store-filters"
+            aria-label={ts("filters")}
+            className={`relative grid min-h-11 w-12 shrink-0 place-items-center rounded-xl border lg:hidden ${open || activeCount > 0 ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface-2 text-muted"}`}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" aria-hidden><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+            {activeCount > 0 && <span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">{activeCount}</span>}
+          </button>
           <div role="group" aria-label={ts("view")} className="flex shrink-0 gap-1 rounded-xl border border-border bg-surface-2 p-1">
             {(["grid", "list"] as const).map((v) => (
               <button
@@ -257,11 +273,11 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
 
       {/* Quick picks: the first games of the store, one tap searches them */}
       {quick.length > 0 && (
-        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0" aria-label={ts("quickPicks")} role="group">
+        <div className="mt-3 hidden flex-wrap gap-2 sm:flex" aria-label={ts("quickPicks")} role="group">
           {quick.map((name, i) => {
             const on = q.trim().toLowerCase() === name.toLowerCase();
             return (
-              <button key={name} type="button" onClick={() => setQ(on ? "" : name)} aria-pressed={on} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${on ? "border-[#3b82f6] bg-[#1d4ed8]/25 text-text" : "border-border bg-surface/80 text-muted hover:text-text"}`}>
+              <button key={name} type="button" onClick={() => setQ(on ? "" : name)} aria-pressed={on} className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition-colors ${on ? "border-[#3b82f6] bg-[#1d4ed8]/25 text-text" : "border-border bg-surface/80 text-muted hover:text-text"}`}>
                 {i === 0 && <span aria-hidden className="text-amber-300">🔥</span>}
                 {name}
               </button>
@@ -291,16 +307,16 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
       </nav>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <aside>
+        <aside id="store-filters" className={open ? "" : "hidden lg:block"}>
           <div className="card p-4 lg:sticky lg:top-24">
-            <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full items-center justify-between font-bold lg:pointer-events-none">
+            <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex min-h-11 w-full items-center justify-between font-bold lg:pointer-events-none lg:min-h-0">
               <span className="flex items-center gap-2">
                 {ts("filters")}
                 {activeCount > 0 && <span className="rounded-full bg-primary px-2 py-px text-[11px] text-white">{activeCount}</span>}
               </span>
               <span className={`text-muted transition-transform lg:hidden ${open ? "rotate-180" : ""}`} aria-hidden>▾</span>
             </button>
-            <div className={`mt-4 space-y-5 ${open ? "" : "hidden lg:block"}`}>
+            <div className="mt-4 space-y-5">
               {tags.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted">{ts("tag")}</p>
@@ -346,7 +362,7 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
               {picked.map((tg) => <Chip key={tg} label={tg} onRemove={() => toggleTag(tg)} removeLabel={ts("remove", { name: tg })} />)}
               {min && <Chip label={`≥ ${min} ${currency}`} onRemove={() => setMin("")} removeLabel={ts("remove", { name: ts("priceMin") })} />}
               {max && <Chip label={`≤ ${max} ${currency}`} onRemove={() => setMax("")} removeLabel={ts("remove", { name: ts("priceMax") })} />}
-              <button type="button" onClick={clearAll} className="px-1 text-sm font-semibold text-primary">{ts("clear")}</button>
+              {list.length > 0 && <button type="button" onClick={clearAll} className="min-h-11 px-2 text-sm font-semibold text-primary">{ts("clear")}</button>}
             </div>
           )}
 

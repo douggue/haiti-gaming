@@ -25,6 +25,7 @@ test("phone formats as typed, gift link shows the code to the receiver", async (
   await page.waitForURL("**/ht/cart");
   await page.getByRole("link", { name: "Peye" }).click();
   await page.waitForURL("**/ht/checkout");
+  await page.getByRole("button", { name: /Ajoute yon mesaj/ }).click();
   await page.getByLabel("Mesaj pou moun k ap resevwa l (si w vle)").fill("Bòn fèt Nadia!");
   await page.getByText("MonCash", { exact: true }).first().click();
   await page.getByRole("button", { name: "Pase kòmand lan" }).click();

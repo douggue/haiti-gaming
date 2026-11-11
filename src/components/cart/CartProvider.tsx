@@ -35,6 +35,8 @@ type StoreCtx = {
   add: (line: Omit<CartLine, "key">) => void;
   setQuantity: (key: string, quantity: number) => void;
   remove: (key: string) => void;
+  /** New player ID / account details for a line (merges with an identical line if there is one) */
+  updateFields: (key: string, fields: Record<string, string>) => void;
   clear: () => void;
 };
 
@@ -60,7 +62,7 @@ function readLocal(): Stored {
   return { lines: [], updatedAt: 0, guest: false };
 }
 
-function lineKey(variantId: string, fields: Record<string, string>, amount?: number) {
+export function lineKey(variantId: string, fields: Record<string, string>, amount?: number) {
   return `${variantId}:${amount ? `$${amount}:` : ""}${Object.entries(fields).sort().map(([k, v]) => `${k}=${v}`).join("&")}`;
 }
 
@@ -161,14 +163,26 @@ export function CartProvider({ children, currency, htgPerUsd, signedIn = false }
     changed.current = true;
     setLines((prev) => prev.filter((l) => l.key !== key));
   }, []);
+  const updateFields = useCallback((key: string, fields: Record<string, string>) => {
+    changed.current = true;
+    setLines((prev) => {
+      const line = prev.find((l) => l.key === key);
+      if (!line) return prev;
+      const nextKey = lineKey(line.variantId, fields, line.amount);
+      if (nextKey === key) return prev.map((l) => (l.key === key ? { ...l, fields } : l));
+      const twin = prev.find((l) => l.key === nextKey);
+      if (twin) return prev.filter((l) => l.key !== key).map((l) => (l.key === nextKey ? { ...l, quantity: Math.min(10, l.quantity + line.quantity) } : l));
+      return prev.map((l) => (l.key === key ? { ...l, fields, key: nextKey } : l));
+    });
+  }, []);
   const clear = useCallback(() => {
     changed.current = true;
     setLines([]);
   }, []);
 
   const value = useMemo(
-    () => ({ currency, htgPerUsd, lines, count: lines.reduce((s, l) => s + l.quantity, 0), ready, add, setQuantity, remove, clear }),
-    [currency, htgPerUsd, lines, ready, add, setQuantity, remove, clear],
+    () => ({ currency, htgPerUsd, lines, count: lines.reduce((s, l) => s + l.quantity, 0), ready, add, setQuantity, remove, updateFields, clear }),
+    [currency, htgPerUsd, lines, ready, add, setQuantity, remove, updateFields, clear],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

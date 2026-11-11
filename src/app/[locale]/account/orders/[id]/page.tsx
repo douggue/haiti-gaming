@@ -13,7 +13,8 @@ import { t } from "@/lib/text";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
 import { Celebrate } from "@/components/Celebrate";
-import { NatcashOrderForm, MoncashRetryButton } from "@/components/OrderPayment";
+import { NatcashOrderForm, MoncashRetryButton, ChangePaymentButton, PendingOrderCart } from "@/components/OrderPayment";
+import type { FieldDef } from "@/lib/orders";
 import { WhatsAppIcon } from "@/components/Icons";
 import { ReviewRequest } from "@/components/ReviewRequest";
 import { formatPhone } from "@/lib/phone";
@@ -29,9 +30,10 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
   const order = await prisma.order.findFirst({
     where: { id, userId: user.id },
     include: {
-      items: { include: { codes: true, variant: { include: { product: { select: { slug: true, image: true, accent: true } } } } } },
+      items: { include: { codes: true, variant: { include: { product: { select: { slug: true, image: true, accent: true, fields: true } } } } } },
       events: { orderBy: { createdAt: "asc" } },
       payments: { orderBy: { createdAt: "desc" }, take: 1 },
+      _count: { select: { payments: true } },
       review: { select: { id: true, createdAt: true } },
       deliveryZone: { select: { name: true } },
     },
@@ -98,6 +100,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
           cta={tcel("continue")}
         />
       )}
+      <PendingOrderCart orderId={order.id} settled={["PAID", "PROCESSING", "FULFILLED", "PAYMENT_REVIEW"].includes(order.status)} />
       <Link href="/account/orders" className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-text">← {tc("orders")}</Link>
 
       {/* Receipt header: number, date, status, how it was paid and the total */}
@@ -123,9 +126,6 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         </div>
       </section>
 
-      {order.status === "FULFILLED" && !order.review && <ReviewRequest orderId={order.id} city={(await prisma.user.findUnique({ where: { id: user.id }, select: { city: true } }))?.city ?? ""} />}
-      {/* Thank-you stays visible for a day after the review is sent (the page re-renders right after saving) */}
-      {order.status === "FULFILLED" && order.review && Date.now() - order.review.createdAt.getTime() < 86_400_000 && <ReviewRequest orderId={order.id} city="" submitted />}
 
       {order.status === "AWAITING_PAYMENT" && order.paymentMethod === "MANUAL" && manual && (
         <section className={payBox}>
@@ -151,9 +151,24 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
         </section>
       )}
       {order.status === "AWAITING_PAYMENT" && order.paymentMethod === "MONCASH" && (
-        <section className="rounded-2xl border border-border bg-surface/90 p-5">
-          <MoncashRetryButton orderId={order.id} />
+        <section className={order._count.payments > 0 ? "rounded-2xl border border-danger/40 bg-danger-soft/60 p-5" : "rounded-2xl border border-border bg-surface/90 p-5"} role={order._count.payments > 0 ? "alert" : undefined}>
+          {order._count.payments > 0 && (
+            <>
+              <h2 className="display font-bold text-danger">{to("payFailedTitle")}</h2>
+              <p className="mt-1 text-sm text-muted">{to("payFailedBody")}</p>
+            </>
+          )}
+          <div className="mt-4 flex flex-wrap items-start gap-2">
+            <MoncashRetryButton orderId={order.id} />
+            <ChangePaymentButton orderId={order.id} />
+          </div>
         </section>
+      )}
+      {order.status === "AWAITING_PAYMENT" && (order.paymentMethod === "NATCASH" || order.paymentMethod === "MANUAL") && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-surface/80 px-4 py-3 text-sm">
+          <span className="text-muted">{to("otherMethodHint")}</span>
+          <ChangePaymentButton orderId={order.id} className="btn-secondary min-h-11 px-4 text-sm" />
+        </div>
       )}
       {order.paymentMethod === "COD" && order.status === "AWAITING_PAYMENT" && (
         <p className="rounded-2xl border border-[#3b82f6]/30 bg-[#1d4ed8]/10 px-4 py-3 text-sm text-[#93c5fd]">{to("codWaiting")}</p>
@@ -184,14 +199,22 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
                     <p className="display font-bold leading-snug">{itemTitle(item, locale)} × {item.quantity}</p>
                     <span className="display shrink-0 font-extrabold">{formatMoney(item.unitPrice * item.quantity, order.currency, locale)}</span>
                   </div>
-                  <div className="mt-1"><StatusBadge status={item.status} label={to(`itemStatus.${item.status}`)} /></div>
+                  {/* The order's status is in the header; a per-item badge only helps when items differ */}
+                  {order.items.length > 1 && ["PAID", "PROCESSING", "FULFILLED"].includes(order.status) && <div className="mt-1"><StatusBadge status={item.status} label={to(`itemStatus.${item.status}`)} /></div>}
                 </div>
               </div>
               {values.length > 0 && (
-                <p className="flex items-center gap-2 rounded-xl bg-[#0b0f19]/60 px-3 py-2.5 text-sm">
-                  <span className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-extrabold ${paid.tone}`}>{paid.label}</span>
-                  <span className="min-w-0 truncate font-mono font-semibold">{values.join(" · ")}</span>
-                </p>
+                <dl className="space-y-1 rounded-xl bg-[#0b0f19]/60 px-3 py-2.5 text-sm">
+                  {Object.entries(item.fieldValues as Record<string, string>).filter(([, v]) => v).map(([k, v]) => {
+                    const def = ((product.fields ?? []) as FieldDef[]).find((f) => f.key === k);
+                    return (
+                      <div key={k} className="flex items-center gap-2">
+                        <dt className="shrink-0 text-xs font-semibold text-muted">{def ? t(def.label, locale) : to("details")}</dt>
+                        <dd className="min-w-0 truncate font-mono font-semibold">{v}</dd>
+                      </div>
+                    );
+                  })}
+                </dl>
               )}
               {item.codes.length > 0 && (
                 <div className="rounded-xl border border-[#3b82f6]/25 bg-[#1d4ed8]/10 p-3">
@@ -216,7 +239,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
                 </div>
               )}
               <div className="flex justify-end">
-                <Link href={`/products/${product.slug}`} className="btn-primary min-h-10 px-4 text-sm">↻ {to("buyAgain")}</Link>
+                <Link href={`/products/${product.slug}`} className={`${order.status === "FULFILLED" ? "btn-primary" : "btn-secondary"} min-h-11 px-4 text-sm`}>↻ {to("buyAgain")}</Link>
               </div>
             </div>
           );
@@ -235,6 +258,9 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       )}
 
       {giftText && <GiftShare text={giftText} hasNote={!!order.recipientNote} />}
+      {order.status === "FULFILLED" && !order.review && <ReviewRequest orderId={order.id} city={(await prisma.user.findUnique({ where: { id: user.id }, select: { city: true } }))?.city ?? ""} />}
+      {/* Thank-you stays visible for a day after the review is sent (the page re-renders right after saving) */}
+      {order.status === "FULFILLED" && order.review && Date.now() - order.review.createdAt.getTime() < 86_400_000 && <ReviewRequest orderId={order.id} city="" submitted />}
 
       <section className="rounded-2xl border border-border bg-surface/90 p-5">
         <h2 className="display mb-4 font-bold">{to("timeline")}</h2>
@@ -254,8 +280,8 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
 
       {/* Help */}
       <section className="flex flex-col gap-3 rounded-2xl border border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 to-surface/90 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <a href={`https://wa.me/${settings.whatsappNumber}?text=${helpText}`} target="_blank" rel="noopener" className="btn-primary min-h-11 !bg-[#1fa855] px-4">
-          <WhatsAppIcon width={18} height={18} /> {to("getHelp")}
+        <a href={`https://wa.me/${settings.whatsappNumber}?text=${helpText}`} target="_blank" rel="noopener" className="btn-secondary min-h-11 px-4">
+          <WhatsAppIcon width={18} height={18} className="text-[#25d366]" /> {to("getHelp")}
         </a>
         <div className="flex flex-wrap gap-2">
           <CopyButton value={statusUrl} label={to("shareStatus")} done={to("copied")} />

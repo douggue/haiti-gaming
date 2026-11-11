@@ -1,9 +1,10 @@
 "use client";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { t } from "@/lib/text";
 import { linePrice, useStore } from "./CartProvider";
-import { Price, PriceSplit } from "../Money";
+import { PriceSplit } from "../Money";
 import { ProductArtSmall } from "./ProductArtSmall";
 import { ArrowRightIcon, CartIcon, LockIcon } from "../Icons";
 
@@ -11,7 +12,8 @@ export function CartView() {
   const tc = useTranslations("cart");
   const tco = useTranslations("checkout");
   const locale = useLocale();
-  const { lines, ready, setQuantity, remove, htgPerUsd, count } = useStore();
+  const { lines, ready, setQuantity, remove, updateFields, htgPerUsd, count } = useStore();
+  const [editing, setEditing] = useState<string | null>(null);
   const subtotal = lines.reduce((s, l) => s + l.priceHtg * l.quantity, 0);
   const subtotalUsd = lines.reduce((s, l) => s + linePrice(l, "USD", htgPerUsd) * l.quantity, 0);
 
@@ -46,18 +48,34 @@ export function CartView() {
                   </span>
                   <PriceSplit htg={l.priceHtg * l.quantity} usd={linePrice(l, "USD", htgPerUsd) * l.quantity} className="display shrink-0 text-lg font-extrabold" unitClassName="ml-1 text-[0.6em] font-bold text-muted" />
                 </div>
-                {Object.values(l.fields).length > 0 && (
-                  <p className="mt-1.5 inline-flex max-w-full items-center rounded-lg bg-[#0b0f19]/60 px-2 py-1 font-mono text-xs text-muted">
-                    <span className="truncate">{Object.values(l.fields).join(" · ")}</span>
-                  </p>
-                )}
+                {Object.values(l.fields).length > 0 &&
+                  (editing === l.key ? (
+                    <FieldsEditor
+                      fields={l.fields}
+                      label={tc("editDetails")}
+                      save={tc("save")}
+                      cancel={tc("cancel")}
+                      onCancel={() => setEditing(null)}
+                      onSave={(f) => {
+                        updateFields(l.key, f);
+                        setEditing(null);
+                      }}
+                    />
+                  ) : (
+                    <p className="mt-1.5 flex max-w-full items-center gap-2">
+                      <span className="inline-flex min-w-0 items-center rounded-lg bg-[#0b0f19]/60 px-2 py-1 font-mono text-xs text-muted">
+                        <span className="truncate">{Object.values(l.fields).join(" · ")}</span>
+                      </span>
+                      <button type="button" onClick={() => setEditing(l.key)} className="min-h-11 shrink-0 px-1 text-xs font-semibold text-[#60a5fa] hover:underline">{tco("change")}</button>
+                    </p>
+                  ))}
                 <div className="mt-3 flex items-center gap-3">
                   <div className="flex items-center rounded-xl border border-border bg-[#0b0f19]/60">
-                    <button type="button" className="h-9 w-9" onClick={() => setQuantity(l.key, l.quantity - 1)} aria-label="−">−</button>
+                    <button type="button" className="h-11 w-11 text-lg" onClick={() => setQuantity(l.key, l.quantity - 1)} aria-label="−">−</button>
                     <span className="w-8 text-center text-sm font-bold">{l.quantity}</span>
-                    <button type="button" className="h-9 w-9" onClick={() => setQuantity(l.key, l.quantity + 1)} aria-label="+">+</button>
+                    <button type="button" className="h-11 w-11 text-lg" onClick={() => setQuantity(l.key, l.quantity + 1)} aria-label="+">+</button>
                   </div>
-                  <button type="button" onClick={() => remove(l.key)} className="ml-auto text-sm font-semibold text-danger hover:underline">{tc("remove")}</button>
+                  <button type="button" onClick={() => remove(l.key)} className="ml-auto min-h-11 px-1 text-sm font-semibold text-danger hover:underline">{tc("remove")}</button>
                 </div>
               </div>
             </li>
@@ -68,10 +86,6 @@ export function CartView() {
       <aside className="relative h-fit space-y-4 overflow-hidden rounded-2xl border border-border bg-surface/90 p-5 lg:sticky lg:top-24">
         <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[#1d4ed8] via-[#7c3aed] to-[#dc2626]" />
         <h2 className="display text-lg font-bold">{tco("summary")}</h2>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-muted">{tc("subtotal")}</span>
-          <Price htg={subtotal} usd={subtotalUsd} className="font-semibold" />
-        </div>
         <div className="rounded-xl bg-[#0b0f19]/60 px-4 py-3">
           <span className="eyebrow block text-[10px] text-muted">{tco("total")}</span>
           <PriceSplit htg={subtotal} usd={subtotalUsd} className="display text-[1.7rem] font-extrabold tracking-tight" />
@@ -81,5 +95,33 @@ export function CartView() {
         <p className="flex items-center justify-center gap-1.5 text-[11px] text-muted"><LockIcon width={12} height={12} /> {tco("secureNote")}</p>
       </aside>
     </div>
+  );
+}
+
+/** Fix the player ID / account details of a line without removing it. */
+function FieldsEditor({ fields, label, save, cancel, onSave, onCancel }: { fields: Record<string, string>; label: string; save: string; cancel: string; onSave: (f: Record<string, string>) => void; onCancel: () => void }) {
+  const [values, setValues] = useState(fields);
+  const keys = Object.keys(fields);
+  return (
+    <form
+      className="mt-2 space-y-2 rounded-xl border border-border bg-[#0b0f19]/40 p-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const clean = Object.fromEntries(keys.map((k) => [k, (values[k] ?? "").trim()]));
+        if (keys.some((k) => fields[k] && !clean[k])) return;
+        onSave(clean);
+      }}
+    >
+      {keys.map((k, i) => (
+        <label key={k} className="block">
+          <span className="label">{label}{keys.length > 1 ? ` ${i + 1}` : ""}</span>
+          <input className="input font-mono" value={values[k] ?? ""} maxLength={100} autoFocus={i === 0} autoComplete="off" onChange={(e) => setValues({ ...values, [k]: e.target.value })} />
+        </label>
+      ))}
+      <div className="flex gap-2">
+        <button type="submit" className="btn-primary min-h-11 px-4 text-sm">{save}</button>
+        <button type="button" onClick={onCancel} className="btn-secondary min-h-11 px-4 text-sm">{cancel}</button>
+      </div>
+    </form>
   );
 }

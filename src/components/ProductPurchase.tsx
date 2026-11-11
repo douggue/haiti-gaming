@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { t } from "@/lib/text";
 import type { FieldDef } from "@/lib/orders";
-import { useStore } from "./cart/CartProvider";
+import { lineKey, useStore } from "./cart/CartProvider";
 import { MoneySplit, Price, PriceSplit } from "./Money";
 import { BagIcon, BoltIcon, CartIcon, GiftIcon, HelpIcon, LockIcon } from "./Icons";
 import { formatMoney, parseAmount } from "@/lib/money";
@@ -23,7 +23,9 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
   const tp = useTranslations("product");
   const locale = useLocale();
   const router = useRouter();
-  const { add } = useStore();
+  const { add, lines } = useStore();
+  const [fieldError, setFieldError] = useState<{ key: string; msg: string } | null>(null);
+  const [toast, setToast] = useState<{ text: string; n: number } | null>(null);
   const mode = pricing ?? null;
   const [amountText, setAmountText] = useState(mode?.presets[0] ? String(mode.presets[0]) : "");
   const amount = parseAmount(amountText);
@@ -47,10 +49,21 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
     }
     for (const f of product.fields) {
       if (f.required && !fields[f.key]?.trim()) {
-        setError(`${t(f.label, locale)} *`);
-        document.getElementById(`field-${f.key}`)?.focus();
+        // Say it under the field and bring the field to the middle of the screen (not behind the bottom bar)
+        setFieldError({ key: f.key, msg: tp("fieldMissing", { label: t(f.label, locale) }) });
+        const el = document.getElementById(`field-${f.key}`);
+        el?.scrollIntoView({ block: "center", behavior: "smooth" });
+        el?.focus({ preventScroll: true });
         return;
       }
+    }
+    const lineFields = Object.fromEntries(product.fields.map((f) => [f.key, (fields[f.key] ?? "").trim()]).filter(([, v]) => v)) as Record<string, string>;
+    const key = lineKey(variant.id, lineFields, quote?.amount);
+    const existing = lines.find((l) => l.key === key);
+    // "Buy now" right after "Add to cart": the item is already there, don't add it a second time
+    if (goToCart && existing) {
+      router.push("/cart");
+      return;
     }
     add({
       variantId: variant.id,
@@ -62,12 +75,14 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
       priceHtg: quote ? quote.totalHtg : variant.salePriceHtg ?? variant.priceHtg,
       ...(quote ? { amount: quote.amount, priceUsd: quote.totalUsd } : {}),
       quantity: quote ? 1 : qty,
-      fields: Object.fromEntries(product.fields.map((f) => [f.key, (fields[f.key] ?? "").trim()]).filter(([, v]) => v)),
+      fields: lineFields,
       ...(product.physical ? { physical: true } : {}),
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
-    if (goToCart) router.push("/cart");
+    if (goToCart) return router.push("/cart");
+    const now = Math.min(10, (existing?.quantity ?? 0) + (quote ? 1 : qty));
+    setToast({ text: existing ? tp("toastMore", { n: now }) : tp("toastAdded"), n: Date.now() });
   }
 
   // Game top-ups ask for a player ID: that step gets the player wording, the "where is my ID?" link and a gem icon on the tiles.
@@ -228,7 +243,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                           type="button"
                           role="radio"
                           aria-checked={on}
-                          onClick={() => setFields({ ...fields, [f.key]: o.value })}
+                          onClick={() => { setFields({ ...fields, [f.key]: o.value }); if (fieldError?.key === f.key) setFieldError(null); }}
                           className={`min-h-12 rounded-xl border-2 px-3 text-sm font-semibold transition-colors ${on ? "border-[#3b82f6] bg-[#1d4ed8]/20 text-text" : "border-border bg-surface text-muted hover:border-[#3b82f6]/50"}`}
                         >
                           {o.label ? t(o.label, locale) : o.value}
@@ -239,15 +254,25 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                 ) : (
                 <input
                   id={`field-${f.key}`}
-                  className={`input h-14 bg-[#0b0f19]/60 font-semibold ${hasPlayer && f.type === "number" ? "text-lg tracking-[0.08em] tabular-nums" : ""}`}
+                  className={`input h-14 bg-[#0b0f19]/60 font-semibold placeholder:text-base placeholder:font-normal placeholder:tracking-normal placeholder:text-muted/70 ${hasPlayer && f.type === "number" ? "text-lg tracking-[0.08em] tabular-nums" : ""} ${fieldError?.key === f.key ? "!border-danger" : ""}`}
                   type={f.type === "number" ? "text" : f.type}
                   inputMode={f.type === "number" ? "numeric" : undefined}
                   autoComplete="off"
                   maxLength={100}
-                  placeholder={f.placeholder}
+                  placeholder={f.placeholder ? (/^(egz|ex|e\.g)/i.test(f.placeholder) ? f.placeholder : `${tp("examplePrefix")} ${f.placeholder}`) : undefined}
+                  aria-invalid={fieldError?.key === f.key || undefined}
+                  aria-describedby={fieldError?.key === f.key ? `field-${f.key}-error` : undefined}
                   value={fields[f.key] ?? ""}
-                  onChange={(e) => setFields({ ...fields, [f.key]: e.target.value })}
+                  onChange={(e) => {
+                    setFields({ ...fields, [f.key]: e.target.value });
+                    if (fieldError?.key === f.key) setFieldError(null);
+                  }}
                 />
+                )}
+                {fieldError?.key === f.key && (
+                  <p id={`field-${f.key}-error`} role="alert" className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-danger">
+                    <span aria-hidden>⚠</span> {fieldError.msg}
+                  </p>
                 )}
               </div>
             ))}
@@ -310,6 +335,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
         </div>
       </div>
       <p className="sr-only" aria-live="polite">{added ? tp("added") : ""}</p>
+      {toast && <AddedToast key={toast.n} text={toast.text} cta={tp("toastCta")} onDone={() => setToast(null)} />}
     </div>
   );
 }
@@ -380,6 +406,21 @@ function PlayerCheck({ variantId, fields }: { variantId: string; fields: Record<
         {busy ? "…" : tp("checkPlayer")}
       </button>
       {state && <span role="status" className={`text-sm font-semibold ${state.ok ? "text-success" : "text-danger"}`}>{state.ok ? "✓ " : "✕ "}{state.text}</span>}
+    </div>
+  );
+}
+
+/** "Added to cart · See cart": a small note under the header that leaves on its own. */
+function AddedToast({ text, cta, onDone }: { text: string; cta: string; onDone: () => void }) {
+  useEffect(() => {
+    const id = setTimeout(onDone, 3500);
+    return () => clearTimeout(id);
+  }, [onDone]);
+  return (
+    <div role="status" className="animate-rise fixed inset-x-4 top-[4.75rem] z-50 mx-auto flex max-w-sm items-center gap-3 rounded-2xl border border-emerald-400/40 bg-[#0f1a1a]/95 px-4 py-3 text-sm text-white shadow-[0_18px_40px_-16px_rgba(0,0,0,.9)] backdrop-blur">
+      <span className="copy-pop grid size-7 shrink-0 place-items-center rounded-full bg-emerald-500/20 text-emerald-300" aria-hidden>✓</span>
+      <span className="min-w-0 flex-1 font-semibold">{text}</span>
+      <Link href="/cart" className="shrink-0 rounded-lg px-2 py-2 font-bold text-[#93c5fd] hover:underline">{cta}</Link>
     </div>
   );
 }

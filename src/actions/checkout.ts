@@ -1,7 +1,8 @@
 "use server";
 import { prisma } from "@/lib/db";
 import { assertUser } from "@/lib/session";
-import { cartSchema, createOrder, OrderError, type FieldDef } from "@/lib/orders";
+import { cartSchema, createOrder, OrderError, refundOrCancel, type FieldDef } from "@/lib/orders";
+import { revalidatePath } from "next/cache";
 import { InsufficientFundsError } from "@/lib/ledger";
 import { LimitExceededError } from "@/lib/risk";
 import { createMoncashPayment } from "@/lib/payments/moncash";
@@ -64,4 +65,62 @@ async function rememberPlayerIds(userId: string, items: z.infer<typeof cartSchem
     if (existing.some((s) => JSON.stringify(s.values) === JSON.stringify(item.fields))) continue;
     await prisma.savedPlayerId.create({ data: { userId, productId: v.productId, values: item.fields, label: Object.values(item.fields)[0] } });
   }
+}
+
+export type RefillLine = {
+  variantId: string;
+  productSlug: string;
+  productName: Record<string, string>;
+  variantName: Record<string, string>;
+  accent: string | null;
+  image: string | null;
+  priceHtg: number;
+  quantity: number;
+  fields: Record<string, string>;
+  physical?: boolean;
+};
+
+/**
+ * "Change payment method" on an order that was never paid (e.g. the customer canceled on the MonCash page):
+ * cancels that order (stock goes back) and returns its lines so the cart can be filled again for a new checkout.
+ * Only the customer's own order, only while nothing was paid or sent for review. If MonCash still confirms the
+ * old attempt later, that money lands in the customer's wallet (it is never lost).
+ */
+export async function cancelUnpaidOrder(orderId: string): Promise<{ ok: true; lines: RefillLine[] } | { ok: false; error: string }> {
+  let user;
+  try {
+    user = await assertUser();
+  } catch {
+    return { ok: false, error: "signin" };
+  }
+  const order = await prisma.order.findFirst({
+    where: { id: String(orderId).slice(0, 64), userId: user.id, status: "AWAITING_PAYMENT", paymentMethod: { not: "COD" } },
+    include: {
+      payments: { where: { status: { in: ["SUCCEEDED", "REVIEW"] } }, select: { id: true } },
+      items: { include: { variant: { select: { product: { select: { slug: true, image: true, accent: true, fulfillmentType: true } } } } } },
+    },
+  });
+  if (!order || order.payments.length > 0) return { ok: false, error: "not_found" };
+  try {
+    await refundOrCancel(order.id, user.id, "Canceled by the customer to change the payment method");
+  } catch (e) {
+    console.error("cancelUnpaidOrder failed", e);
+    return { ok: false, error: "generic" };
+  }
+  revalidatePath("/[locale]/account/orders/[id]", "page");
+  return {
+    ok: true,
+    lines: order.items.map((i) => ({
+      variantId: i.variantId,
+      productSlug: i.variant.product.slug,
+      productName: i.productName as Record<string, string>,
+      variantName: i.variantName as Record<string, string>,
+      accent: i.variant.product.accent,
+      image: i.variant.product.image,
+      priceHtg: i.unitPrice,
+      quantity: i.quantity,
+      fields: (i.fieldValues ?? {}) as Record<string, string>,
+      ...(i.variant.product.fulfillmentType === "PHYSICAL" ? { physical: true } : {}),
+    })),
+  };
 }

@@ -101,7 +101,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
 <section className="container-page mt-12">
         <div className="mb-5 flex items-end justify-between gap-4">
           <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("categoriesTitle")}</h2>
-          <Link href="/categories" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
+          <Link href="/categories" className="inline-flex min-h-11 items-center px-1 text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
         <div className="stagger grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {categories.map((c, i) => (
@@ -116,7 +116,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
 <section className="container-page mt-14">
         <div className="mb-5 flex items-end justify-between gap-4">
           <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("featured")}</h2>
-          <Link href="/store" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
+          <Link href="/store" className="inline-flex min-h-11 items-center px-1 text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
         <div className="stagger grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
           {featured.map((p) => (
@@ -268,7 +268,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
             </details>
           ))}
         </div>
-        <Link href="/faq" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-[#60a5fa]">{tc("viewAll")} <ArrowRightIcon width={16} height={16} /></Link>
+        <Link href="/faq" className="mt-4 inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-[#60a5fa]">{tc("viewAll")} <ArrowRightIcon width={16} height={16} /></Link>
       </section>
       </>
     ),
@@ -276,7 +276,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
       <section className="container-page mt-16">
         <div className="mb-5 flex items-end justify-between gap-4">
           <h2 className="display text-2xl font-bold tracking-tight sm:text-3xl">{th("newsTitle")}</h2>
-          <Link href="/news" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
+          <Link href="/news" className="inline-flex min-h-11 items-center px-1 text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
           {news.map((n) => <NewsCard key={n.id} article={n} locale={locale} />)}

@@ -93,6 +93,10 @@ export async function Header() {
               {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-danger ring-2 ring-surface" />}
             </Link>
           )}
+          {/* Phones: search from any page (opens the Store with the cursor in its search box) */}
+          <Link href="/store?focus=1" className="btn-ghost inline-flex min-h-10 px-2 md:hidden" aria-label={t("search")}>
+            <SearchIcon />
+          </Link>
           {/* Phones: with the Market in the bottom bar, the cart lives here */}
           <div className={settings.marketEnabled ? "block" : "hidden md:block"}>
             <CartButton />

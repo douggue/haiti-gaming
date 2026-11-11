@@ -25,7 +25,7 @@ export function ReviewRequest({ orderId, city, submitted = false }: { orderId: s
   }
   return (
     <form
-      className="card space-y-4 border-primary/40 p-5"
+      className="card space-y-4 p-5"
       action={(fd) =>
         start(async () => {
           fd.set("rating", String(rating));
@@ -55,20 +55,27 @@ export function ReviewRequest({ orderId, city, submitted = false }: { orderId: s
           </button>
         ))}
       </div>
-      <label className="block">
-        <span className="label">{t("comment")}</span>
-        <textarea name="quote" maxLength={400} rows={3} placeholder={t("commentPlaceholder")} className="input min-h-24 py-3" />
-      </label>
-      <label className="block">
-        <span className="label">{t("yourCity")}</span>
-        <select name="city" defaultValue={city} className="input">
-          <option value="">{t("cityNone")}</option>
-          {CITIES.map((c) => <option key={c.name} value={c.name}>{c.flag} {c.name}</option>)}
-        </select>
-      </label>
-      {error && <p className="text-sm text-danger" role="alert">{error}</p>}
-      <button className="btn-primary min-h-12 w-full" disabled={pending || !rating}>{t("send")}</button>
-      <p className="text-xs text-muted">{t("privacyNote")}</p>
+      {/* Stars first: the comment, city and send button open once a star is picked */}
+      {rating > 0 ? (
+        <div className="animate-rise space-y-4">
+        <label className="block">
+          <span className="label">{t("comment")}</span>
+          <textarea name="quote" maxLength={400} rows={3} placeholder={t("commentPlaceholder")} className="input min-h-24 py-3" />
+        </label>
+        <label className="block">
+          <span className="label">{t("yourCity")}</span>
+          <select name="city" defaultValue={city} className="input">
+            <option value="">{t("cityNone")}</option>
+            {CITIES.map((c) => <option key={c.name} value={c.name}>{c.flag} {c.name}</option>)}
+          </select>
+        </label>
+        {error && <p className="text-sm text-danger" role="alert">{error}</p>}
+        <button className="btn-primary min-h-12 w-full" disabled={pending || !rating}>{t("send")}</button>
+        <p className="text-xs text-muted">{t("privacyNote")}</p>
+        </div>
+      ) : (
+        error && <p className="text-sm text-danger" role="alert">{error}</p>
+      )}
     </form>
   );
 }
