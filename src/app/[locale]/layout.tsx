@@ -19,6 +19,8 @@ import { fullTheme } from "@/lib/settings";
 import { Chakra_Petch, Figtree, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { RouteProgress } from "@/components/RouteProgress";
+import { AnalyticsBeacon } from "@/components/AnalyticsBeacon";
+import { Suspense } from "react";
 import { cookies, headers } from "next/headers";
 import { getUser } from "@/lib/session";
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -82,6 +84,8 @@ export default async function LocaleLayout({ children, params }: { children: Rea
       </head>
       <body className="min-h-dvh antialiased">
         <RouteProgress />
+        {/* Anonymous visitor statistics: no cookie (see /api/a) */}
+        <Suspense fallback={null}><AnalyticsBeacon /></Suspense>
         {fullTheme(settings.theme).style === "cyber" && fullTheme(settings.theme).animatedBg && <AnimatedBackground />}
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2">
           {t("skipToContent")}

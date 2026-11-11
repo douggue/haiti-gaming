@@ -10,6 +10,7 @@ import { Price } from "./Money";
 import { AndroidIcon, BoltIcon, ChatIcon, CloseIcon, FireIcon, GlobeIcon, HashIcon, LaptopIcon, SearchIcon, SmartphoneIcon, StarIcon } from "./Icons";
 import { GamepadIcon } from "./account/AccountIcons";
 import { ProductArt } from "./ProductArt";
+import { track } from "./AnalyticsBeacon";
 import { GameCard } from "./GameCard";
 
 export type StoreProduct = {
@@ -152,6 +153,18 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [products, textHits, picked, min, max, cat, sort, favOnly, favs, currency, htgPerUsd]);
+
+  // Visitor statistics: what people search for (and what finds nothing), once they stop typing
+  const sentQ = useRef("");
+  useEffect(() => {
+    const term = q.trim().toLowerCase();
+    if (term.length < 2 || term === sentQ.current) return;
+    const id = setTimeout(() => {
+      sentQ.current = term;
+      track("search", { q: term, n: list.length });
+    }, 1200);
+    return () => clearTimeout(id);
+  }, [q, list.length]);
 
   // Counts show what you'd get after tapping, with the other filters kept.
   const catCount = (c: string) => products.filter((p) => byText(p) && byTags(p) && byPrice(p) && byFav(p) && byCat(p, c)).length;

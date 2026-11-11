@@ -21,6 +21,7 @@ const PATHS: Record<string, string[]> = {
   "/admin/wallet": ["M4 4h12a2 2 0 0 1 2 2v2", "M4 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16V8H4", "M16 14h.01"],
   "/admin/referrals": ["M20 12v9H4v-9", "M2 7h20v5H2z", "M12 21V7", "M12 7H8a2.5 2.5 0 1 1 0-5c3 0 4 5 4 5Z", "M12 7h4a2.5 2.5 0 1 0 0-5c-3 0-4 5-4 5Z"],
   "/admin/analytics": ["M3 3v18h18", "M7 15l4-4 3 3 6-6"],
+  "/admin/analytics/visitors": ["M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z", "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"],
   "/admin/homepage": ["M3 4h18v6H3z", "M3 14h8v6H3z", "M15 14h6v6h-6z"],
   "/admin/news": ["M4 4h13v16H6a2 2 0 0 1-2-2Z", "M17 8h3v10a2 2 0 0 1-2 2", "M8 8h5", "M8 12h5", "M8 16h3"],
   "/admin/pages": ["M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z", "M14 2v6h6", "M8 13h8", "M8 17h5"],

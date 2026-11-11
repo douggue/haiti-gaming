@@ -13,6 +13,7 @@ import { t } from "@/lib/text";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
 import { Celebrate } from "@/components/Celebrate";
+import { TrackPurchase } from "@/components/AnalyticsBeacon";
 import { NatcashOrderForm, MoncashRetryButton, ChangePaymentButton, PendingOrderCart } from "@/components/OrderPayment";
 import type { FieldDef } from "@/lib/orders";
 import { WhatsAppIcon } from "@/components/Icons";
@@ -81,6 +82,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
 
   return (
     <div className="space-y-5">
+      {justPaid && <TrackPurchase orderId={order.id} />}
       {justPaid && (
         <Celebrate
           onceKey={`paid_${order.id}`}

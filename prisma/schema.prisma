@@ -1189,3 +1189,41 @@ model MarketMessage {
 
   @@index([chatId, createdAt])
 }
+
+/// Anonymous visitor statistics (no cookies). One row per page view, store search or add-to-cart.
+/// visitorHash = sha256(daily salt + IP + browser): the same visitor is counted once per day, the IP is never stored.
+/// Kept 90 days, then only the daily totals in AnalyticsDaily remain.
+model AnalyticsEvent {
+  id           String   @id @default(cuid())
+  at           DateTime @default(now())
+  /// pageview | search | add_to_cart | purchase
+  type         String
+  path         String
+  productSlug  String?
+  visitorHash  String
+  referrerHost String?
+  /// whatsapp | facebook | instagram | tiktok | google | direct | other
+  source       String
+  country      String?
+  city         String?
+  /// phone | tablet | desktop
+  device       String
+  browser      String
+  os           String
+  locale       String
+  dataSaver    Boolean  @default(false)
+  query        String?
+  results      Int?
+
+  @@index([at])
+  @@index([type, at])
+  @@index([visitorHash, at])
+}
+
+/// Daily totals kept after the detailed events are deleted (90 days).
+model AnalyticsDaily {
+  /// UTC day, YYYY-MM-DD
+  day       String @id
+  visitors  Int
+  pageviews Int
+}

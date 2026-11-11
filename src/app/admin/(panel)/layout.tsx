@@ -47,6 +47,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     { href: "/admin/transfers", label: "Transfers", group: "Customers", perm: "wallet.view" },
     { href: "/admin/referrals", label: "Referrals", group: "Customers", perm: "referrals.manage" },
     { href: "/admin/analytics", label: "Reports", group: "Customers", perm: "analytics.view" },
+    { href: "/admin/analytics/visitors", label: "Visitors", group: "Customers", perm: "analytics.view" },
     { href: "/admin/homepage", label: "Homepage", group: "Content", perm: "content.manage" },
     { href: "/admin/news", label: "News", group: "Content", perm: "content.manage" },
     { href: "/admin/pages", label: "Pages", group: "Content", perm: "content.manage" },

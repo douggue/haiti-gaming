@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getSavedCart, saveCart } from "@/actions/customer";
 import { priceIn } from "@/lib/money";
+import { track } from "../AnalyticsBeacon";
 
 export type CartLine = {
   key: string;
@@ -147,6 +148,7 @@ export function CartProvider({ children, currency, htgPerUsd, signedIn = false }
   const add = useCallback((line: Omit<CartLine, "key">) => {
     const key = lineKey(line.variantId, line.fields, line.amount);
     changed.current = true;
+    track("add_to_cart");
     setLines((prev) => {
       const existing = prev.find((l) => l.key === key);
       if (existing) return prev.map((l) => (l.key === key ? { ...l, quantity: Math.min(10, l.quantity + line.quantity) } : l));

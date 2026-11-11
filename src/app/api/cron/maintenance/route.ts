@@ -85,5 +85,31 @@ export async function GET(req: NextRequest) {
       }
     }
   }
+  try {
+    result.analyticsDays = await rollUpAnalytics();
+  } catch (e) {
+    console.error("Analytics roll-up failed", e);
+  }
   return NextResponse.json(result);
+}
+
+/**
+ * Visitor statistics: keeps a daily total (visitors, page views) for every finished day, then deletes the detailed
+ * events older than 90 days. Safe to run any number of times: totals are recomputed while the details still exist.
+ */
+async function rollUpAnalytics() {
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = await prisma.$queryRaw<{ day: string; visitors: bigint; pageviews: bigint }[]>`
+    SELECT to_char("at" AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS day,
+           COUNT(DISTINCT "visitorHash") AS visitors,
+           COUNT(*) FILTER (WHERE "type" = 'pageview') AS pageviews
+    FROM "AnalyticsEvent"
+    WHERE "at" < ${new Date(`${today}T00:00:00Z`)} AND "at" >= ${new Date(Date.now() - 92 * 86_400_000)}
+    GROUP BY 1`;
+  for (const r of rows) {
+    const data = { visitors: Number(r.visitors), pageviews: Number(r.pageviews) };
+    await prisma.analyticsDaily.upsert({ where: { day: r.day }, create: { day: r.day, ...data }, update: data });
+  }
+  await prisma.analyticsEvent.deleteMany({ where: { at: { lt: new Date(Date.now() - 90 * 86_400_000) } } });
+  return rows.length;
 }

@@ -29,7 +29,9 @@ export function AdminNav({ items, user, logo }: { items: { href: string; label: 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const theme = useAdminTheme();
-  const active = (h: string) => (h === "/admin" ? pathname === "/admin" : pathname.startsWith(h));
+  const hits = (h: string) => (h === "/admin" ? pathname === "/admin" : pathname === h || pathname.startsWith(`${h}/`));
+  // The most specific item wins (Reports vs Reports → Visitors)
+  const active = (h: string) => hits(h) && !items.some((o) => o.href.length > h.length && o.href.startsWith(h) && hits(o.href));
   const nav = (
     <nav className="flex flex-col gap-0.5" aria-label="Admin">
       {items.map((i, n) => (

@@ -598,7 +598,8 @@
       "Gift-card codes and payment information are stored encrypted.",
       "We do not sell your data. We share only what payment and fulfillment providers need to complete your order.",
       "You can ask us to export or delete your data by contacting support.",
-      "We only use necessary cookies: your sign-in, your language, a referral code if you followed an invite, and an anonymous browser ID that helps us stop fraud with multiple accounts. No advertising cookies."
+      "We only use necessary cookies: your sign-in, your language, a referral code if you followed an invite, and an anonymous browser ID that helps us stop fraud with multiple accounts. No advertising cookies.",
+      "We count visits to improve the site (pages viewed, country, device type, store searches) without cookies and without keeping your IP address: each visitor is an anonymous code that changes every day. These details are kept for 90 days, then only daily totals remain. If your browser asks not to be tracked (Do Not Track / GPC), you are not counted."
     ],
     "refundsTitle": "Refund policy",
     "refundsBody": [
