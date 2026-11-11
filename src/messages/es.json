@@ -215,7 +215,10 @@
     "toastAdded": "Añadido al carrito",
     "toastMore": "Cantidad actualizada: {n} en el carrito",
     "toastCta": "Ver carrito",
-    "nothingToFill": "No tienes que llenar nada: paga y enviamos tu compra (por ejemplo la cuenta y su contraseña) a la página de tu pedido."
+    "nothingToFill": "No tienes que llenar nada: paga y enviamos tu compra (por ejemplo la cuenta y su contraseña) a la página de tu pedido.",
+    "about": "Sobre este producto",
+    "readMore": "Leer más",
+    "readLess": "Menos"
   },
   "cart": {
     "title": "Tu carrito",

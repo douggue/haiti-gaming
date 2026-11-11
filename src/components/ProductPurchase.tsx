@@ -2,7 +2,7 @@
 import { QtyInput } from "./QtyInput";
 import * as UI from "@/components/Icons";
 import { checkPlayer } from "@/actions/player";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { t } from "@/lib/text";
@@ -16,12 +16,14 @@ import type { ExchangePricing } from "@/lib/amount";
 
 type Variant = { id: string; name: Record<string, string>; priceHtg: number; salePriceHtg: number | null; inStock: boolean; lowStock?: boolean; canCheck?: boolean };
 type Props = {
+  /** Short text about the product, shown in a box just before the secure-payment line and the total */
+  description?: string;
   product: { id: string; slug: string; name: Record<string, string>; accent: string | null; image: string | null; fields: FieldDef[]; variants: Variant[]; physical?: boolean };
   saved: { id: string; label: string | null; values: Record<string, string> }[];
   pricing?: ExchangePricing;
 };
 
-export function ProductPurchase({ product, saved, pricing }: Props) {
+export function ProductPurchase({ product, saved, pricing, description }: Props) {
   const tp = useTranslations("product");
   const tord = useTranslations("order");
   const locale = useLocale();
@@ -307,6 +309,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
             <QtyInput id="qty" value={qty} onChange={setQty} label={tp("quantity")} />
           </div>
         )}
+        {description && <AboutBox text={description} title={tp("about")} more={tp("readMore")} less={tp("readLess")} />}
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
           <span className="inline-flex items-center gap-1.5"><LockIcon width={13} height={13} /> {tp("securePay")}</span>
         </p>
@@ -428,6 +431,28 @@ function AddedToast({ text, cta, onDone }: { text: string; cta: string; onDone: 
       <span className="copy-pop grid size-7 shrink-0 place-items-center rounded-full bg-emerald-500/20 text-emerald-300" aria-hidden>✓</span>
       <span className="min-w-0 flex-1 font-semibold">{text}</span>
       <Link href="/cart" className="shrink-0 rounded-lg px-2 py-2 font-bold text-[#93c5fd] hover:underline">{cta}</Link>
+    </div>
+  );
+}
+
+/** Product description in a box, 4 lines at most; "Li plis" opens the rest when it is longer. */
+function AboutBox({ text, title, more, less }: { text: string; title: string; more: string; less: string }) {
+  const [open, setOpen] = useState(false);
+  const [long, setLong] = useState(false);
+  const ref = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (el) setLong(el.scrollHeight > el.clientHeight + 2);
+  }, [text]);
+  return (
+    <div className="rounded-2xl border border-border bg-surface/80 px-4 py-3">
+      <p className="text-sm font-semibold">{title}</p>
+      <p ref={ref} className={`mt-1 whitespace-pre-line text-sm leading-relaxed text-muted ${open ? "" : "line-clamp-4"}`}>{text}</p>
+      {(long || open) && (
+        <button type="button" onClick={() => setOpen(!open)} className="mt-1 min-h-9 text-sm font-semibold text-primary" aria-expanded={open}>
+          {open ? less : more}
+        </button>
+      )}
     </div>
   );
 }

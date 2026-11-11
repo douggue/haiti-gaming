@@ -215,7 +215,10 @@
     "toastAdded": "Added to cart",
     "toastMore": "Quantity updated: {n} in cart",
     "toastCta": "See cart",
-    "nothingToFill": "Nothing to fill in: pay, and we send what you bought (for example the account and its password) to your order page."
+    "nothingToFill": "Nothing to fill in: pay, and we send what you bought (for example the account and its password) to your order page.",
+    "about": "About this product",
+    "readMore": "Read more",
+    "readLess": "Less"
   },
   "cart": {
     "title": "Your cart",

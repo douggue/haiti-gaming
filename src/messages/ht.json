@@ -215,7 +215,10 @@
     "toastAdded": "Ajoute nan panye",
     "toastMore": "Kantite a monte: {n} nan panye",
     "toastCta": "Wè panye",
-    "nothingToFill": "Ou pa bezwen ranpli anyen: peye, epi n ap voye sa w achte a (egzanp kont lan ak modpas li) sou paj kòmand ou."
+    "nothingToFill": "Ou pa bezwen ranpli anyen: peye, epi n ap voye sa w achte a (egzanp kont lan ak modpas li) sou paj kòmand ou.",
+    "about": "Sou pwodwi sa a",
+    "readMore": "Li plis",
+    "readLess": "Mwens"
   },
   "cart": {
     "title": "Panye ou",

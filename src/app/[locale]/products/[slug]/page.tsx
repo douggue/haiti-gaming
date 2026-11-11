@@ -111,7 +111,6 @@ export default async function ProductPage({ params }: { params: P }) {
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-emerald-300"><BoltIcon width={11} height={11} /> {tp("instantShort")}</span>
             ) : undefined}
           />
-          <p className="text-sm text-muted sm:text-base">{t(product.description, locale)}</p>
           {/* Three promises as small chips */}
           <ul className="flex flex-wrap gap-2 text-xs">
             <li className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/80 px-3 py-1.5">
@@ -129,6 +128,7 @@ export default async function ProductPage({ params }: { params: P }) {
         </div>
         <div>
           <ProductPurchase
+            description={t(product.description, locale)}
             product={{
               id: product.id,
               slug: product.slug,
