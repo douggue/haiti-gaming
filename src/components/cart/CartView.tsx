@@ -1,4 +1,5 @@
 "use client";
+import { QtyInput } from "../QtyInput";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -11,6 +12,7 @@ import { ArrowRightIcon, CartIcon, LockIcon } from "../Icons";
 export function CartView() {
   const tc = useTranslations("cart");
   const tco = useTranslations("checkout");
+  const tq = useTranslations("product");
   const locale = useLocale();
   const { lines, ready, setQuantity, remove, updateFields, htgPerUsd, count } = useStore();
   const [editing, setEditing] = useState<string | null>(null);
@@ -70,11 +72,7 @@ export function CartView() {
                     </p>
                   ))}
                 <div className="mt-3 flex items-center gap-3">
-                  <div className="flex items-center rounded-xl border border-border bg-[#0b0f19]/60">
-                    <button type="button" className="h-11 w-11 text-lg" onClick={() => setQuantity(l.key, l.quantity - 1)} aria-label="−">−</button>
-                    <span className="w-8 text-center text-sm font-bold">{l.quantity}</span>
-                    <button type="button" className="h-11 w-11 text-lg" onClick={() => setQuantity(l.key, l.quantity + 1)} aria-label="+">+</button>
-                  </div>
+                  <QtyInput size="sm" value={l.quantity} onChange={(n) => setQuantity(l.key, n)} label={tq("quantity")} />
                   <button type="button" onClick={() => remove(l.key)} className="ml-auto min-h-11 px-1 text-sm font-semibold text-danger hover:underline">{tc("remove")}</button>
                 </div>
               </div>

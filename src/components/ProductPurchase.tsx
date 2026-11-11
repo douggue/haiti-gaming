@@ -1,4 +1,5 @@
 "use client";
+import { QtyInput } from "./QtyInput";
 import * as UI from "@/components/Icons";
 import { checkPlayer } from "@/actions/player";
 import { useEffect, useState } from "react";
@@ -295,11 +296,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
         {!mode && (
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface/80 px-4 py-3">
             <label className="font-semibold" htmlFor="qty">{tp("quantity")}</label>
-            <div className="flex items-center rounded-xl border border-border bg-[#0b0f19]/60">
-              <button type="button" className="h-11 w-11 text-lg" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="−">−</button>
-              <input id="qty" className="h-11 w-12 bg-transparent text-center font-bold" value={qty} readOnly />
-              <button type="button" className="h-11 w-11 text-lg" onClick={() => setQty(Math.min(10, qty + 1))} aria-label="+">+</button>
-            </div>
+            <QtyInput id="qty" value={qty} onChange={setQty} label={tp("quantity")} />
           </div>
         )}
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
