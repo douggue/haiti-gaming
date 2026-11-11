@@ -6,10 +6,11 @@ const LOCALES = [
 ] as const;
 
 /** Four inputs (one per language) named `${prefix}_${locale}`. */
-export function LocalizedInputs({ prefix, label, value = {}, textarea = false, required = false }: { prefix: string; label: string; value?: Record<string, string>; textarea?: boolean; required?: boolean }) {
+export function LocalizedInputs({ prefix, label, value = {}, textarea = false, required = false, hint }: { prefix: string; label: string; value?: Record<string, string>; textarea?: boolean; required?: boolean; hint?: string }) {
   return (
     <fieldset className="space-y-2">
       <legend className="label">{label}</legend>
+      {hint && <p className="-mt-1 text-xs text-muted">{hint}</p>}
       <div className="grid gap-2 sm:grid-cols-2">
         {LOCALES.map(([code, name]) => (
           <label key={code} className="block">

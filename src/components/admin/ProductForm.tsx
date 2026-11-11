@@ -59,7 +59,7 @@ export function ProductForm({ product, categories }: { product?: P; categories: 
         <input name="tags" defaultValue={product?.tags.join(", ")} placeholder="Android, iOS, PC, US region" className="input" />
         <span className="mt-1 block text-xs text-muted">Shown as store filters, e.g. platform or region. Use the same spelling across products.</span>
       </label>
-      <LocalizedInputs prefix="description" label="Description" value={product?.description} textarea />
+      <LocalizedInputs prefix="description" label="Description" value={product?.description} textarea hint={"Shown on the product page in the \"Deskripsyon\" box, just before the total. Keep it short: about 4 lines on a phone (longer text gets a \"Li plis\" link)."} />
       <LocalizedInputs prefix="delivery" label="Delivery estimate" value={product?.delivery} />
       <details className="rounded-xl bg-surface-2 p-4">
         <summary className="cursor-pointer font-semibold">SEO</summary>
