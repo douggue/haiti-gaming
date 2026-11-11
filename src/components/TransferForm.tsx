@@ -39,8 +39,10 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [confirming, setConfirming] = useState(false);
-  const [error, setError] = useState("");
-  const [done, setDone] = useState("");
+  // Each error shows under the field it is about (code, amount); anything else under the button
+  const [codeError, setCodeError] = useState("");
+  const [sendError, setSendError] = useState<{ field: "code" | "amount" | "other"; text: string } | null>(null);
+  const [receipt, setReceipt] = useState<{ amount: string; name: string; code: string; at: string } | null>(null);
   const [sent, setSent] = useState<{ amount: string; name: string } | null>(null);
   const tcel = useTranslations("celebrate");
   const [key, setKey] = useState(newKey);
@@ -51,6 +53,7 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
   // Look the code up once it's complete (HG + 6 characters).
   useEffect(() => {
     setWho(null);
+    setCodeError("");
     const c = code.trim().toUpperCase().replace(/^HG-?/, "");
     if (c.length !== 6) return;
     let live = true;
@@ -58,8 +61,8 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
       if (!live) return;
       if (r.ok) {
         setWho({ name: r.name!, code: r.code! });
-        setError("");
-      } else setError(err(r.error));
+        setCodeError("");
+      } else setCodeError(err(r.error));
     });
     return () => {
       live = false;
@@ -68,29 +71,46 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
   }, [code]);
 
   const problem = !minor ? "" : minor > balance ? t("err_funds") : minor > left ? t("err_limit") : "";
+  const codeMsg = codeError || (sendError?.field === "code" ? sendError.text : "");
+  const amountMsg = problem || (sendError?.field === "amount" ? sendError.text : "");
+  const fieldOf = (e: string): "code" | "amount" | "other" => (e === "recipient" || e === "self" ? "code" : ["amount", "limit", "funds"].includes(e) ? "amount" : "other");
 
   return (
     <section className="card space-y-4 p-5">
       <h2 className="font-semibold">{t("send")}</h2>
       <Celebrate open={!!sent} onClose={() => setSent(null)} title={tcel("transferTitle")} amount={sent?.amount} subtitle={sent ? tcel("transferSub", { name: sent.name }) : undefined} cta={tcel("continue")} />
-      {done && <p className="rounded-xl bg-success-soft px-4 py-3 text-sm text-success" role="status">{done}</p>}
+      {receipt && (
+        <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4" role="status" data-testid="transfer-receipt">
+          <p className="flex items-center gap-2 text-sm font-bold text-emerald-400">✓ {t("receiptTitle")}</p>
+          <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-muted">{t("receiptAmount")}</dt><dd className="text-right font-bold tabular-nums">{receipt.amount}</dd>
+            <dt className="text-muted">{t("receiptTo")}</dt><dd className="text-right font-semibold">{receipt.name} <span className="font-mono text-xs text-muted">{receipt.code}</span></dd>
+            <dt className="text-muted">{t("receiptWhen")}</dt><dd className="text-right">{receipt.at}</dd>
+          </dl>
+        </div>
+      )}
       <label className="block">
         <span className="label">{t("codeLabel")}</span>
-        <input value={code} onChange={(e) => { setCode(e.target.value); setConfirming(false); setDone(""); }} placeholder="HG-XXXXXX" autoCapitalize="characters" autoComplete="off" spellCheck={false} maxLength={12} className="input font-mono uppercase tracking-wider" />
-        {who && <span className="mt-1.5 block text-sm font-semibold text-success">✓ {who.name}</span>}
+        <input value={code} onChange={(e) => { setCode(e.target.value); setConfirming(false); setReceipt(null); setSendError(null); }} placeholder="HG-XXXXXX" autoCapitalize="characters" autoComplete="off" spellCheck={false} maxLength={12} aria-invalid={!!codeMsg} aria-describedby="code-msg" className={`input font-mono uppercase tracking-wider ${codeMsg ? "!border-danger" : ""}`} />
+        {who && !codeMsg && <span id="code-msg" className="mt-1.5 block text-sm font-semibold text-success">✓ {who.name}</span>}
+        {codeMsg && <span id="code-msg" className="mt-1.5 block text-sm font-semibold text-danger" role="alert">{codeMsg}</span>}
       </label>
       <label className="block">
         <span className="label">{t("amountLabel")}</span>
-        <input value={amount} onChange={(e) => { setAmount(e.target.value); setConfirming(false); }} inputMode="decimal" placeholder="500" className="input" />
-        <span className="mt-1 block text-xs text-muted">{t("balance", { balance: formatMoney(balance, "HTG", locale) })}</span>
+        <input value={amount} onChange={(e) => { setAmount(e.target.value); setConfirming(false); setSendError(null); }} inputMode="decimal" placeholder="500" aria-invalid={!!amountMsg} aria-describedby="amount-msg" className={`input ${amountMsg ? "!border-danger" : ""}`} />
+        {amountMsg ? (
+          <span id="amount-msg" className="mt-1 block text-sm font-semibold text-danger" role="alert">{amountMsg}</span>
+        ) : (
+          <span id="amount-msg" className="mt-1 block text-xs text-muted">{t("balance", { balance: formatMoney(balance, "HTG", locale) })}</span>
+        )}
       </label>
       <label className="block">
         <span className="label">{t("noteLabel")}</span>
         <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={140} className="input" />
       </label>
-      {(problem || error) && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{problem || error}</p>}
+      {sendError?.field === "other" && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{sendError.text}</p>}
       {!confirming ? (
-        <button type="button" disabled={!who || !minor || !!problem} onClick={() => setConfirming(true)} className="btn-primary min-h-12 w-full">{t("continue")}</button>
+        <button type="button" disabled={!who || !minor || !!problem || !!codeMsg} onClick={() => setConfirming(true)} className="btn-primary min-h-12 w-full">{t("continue")}</button>
       ) : (
         <div className="space-y-3 rounded-2xl border-2 border-primary bg-primary-soft p-4">
           <p className="text-sm">{t("confirm", { amount: formatMoney(minor ?? 0, "HTG", locale), name: who?.name ?? "", code: who?.code ?? "" })}</p>
@@ -109,14 +129,20 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
                   const r = await sendMoney(fd);
                   setConfirming(false);
                   if (r.ok) {
-                    setDone(t("sent", { amount: formatMoney(minor ?? 0, "HTG", locale), name: r.name ?? "" }));
-                    setSent({ amount: formatMoney(minor ?? 0, "HTG", locale), name: r.name ?? "" });
+                    const sentAmount = formatMoney(minor ?? 0, "HTG", locale);
+                    setReceipt({
+                      amount: sentAmount,
+                      name: r.name ?? who?.name ?? "",
+                      code: who?.code ?? "",
+                      at: new Date().toLocaleString(locale === "en" ? "en-GB" : locale === "ht" ? "fr-HT" : locale, { dateStyle: "medium", timeStyle: "short", hour12: false }),
+                    });
+                    setSent({ amount: sentAmount, name: r.name ?? "" });
                     setAmount("");
                     setNote("");
                     setCode("");
                     setKey(newKey());
                     router.refresh();
-                  } else setError(err(r.error));
+                  } else setSendError({ field: fieldOf(r.error), text: err(r.error) });
                 })
               }
             >

@@ -55,7 +55,8 @@ test("a customer sends gourdes to another with their code", async ({ browser }) 
   await from.getByLabel("Kantite (HTG)").fill("300");
   await from.getByRole("button", { name: "Kontinye" }).click();
   await from.getByRole("button", { name: "Wi, voye l" }).click();
-  await expect(from.getByText(/300.*voye bay Nadège T\./)).toBeVisible();
+  await expect(from.getByTestId("transfer-receipt")).toContainText("Nadège T.");
+  await expect(from.getByTestId("transfer-receipt")).toContainText("300");
   // Own code is refused, and more than the balance is blocked before sending
   await from.getByLabel("Kantite (HTG)").fill("5000");
   await expect(from.getByText("Ou pa gen ase kòb nan bous ou.")).toBeVisible();
@@ -229,8 +230,10 @@ test("Market: vendor applies and is approved, sells, staff approves, buyer reser
   await b.getByRole("button", { name: /Achte kounye a \(peman jele\)/ }).click();
   await b.getByLabel("Mwen li règ yo e mwen aksepte yo.").check();
   await b.getByRole("button", { name: "Aksepte epi kontinye" }).click();
-  await b.waitForURL(/wa\.me/);
-  expect(decodeURIComponent(b.url())).toContain(title);
+  // The page says what happened and gives the WhatsApp link to the agent (the buyer stays on the site)
+  const waLink = b.getByTestId("deal-requested").getByRole("link", { name: /WhatsApp/ });
+  await expect(waLink).toHaveAttribute("href", /wa\.me/);
+  expect(decodeURIComponent((await waLink.getAttribute("href"))!)).toContain(title);
   expect((await db.marketListing.findUniqueOrThrow({ where: { id: listing.id } })).status).toBe("RESERVED");
   const deal = await db.marketDeal.findFirstOrThrow({ where: { listingId: listing.id } });
 
@@ -373,7 +376,7 @@ test("Market chat: buyer and seller talk, contact details hidden, offer accepted
 
   // Seller: unread chat in Messages, sees the hidden number as •••, photo is visible to them only
   await s.goto("/ht/account/messages");
-  await expect(s.getByRole("link", { name: /Mesaj \(1\)/ }).first()).toBeVisible();
+  // (On phones the account sub-menu is gone; the header icon carries the count)
   await expect(s.getByTestId("header-messages")).toContainText("3");
   await expect(s.getByLabel("3 poko li")).toBeVisible();
   await s.getByRole("link", { name: /Daphné N\./ }).click();
@@ -400,7 +403,8 @@ test("Market chat: buyer and seller talk, contact details hidden, offer accepted
   await b.getByRole("button", { name: /Achte · 4[\s  ]?000 HTG/ }).click();
   await b.getByLabel("Mwen li règ yo e mwen aksepte yo.").check();
   await b.getByRole("button", { name: "Aksepte epi kontinye" }).click();
-  await b.waitForURL(/wa\.me/);
+  // The chat shows the deal and its steps
+  await expect(b.getByTestId("deal-banner")).toBeVisible({ timeout: 10_000 });
   const deal = await db.marketDeal.findFirstOrThrow({ where: { listingId: listing.id } });
   expect(deal.price).toBe(400000);
 

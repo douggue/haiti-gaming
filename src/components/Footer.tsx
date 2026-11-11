@@ -18,7 +18,7 @@ const footerPages = unstable_cache(
   { tags: ["pages"], revalidate: 300 },
 );
 
-export async function Footer({ settings }: { settings: Settings }) {
+export async function Footer({ settings, signedIn = false }: { settings: Settings; signedIn?: boolean }) {
   const t = await getTranslations("common");
   const tp = await getTranslations("pages");
   const tf = await getTranslations("footer");
@@ -103,9 +103,12 @@ export async function Footer({ settings }: { settings: Settings }) {
             <PayLogo brand="moncash" height={26} />
             <PayLogo brand="natcash" height={26} />
           </div>
-          <div className="rounded-2xl border border-border bg-surface-2/60 p-3">
-            <DataSaverToggle />
-          </div>
+          {/* Signed-in customers have this switch in Account → settings (one place per page) */}
+          {!signedIn && (
+            <div className="rounded-2xl border border-border bg-surface-2/60 p-3">
+              <DataSaverToggle />
+            </div>
+          )}
           <InstallLink />
         </div>
       </div>

@@ -92,7 +92,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <AnnouncementBar settings={settings} locale={locale} />
             <Header />
             <main id="main">{children}</main>
-            <Footer settings={settings} />
+            <Footer settings={settings} signedIn={!!user} />
             <WhatsAppButton number={settings.whatsappNumber} />
             {/* Room for the phone bottom navigation so it never covers the footer */}
             <div className="md:hidden" style={{ height: "calc(4rem + env(safe-area-inset-bottom, 0px))" }} aria-hidden />

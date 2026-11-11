@@ -23,6 +23,8 @@ type Props = {
   otherReadAt: string | null;
   /** Closed / reopen request / agent called / when the other person was last active */
   state: ChatState;
+  /** The deal for this account between these two people (after "Buy"): where it stands and what comes next */
+  deal?: { number: number; status: string; statusLabel: string; steps: string[]; at: number; next: string; href: string } | null;
   /** Pusher settings for instant updates; null = check every few seconds instead */
   realtime?: { key: string; cluster: string; host?: string; port?: number } | null;
 };
@@ -31,7 +33,7 @@ const ImageIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 9" /></svg>
 );
 
-export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted, firstUnreadId, otherReadAt: otherRead0, realtime, state: state0 }: Props) {
+export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPrice: agreed0, rulesAccepted, firstUnreadId, otherReadAt: otherRead0, realtime, state: state0, deal }: Props) {
   const t = useTranslations("chat");
   const tm = useTranslations("market");
   const locale = useLocale();
@@ -259,7 +261,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
                 )}
                 {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                 <p className={`mt-0.5 text-[10px] ${m.mine ? "text-white/70" : "text-muted"}`}>
-                  {new Date(m.at).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(m.at).toLocaleTimeString(locale === "en" ? "en-GB" : locale === "ht" ? "fr-HT" : locale, { hour: "2-digit", minute: "2-digit", hour12: false })}
                   {m.hidden && ` · ${t("hidden")}`}
                   {ticks(m)}
                 </p>
@@ -311,7 +313,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
             ) : (
               <>
                 <span className={`size-2.5 shrink-0 rounded-full ring-2 ring-white/40 ${online ? "bg-emerald-400" : "bg-red-500"}`} aria-hidden />
-                {online ? t("online") : state.otherSeenAt ? t("lastSeen", { time: new Date(state.otherSeenAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) }) : t("offline")}
+                {online ? t("online") : state.otherSeenAt ? t("lastSeen", { time: new Date(state.otherSeenAt).toLocaleTimeString(locale === "en" ? "en-GB" : locale === "ht" ? "fr-HT" : locale, { hour: "2-digit", minute: "2-digit", hour12: false }) }) : t("offline")}
               </>
             )}
           </p>
@@ -348,6 +350,27 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
           </div>
         )}
       </div>
+
+      {/* Deal pinned under the account: the 4 steps, where it is, what to do next */}
+      {deal && (
+        <Link href={deal.href} className="block border-b border-border bg-surface-2/70 px-3 py-2.5" data-testid="deal-banner">
+          <span className="flex items-center justify-between gap-2 text-xs">
+            <b className="display">{t("dealTitle", { number: deal.number })}</b>
+            <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${deal.status === "CANCELED" ? "bg-surface text-muted" : deal.status === "COMPLETED" ? "bg-emerald-500/15 text-emerald-400" : "bg-primary/15 text-[#60a5fa]"}`}>{deal.statusLabel}</span>
+          </span>
+          {deal.at >= 0 && (
+            <ol className="mt-2 flex gap-1" aria-label={deal.statusLabel}>
+              {deal.steps.map((s, i) => (
+                <li key={s} className="flex flex-1 flex-col gap-1">
+                  <span className={`h-1.5 rounded-full ${i <= deal.at ? "bg-primary" : "bg-surface"}`} />
+                  <span className={`text-[10px] leading-tight ${i === deal.at ? "font-bold text-text" : "text-muted"}`}>{s}</span>
+                </li>
+              ))}
+            </ol>
+          )}
+          {deal.next && <span className="mt-1.5 block text-xs text-muted">{deal.next} <span className="font-semibold text-[#60a5fa]">{t("dealOpen")} ›</span></span>}
+        </Link>
+      )}
 
       <div ref={list} className="relative flex-1 space-y-2 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_1px_1px,rgb(127_127_127/0.12)_1px,transparent_0)] bg-[length:18px_18px] p-3" data-testid="chat-messages">
         <p className="mx-auto w-fit max-w-[92%] rounded-xl bg-amber-400/15 px-3 py-2 text-center text-[11px] text-amber-700 dark:text-amber-300">🔒 {t("safety")}</p>
@@ -395,7 +418,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
         }}
       >
         {canOffer && (
-          <button type="button" onClick={() => setKeypad(true)} aria-label={t("makeOffer")} className="grid size-11 shrink-0 place-items-center rounded-full bg-amber-400 text-lg font-extrabold text-black shadow">$</button>
+          <button type="button" onClick={() => setKeypad(true)} className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-amber-400 px-3 text-xs font-extrabold text-black shadow">{t("makeOffer")}</button>
         )}
         <button type="button" disabled={uploading || pending} onClick={() => fileRef.current?.click()} aria-label={t("photo")} className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 text-primary">
           {uploading ? <span className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" /> : <ImageIcon />}

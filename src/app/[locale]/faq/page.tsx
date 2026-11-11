@@ -22,7 +22,12 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
     [t("tagWallet"), "bg-[#3b82f6]/25 text-[#93c5fd]"],
     [t("tagOrder"), "bg-amber-500/20 text-amber-300"],
   ] as const;
-  const items = [1, 2, 3, 4].map((i) => ({ q: tf(`q${i}`), a: tf(`a${i}`), tag: tags[i - 1][0], tone: tags[i - 1][1] }));
+  const items: { q: string; a: string; tag: string; tone: string }[] = [1, 2, 3, 4].map((i) => ({ q: tf(`q${i}`), a: tf(`a${i}`), tag: tags[i - 1][0], tone: tags[i - 1][1] }));
+  // Market questions (escrow, commission, seller payout, timing, problems) only when the Market is on
+  if (settings.marketEnabled) {
+    const pct = settings.marketCommissionBps / 100;
+    for (const i of [5, 6, 7, 8, 9]) items.push({ q: tf(`q${i}`), a: tf(`a${i}`, { pct }), tag: t("tagMarket"), tone: "bg-violet-500/20 text-violet-300" });
+  }
   const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: items.map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } })) };
   return (
     <div className="container-page py-6 sm:py-10">

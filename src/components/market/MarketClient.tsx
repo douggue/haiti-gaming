@@ -84,7 +84,7 @@ export function RulesLink() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" className="text-sm font-semibold text-primary underline-offset-2 hover:underline" onClick={() => setOpen(true)}>{t("rulesLink")}</button>
+      <button type="button" className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-2 hover:underline" onClick={() => setOpen(true)}>{t("rulesLink")}</button>
       <RulesSheet open={open} onClose={() => setOpen(false)} onAccepted={() => setOpen(false)} />
     </>
   );
@@ -145,6 +145,8 @@ export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabled
   const [accepted, setAccepted] = useState(rulesAccepted);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
+  // After "Buy": say what happened and what to do next, instead of leaving the site
+  const [done, setDone] = useState<{ number?: number; whatsapp?: string } | null>(null);
   const buy = () =>
     start(async () => {
       setError("");
@@ -154,9 +156,22 @@ export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabled
         else setError(errText(t, r.error));
         return;
       }
+      setDone({ number: r.number, whatsapp: r.whatsapp });
       router.refresh();
-      if (r.whatsapp) window.location.href = r.whatsapp;
     });
+  if (done)
+    return (
+      <div role="status" className="space-y-2 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-left" data-testid="deal-requested">
+        <p className="text-sm font-bold text-emerald-400">✓ {t("dealRequested", { number: done.number ?? "" })}</p>
+        <p className="text-xs text-muted">{t("dealRequestedNext")}</p>
+        {done.whatsapp && (
+          <a href={done.whatsapp} target="_blank" rel="noopener" className="btn-primary min-h-11 w-full !bg-[#15803d] text-sm">
+            {t("dealWriteAgent")}
+          </a>
+        )}
+        <Link href="/account/market?tab=purchases" className="btn-secondary min-h-11 w-full text-sm">{t("dealFollow")}</Link>
+      </div>
+    );
   if (disabledLabel) return <button type="button" className="btn-primary min-h-12 w-full" disabled>{disabledLabel}</button>;
   if (!signedIn) return <Link href={`/auth/login?next=/market/${listingId}`} className="btn-primary min-h-12 w-full">{t("signInToBuy")}</Link>;
   return (
@@ -227,7 +242,7 @@ export function ReportButton({ listingId, signedIn }: { listingId: string; signe
   if (!signedIn) return null;
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="text-xs font-medium text-muted underline-offset-2 hover:text-danger hover:underline">⚑ {t("report")}</button>
+      <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center px-1 text-xs font-medium text-muted underline-offset-2 hover:text-danger hover:underline">⚑ {t("report")}</button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t("reportTitle")}>
         {msg ? (
           <p className="rounded-xl bg-success-soft px-4 py-3 text-sm text-success">{msg}</p>
@@ -449,7 +464,7 @@ export function RateSeller({ dealId }: { dealId: string }) {
 }
 
 /** Vendor enrollment: staff contacts the applicant on WhatsApp, then approves or rejects. */
-export function VendorForm({ rulesAccepted, again, idRequired = true }: { rulesAccepted: boolean; again?: boolean; idRequired?: boolean }) {
+export function VendorForm({ rulesAccepted, again, idRequired = true, commissionPct }: { rulesAccepted: boolean; again?: boolean; idRequired?: boolean; commissionPct: number }) {
   const t = useTranslations("market");
   const router = useRouter();
   const [error, setError] = useState("");
@@ -498,6 +513,11 @@ export function VendorForm({ rulesAccepted, again, idRequired = true }: { rulesA
       <div>
         <span className="label">{t("idPhoto")}{idRequired ? "" : ` (${t("optional")})`}</span>
         <PhotoPicker name="idPhoto" label={t("idPhoto")} hint={t("idPhotoHint")} />
+      </div>
+      {/* The money side, said plainly before agreeing: the commission and how sellers get paid */}
+      <div className="rounded-2xl border border-amber-400/40 bg-amber-400/10 p-3 text-sm" data-testid="vendor-payout">
+        <b className="block">{t("payoutTitle", { pct: commissionPct })}</b>
+        <span className="mt-1 block text-xs text-muted">{t("payoutBody")}</span>
       </div>
       <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="agree" required className="mt-0.5 size-4" /> {t("vendorAgree")}</label>
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}

@@ -41,6 +41,17 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
     prisma.marketDeal.findMany({ where: { sellerId: user.id }, orderBy: { createdAt: "desc" }, take: 50, include: { listing: listingSel } }),
     prisma.marketVendor.findUnique({ where: { userId: user.id }, select: { shopName: true, status: true } }),
   ]);
+  // Each deal links to its chat (same account, same buyer)
+  const chats = await prisma.marketChat.findMany({
+    where: { OR: [...purchases, ...sales].map((d) => ({ listingId: d.listingId, buyerId: d.buyerId })) },
+    select: { id: true, listingId: true, buyerId: true },
+  });
+  const chatOf = (d: { listingId: string; buyerId: string }) => chats.find((c) => c.listingId === d.listingId && c.buyerId === d.buyerId)?.id;
+  const tch = await getTranslations("chat");
+  const chatLink = (d: { listingId: string; buyerId: string }) => {
+    const id = chatOf(d);
+    return id ? <Link href={`/account/messages/${id}`} className="btn-secondary min-h-11 px-3 text-xs">💬 {tch("openChat")}</Link> : null;
+  };
   const st = (s: string) => (t.has(`s_${s}`) ? t(`s_${s}` as "s_ACTIVE") : s);
   const badge = (s: string) => <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${TONE[s] ?? ""}`}>{st(s)}</span>;
   const agent = (settings.marketWhatsapp || settings.whatsappNumber).replace(/\D/g, "");
@@ -158,7 +169,8 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
                 {stepper(d.status)}
                 <p className="rounded-xl bg-surface-2 px-3 py-2 text-xs">{t(`buyerStep_${d.status}` as "buyerStep_REQUESTED")}</p>
                 <div className="flex flex-wrap gap-2">
-                  {!["COMPLETED", "CANCELED"].includes(d.status) && <a href={wa(d.number)} target="_blank" rel="noopener" className="btn-secondary min-h-9 px-3 text-xs"><WhatsAppIcon width={14} height={14} className="text-[#1fa855]" /> {t("agent")}</a>}
+                  {chatLink(d)}
+                  {!["COMPLETED", "CANCELED"].includes(d.status) && <a href={wa(d.number)} target="_blank" rel="noopener" className="btn-secondary min-h-11 px-3 text-xs"><WhatsAppIcon width={14} height={14} className="text-[#1fa855]" /> {t("agent")}</a>}
                   {d.status === "REQUESTED" && <MarketAction kind="cancel" id={d.id} />}
                   {d.status === "DELIVERED" && <MarketAction kind="confirm" id={d.id} />}
                 </div>
@@ -195,7 +207,10 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
                   )}
                   {stepper(d.status)}
                   <p className="rounded-xl bg-surface-2 px-3 py-2 text-xs">{t(`sellerStep_${d.status}` as "sellerStep_REQUESTED")}</p>
-                  {!["COMPLETED", "CANCELED"].includes(d.status) && <a href={wa(d.number)} target="_blank" rel="noopener" className="btn-secondary min-h-9 px-3 text-xs"><WhatsAppIcon width={14} height={14} className="text-[#1fa855]" /> {t("agent")}</a>}
+                  <div className="flex flex-wrap gap-2">
+                    {chatLink(d)}
+                    {!["COMPLETED", "CANCELED"].includes(d.status) && <a href={wa(d.number)} target="_blank" rel="noopener" className="btn-secondary min-h-11 px-3 text-xs"><WhatsAppIcon width={14} height={14} className="text-[#1fa855]" /> {t("agent")}</a>}
+                  </div>
                 </li>
               );
             })}
