@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { formatDate, t } from "@/lib/text";
 import { contentSeo } from "@/lib/seo";
 import { Link } from "@/i18n/navigation";
+import { jsonLd as toJsonLd } from "@/lib/json-ld";
 
 type P = Promise<{ locale: string; slug: string }>;
 const load = (slug: string) => prisma.newsArticle.findFirst({ where: { slug, isPublished: true, publishedAt: { lte: new Date() } } });
@@ -34,7 +35,7 @@ export default async function ArticlePage({ params }: { params: P }) {
   };
   return (
     <article className="container-page max-w-3xl py-8 sm:py-12">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(jsonLd) }} />
       <Link href="/news" className="text-sm text-muted hover:text-text">← {tn("back")}</Link>
       <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
       {a.publishedAt && <time className="mt-2 block text-sm text-muted" dateTime={a.publishedAt.toISOString()}>{formatDate(a.publishedAt, locale, "long")}</time>}

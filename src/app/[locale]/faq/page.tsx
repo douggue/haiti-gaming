@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ContentPage } from "@/components/ContentPage";
 import { pageSeo } from "@/lib/seo";
+import { jsonLd as toJsonLd } from "@/lib/json-ld";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -16,7 +17,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
   const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: items.map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } })) };
   return (
     <ContentPage title={t("faqTitle")}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(jsonLd) }} />
       <div className="divide-y divide-border rounded-2xl border border-border bg-surface">
         {items.map((i) => (
           <details key={i.q} className="p-5" open>

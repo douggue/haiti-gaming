@@ -17,6 +17,7 @@ import { BoltIcon, ShieldIcon } from "@/components/Icons";
 import type { FieldDef } from "@/lib/orders";
 import { lowStockVariants, recentSales } from "@/lib/trust";
 import { SalesPopup } from "@/components/SalesPopup";
+import { jsonLd as toJsonLd } from "@/lib/json-ld";
 
 type P = Promise<{ locale: string; slug: string }>;
 
@@ -95,7 +96,7 @@ export default async function ProductPage({ params }: { params: P }) {
 
   return (
     <div className="container-page py-6 sm:py-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, crumbs]) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd([jsonLd, crumbs]) }} />
       <nav className="text-sm text-muted" aria-label="Breadcrumb">
         <Link href="/store" className="hover:text-text">{tc("store")}</Link> /{" "}
         <Link href={`/categories/${product.category.slug}`} className="hover:text-text">{t(product.category.name, locale)}</Link>
