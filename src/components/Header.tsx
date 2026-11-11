@@ -28,7 +28,8 @@ export async function Header() {
   // Unread Market chat messages (the icon shows only once the person has a conversation)
   const chats = user && settings.marketEnabled ? await unreadChats(user.id) : null;
   const unreadMessages = chats ? [...chats.values()].reduce((a, b) => a + b, 0) : 0;
-  const hasChats = !!user && settings.marketEnabled && (unreadMessages > 0 || (await prisma.marketChat.count({ where: { OR: [{ buyerId: user.id }, { sellerId: user.id }], messages: { some: {} } } })) > 0);
+  // Signed-in customers always see the chat icon when the Market is on (an empty inbox explains how chats start)
+  const hasChats = !!user && settings.marketEnabled;
   const custom = settings.navigation?.header ?? [];
   const base = custom.length ? custom.map((l) => ({ href: l.href, label: txt(l.label, locale) })) : [
     { href: "/store", label: t("store") },
