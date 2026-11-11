@@ -144,7 +144,11 @@
     "favorite": "Ajouter aux favoris",
     "unfavorite": "Retirer des favoris",
     "activeFilters": "Filtres actifs",
-    "remove": "Retirer {name}"
+    "remove": "Retirer {name}",
+    "eyebrow": "Fait en Haïti, pour les joueurs",
+    "promiseInstant": "Codes livrés instantanément",
+    "promisePay": "Payez avec MonCash ou NatCash",
+    "promiseHelp": "Aide sur WhatsApp en créole"
   },
   "product": {
     "chooseOption": "Choisissez une option",
@@ -176,7 +180,14 @@
     "playerOk": "ID valide",
     "playerInvalid": "Cet ID n'est pas valide, ou n'est pas dans la bonne région pour ce produit.",
     "playerBusy": "Trop de vérifications. Réessayez dans une minute.",
-    "playerUnavailable": "Vérification impossible pour le moment. Vous pouvez quand même acheter."
+    "playerUnavailable": "Vérification impossible pour le moment. Vous pouvez quand même acheter.",
+    "instantShort": "Instantané",
+    "payStep": "Payer",
+    "totalToPay": "Total à payer",
+    "securePay": "Paiement sécurisé avec MonCash, NatCash ou portefeuille",
+    "safe": "Sécurisé",
+    "checkedByTeam": "Vérifié par l'équipe",
+    "localPay": "Paiement local"
   },
   "cart": {
     "title": "Votre panier",
@@ -233,7 +244,12 @@
     "deliveryPhone": "Téléphone (WhatsApp)",
     "deliveryAddress": "Adresse complète",
     "deliveryNote": "Précisions pour le livreur (facultatif)",
-    "deliveryFee": "Livraison"
+    "deliveryFee": "Livraison",
+    "secureCheckout": "Paiement sécurisé",
+    "stepCart": "Panier",
+    "stepPay": "Paiement",
+    "stepDelivery": "Livraison",
+    "secureNote": "Votre paiement est vérifié avant tout envoi."
   },
   "order": {
     "title": "Commande n° {number}",
@@ -383,7 +399,18 @@
     "cryptoSteps2": "Envoyez de l'USDT sur {network} uniquement.",
     "cryptoSteps3": "Collez le hash de la transaction et envoyez. Nous le vérifions sur la blockchain.",
     "methodAuto": "Automatique",
-    "storeCreditHtg": "Le solde du portefeuille est un crédit boutique en gourdes : dépensez-le sur Haiti Gaming ou envoyez-le à un autre client. Il ne peut pas être retiré."
+    "storeCreditHtg": "Le solde du portefeuille est un crédit boutique en gourdes : dépensez-le sur Haiti Gaming ou envoyez-le à un autre client. Il ne peut pas être retiré.",
+    "showBalance": "Afficher le solde",
+    "hideBalance": "Masquer le solde",
+    "onHoldLabel": "En attente",
+    "eyebrow": "Votre solde Haiti Gaming",
+    "helpWa": "Bonjour Haiti Gaming, j'ai une question sur mon portefeuille.",
+    "helpTitle": "Une question sur un dépôt ou votre solde ?",
+    "f_all": "Tout",
+    "f_deposits": "Dépôts",
+    "f_purchases": "Achats",
+    "f_transfers": "Transferts",
+    "done": "Terminé"
   },
   "auth": {
     "loginTitle": "Se connecter",
@@ -518,7 +545,10 @@
       "Les codes déjà livrés ne sont pas remboursables, car ils peuvent être utilisés immédiatement.",
       "Si une recharge a été envoyée sur un mauvais ID suite à une erreur de saisie, nous ne pouvons pas la récupérer.",
       "Contactez-nous sur WhatsApp avec votre numéro de commande pour tout problème."
-    ]
+    ],
+    "fraudTitle": "Avis de sécurité",
+    "fraudBody": "Payez uniquement sur haitigaming.net ou à notre numéro WhatsApp. Nous ne demandons jamais votre PIN MonCash ou NatCash.",
+    "stepLabel": "Étape"
   },
   "news": {
     "title": "Actualités",
@@ -643,7 +673,8 @@
     "secure": "Connexion sécurisée",
     "loginSub": "Connectez-vous pour voir vos commandes et votre portefeuille.",
     "registerSub": "Gratuit. Vous pouvez acheter tout de suite après.",
-    "welcomeBack": "Bon retour !"
+    "welcomeBack": "Bon retour !",
+    "madeInHaiti": "Fait en Haïti, pour les joueurs"
   },
   "verifyGate": {
     "title": "Confirmez votre e-mail pour continuer",
@@ -992,7 +1023,10 @@
     "allSold": "Aucun compte disponible pour le moment. Revenez plus tard.",
     "pendingMine": "{n, plural, one {Votre compte est} other {# de vos comptes sont}} en vérification par notre équipe",
     "memberSince": "Membre depuis",
-    "similar": "Autres comptes {game}"
+    "similar": "Autres comptes {game}",
+    "escrowEyebrow": "Protection Haiti Gaming",
+    "sellerBandEyebrow": "Transformez votre compte en argent",
+    "sellerBandTitle": "Un compte que vous n'utilisez plus ? Vendez-le en sécurité."
   },
   "chat": {
     "title": "Messages",

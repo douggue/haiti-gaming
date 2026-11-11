@@ -42,26 +42,59 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Avatar name={user.name} image={user.image} size={48} />
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{ta("welcome", { name: user.name.split(" ")[0] })}</h1>
-      </div>
+      {/* Profile card: who, verified, and the order numbers */}
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/70 to-[#7c3aed]/20 p-5">
+        <span aria-hidden className="ds-hide pointer-events-none absolute -right-12 -top-16 size-48 rounded-full bg-[#3b82f6]/25 blur-3xl" />
+        <div className="relative flex items-center gap-4">
+          <span className="relative">
+            <Avatar name={user.name} image={user.image} size={60} />
+            {user.emailVerified && <span className="absolute -bottom-0.5 -right-0.5 grid size-5 place-items-center rounded-full bg-emerald-500 text-[11px] font-black text-white ring-2 ring-surface" aria-hidden>✓</span>}
+          </span>
+          <div className="min-w-0">
+            <p className="eyebrow text-[#60a5fa]">🇭🇹 {ta("dashboard")}</p>
+            <h1 className="display truncate text-2xl font-extrabold tracking-tight sm:text-3xl">{ta("welcome", { name: user.name.split(" ")[0] })}</h1>
+          </div>
+        </div>
+        <dl className="relative mt-5 grid grid-cols-3 gap-2 text-center">
+          {stats.map((s, i) => (
+            <div key={s.label} className="rounded-2xl bg-black/20 px-2 py-3">
+              <dd className={`display text-2xl font-extrabold ${["", "text-amber-400", "text-emerald-400"][i]}`}>{s.value}</dd>
+              <dt className="text-[11px] text-muted">{s.label}</dt>
+            </div>
+          ))}
+        </dl>
+      </section>
       {!user.emailVerified && emailEnabled() && <VerifyEmailBanner email={user.email} />}
       <div className="grid gap-4 xl:grid-cols-[1.3fr_1fr]">
         <WalletCard balances={balances} initial={currency} showUsd={(await getDisplaySettings()).showUsd} />
-        <div className="grid grid-cols-3 gap-3 xl:grid-cols-1">
-          {stats.map((s) => (
-            <div key={s.label} className="card flex flex-col justify-center p-4 xl:flex-row xl:items-center xl:justify-between">
-              <span className="text-xs text-muted sm:text-sm">{s.label}</span>
-              <span className="text-2xl font-bold">{s.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-2">
         <section className="card p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-semibold">{ta("recentOrders")}</h2>
+            <h2 className="display font-bold">{ta("recentActivity")}</h2>
+            <Link href="/account/wallet" className="text-sm font-semibold text-primary">→</Link>
+          </div>
+          {activity.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted">{ta("noActivity")}</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {activity.map((e) => (
+                <li key={e.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                  <span>
+                    <span className="block font-medium">{tw(`tx.${e.transaction.type}`)}</span>
+                    <span className="text-xs text-muted">{fmt.dateTime(e.createdAt, { dateStyle: "medium", timeStyle: "short" })}</span>
+                  </span>
+                  <span className={`display font-bold ${e.amount > 0 ? "text-emerald-400" : ""}`}>
+                    {e.amount > 0 ? "+" : "−"}{formatMoney(Math.abs(e.amount), e.currency, locale)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+      <div>
+        <section className="card p-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="display font-bold">{ta("recentOrders")}</h2>
             <Link href="/account/orders" className="text-sm font-semibold text-primary">→</Link>
           </div>
           {orders.length === 0 ? (
@@ -77,29 +110,6 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
                     </span>
                     <StatusBadge status={o.status} label={to(`status.${o.status}`)} />
                   </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-        <section className="card p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-semibold">{ta("recentActivity")}</h2>
-            <Link href="/account/wallet" className="text-sm font-semibold text-primary">→</Link>
-          </div>
-          {activity.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted">{ta("noActivity")}</p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {activity.map((e) => (
-                <li key={e.id} className="flex items-center justify-between gap-3 py-3 text-sm">
-                  <span>
-                    <span className="block font-medium">{tw(`tx.${e.transaction.type}`)}</span>
-                    <span className="text-xs text-muted">{fmt.dateTime(e.createdAt, { dateStyle: "medium", timeStyle: "short" })}</span>
-                  </span>
-                  <span className={`font-semibold ${e.amount > 0 ? "text-success" : ""}`}>
-                    {e.amount > 0 ? "+" : "−"}{formatMoney(Math.abs(e.amount), e.currency, locale)}
-                  </span>
                 </li>
               ))}
             </ul>

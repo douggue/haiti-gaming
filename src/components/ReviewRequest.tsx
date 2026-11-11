@@ -5,11 +5,12 @@ import { submitReview } from "@/actions/reviews";
 import { CITIES } from "@/lib/cities";
 
 /** "How was it?" — shown on a delivered order until the customer answers. */
-export function ReviewRequest({ orderId, city }: { orderId: string; city: string }) {
+export function ReviewRequest({ orderId, city, submitted = false }: { orderId: string; city: string; submitted?: boolean }) {
   const t = useTranslations("trust");
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
-  const [done, setDone] = useState(false);
+  // `submitted`: the review already exists (the page re-renders after saving), so keep the thank-you showing
+  const [done, setDone] = useState(submitted);
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
 

@@ -103,20 +103,32 @@ export default async function ProductPage({ params }: { params: P }) {
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="space-y-4">
           <ProductGallery name={name} accent={product.accent} images={[product.image, ...((product.gallery ?? []) as string[])].filter((x): x is string => !!x)} />
-          <div className="card space-y-3 p-5 text-sm">
-            <p className="flex items-center gap-2 font-semibold">
-              <BoltIcon width={18} height={18} className="text-success" />
-              {tp("delivery")}: <span className="font-normal text-muted">{t(product.deliveryEstimate, locale)}</span>
-            </p>
-            <p className="flex items-center gap-2 font-semibold">
-              <ShieldIcon width={18} height={18} className="text-primary" />
-              <span className="font-normal text-muted">{product.fulfillmentType === "CODE_INVENTORY" ? tp("instant") : tp("manual")}</span>
-            </p>
-          </div>
+          {/* Three promises under the picture */}
+          <ul className="grid grid-cols-3 gap-2 text-center text-[11px] sm:text-xs">
+            <li className="rounded-xl border border-border bg-surface/80 px-2 py-3">
+              <BoltIcon width={18} height={18} className="mx-auto text-emerald-400" />
+              <b className="mt-1 block">{tp("delivery")}</b>
+              <span className="text-muted">{t(product.deliveryEstimate, locale)}</span>
+            </li>
+            <li className="rounded-xl border border-border bg-surface/80 px-2 py-3">
+              <ShieldIcon width={18} height={18} className="mx-auto text-[#60a5fa]" />
+              <b className="mt-1 block">{tp("safe")}</b>
+              <span className="text-muted">{product.fulfillmentType === "CODE_INVENTORY" ? tp("instantShort") : tp("checkedByTeam")}</span>
+            </li>
+            <li className="rounded-xl border border-border bg-surface/80 px-2 py-3">
+              <span className="block text-lg leading-[18px]" aria-hidden>🇭🇹</span>
+              <b className="mt-1 block">{tp("localPay")}</b>
+              <span className="text-muted">MonCash · NatCash</span>
+            </li>
+          </ul>
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{name}</h1>
-          <p className="mt-3 text-muted">{t(product.description, locale)}</p>
+          <p className="eyebrow flex flex-wrap items-center gap-2 text-[#60a5fa]">
+            {t(product.category.name, locale)}
+            {product.fulfillmentType === "CODE_INVENTORY" && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-400"><BoltIcon width={11} height={11} /> {tp("instantShort")}</span>}
+          </p>
+          <h1 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{name}</h1>
+          <p className="mt-2 text-sm text-muted sm:text-base">{t(product.description, locale)}</p>
           <ProductPurchase
             product={{
               id: product.id,

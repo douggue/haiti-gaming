@@ -69,8 +69,17 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
     if (goToCart) router.push("/cart");
   }
 
+  const step = (n: number, title: string) => (
+    <h2 className="display flex items-center gap-2.5 text-lg font-bold">
+      <span className="grid size-7 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-sm font-extrabold text-white shadow-[0_0_14px_-2px_rgba(59,130,246,.8)]">{n}</span>
+      {title}
+    </h2>
+  );
+
   return (
-    <div className="mt-6 space-y-6">
+    <div className="mt-6 space-y-5">
+      <section className="space-y-3">
+      {step(1, mode ? tp("enterUsd") : tp("chooseOption"))}
       {mode ? (
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-success/30 bg-success-soft px-4 py-3 text-success">
@@ -121,23 +130,24 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
         </div>
       ) : (
       <fieldset>
-        <legend className="label">{tp("chooseOption")}</legend>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <legend className="sr-only">{tp("chooseOption")}</legend>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
           {product.variants.map((v) => {
             const active = v.id === variantId;
             return (
               <label
                 key={v.id}
-                className={`relative flex cursor-pointer flex-col rounded-xl border-2 p-3 transition-colors ${
-                  active ? "border-primary bg-primary-soft" : "border-border bg-surface hover:border-steel"
+                className={`pkg-tile relative flex min-h-[6.5rem] cursor-pointer flex-col rounded-2xl border-2 p-3 transition-all ${
+                  active ? "border-[#3b82f6] bg-[#1d4ed8]/15 shadow-[0_0_22px_-6px_rgba(59,130,246,.75)]" : "border-border bg-surface hover:border-[#3b82f6]/50"
                 } ${!v.inStock ? "cursor-not-allowed opacity-70" : ""}`}
               >
                 <input type="radio" name="variant" value={v.id} checked={active} disabled={!v.inStock} onChange={() => setVariantId(v.id)} className="sr-only" />
-                <span className={`pr-4 text-sm font-semibold ${!v.inStock ? "text-muted line-through decoration-danger decoration-2" : ""}`}>{t(v.name, locale)}</span>
-                <span className="mt-1 text-sm">
-                  <Price htg={v.salePriceHtg ?? v.priceHtg} className={`font-bold ${!v.inStock ? "text-muted" : ""}`} />
-                  {v.salePriceHtg && <Price htg={v.priceHtg} className="ml-1.5 text-xs text-muted line-through" />}
+                <span className={`display pr-4 text-[15px] font-bold leading-snug ${!v.inStock ? "text-muted line-through decoration-danger decoration-2" : ""}`}>{t(v.name, locale)}</span>
+                <span className="mt-auto pt-2">
+                  <Price htg={v.salePriceHtg ?? v.priceHtg} className={`display block text-lg font-extrabold ${!v.inStock ? "text-muted" : active ? "text-[#60a5fa]" : ""}`} />
+                  {v.salePriceHtg && <Price htg={v.priceHtg} className="text-xs text-muted line-through" />}
                 </span>
+                {v.salePriceHtg && v.inStock && <span className="absolute -top-2 left-3 rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-extrabold text-white">−%</span>}
                 {!v.inStock && <span className="mt-1 text-xs font-semibold text-danger">{tp("soldOut")}</span>}
                 {/* Green: available · orange (pulsing): stock is low · red: sold out */}
                 <span
@@ -152,11 +162,16 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
         {variant?.inStock && variant.lowStock && <LowStock name={t(variant.name, locale)} seed={variant.id} />}
       </fieldset>
       )}
+      </section>
+
+      {/* Step 2: the customer's details, quantity, total and the buttons, in one panel */}
+      <section className="pay-panel relative space-y-4 overflow-hidden rounded-2xl border border-border bg-surface p-4 sm:p-5">
+      <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[#1d4ed8] via-[#7c3aed] to-[#dc2626]" />
+      {step(2, product.fields.length ? tp("requiredInfo") : tp("payStep"))}
 
       {product.fields.length > 0 && (
-        <fieldset className="card space-y-4 p-4">
+        <fieldset className="space-y-4">
           <legend className="sr-only">{tp("requiredInfo")}</legend>
-          <p className="text-sm font-semibold">{tp("requiredInfo")}</p>
           {saved.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {saved.map((s) => (
@@ -221,8 +236,19 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
           <input id="qty" className="h-11 w-12 bg-transparent text-center font-semibold" value={qty} readOnly />
           <button type="button" className="h-11 w-11 text-lg" onClick={() => setQty(Math.min(10, qty + 1))} aria-label="+">+</button>
         </div>
-        {variant && <Price htg={(variant.salePriceHtg ?? variant.priceHtg) * qty} className="ml-auto text-xl font-bold" />}
       </div>}
+
+      {/* Total to pay */}
+      {(mode ? quote : variant) && (
+        <div className="flex items-end justify-between gap-3 rounded-xl bg-surface-2/70 px-4 py-3">
+          <span className="eyebrow text-muted">{tp("totalToPay")}</span>
+          {mode ? (
+            <b className="display text-2xl font-extrabold text-[#60a5fa] tabular-nums">{quote ? formatMoney(quote.totalHtg, "HTG", locale) : "—"}</b>
+          ) : (
+            variant && <Price htg={(variant.salePriceHtg ?? variant.priceHtg) * qty} className="display text-2xl font-extrabold text-[#60a5fa]" />
+          )}
+        </div>
+      )}
 
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
 
@@ -234,6 +260,11 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
           {tp("buyNow")}
         </button>
       </div>
+      <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted">
+        <span>🔒 {tp("securePay")}</span>
+        <span>⚡ {tp("instantShort")}</span>
+      </p>
+      </section>
       <p className="sr-only" aria-live="polite">{added ? tp("added") : ""}</p>
     </div>
   );

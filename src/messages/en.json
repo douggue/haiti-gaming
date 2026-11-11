@@ -144,7 +144,11 @@
     "favorite": "Add to favorites",
     "unfavorite": "Remove from favorites",
     "activeFilters": "Active filters",
-    "remove": "Remove {name}"
+    "remove": "Remove {name}",
+    "eyebrow": "Made in Haiti, for gamers",
+    "promiseInstant": "Codes delivered instantly",
+    "promisePay": "Pay with MonCash or NatCash",
+    "promiseHelp": "Help on WhatsApp in Kreyòl"
   },
   "product": {
     "chooseOption": "Choose an option",
@@ -176,7 +180,14 @@
     "playerOk": "ID is valid",
     "playerInvalid": "This ID isn't valid, or isn't in the right region for this product.",
     "playerBusy": "Too many checks. Try again in a minute.",
-    "playerUnavailable": "Can't check right now. You can still buy."
+    "playerUnavailable": "Can't check right now. You can still buy.",
+    "instantShort": "Instant",
+    "payStep": "Pay",
+    "totalToPay": "Total to pay",
+    "securePay": "Secure payment with MonCash, NatCash or wallet",
+    "safe": "Safe",
+    "checkedByTeam": "Checked by our team",
+    "localPay": "Pay local"
   },
   "cart": {
     "title": "Your cart",
@@ -233,7 +244,12 @@
     "deliveryPhone": "Phone (WhatsApp)",
     "deliveryAddress": "Full address",
     "deliveryNote": "Notes for the courier (optional)",
-    "deliveryFee": "Delivery"
+    "deliveryFee": "Delivery",
+    "secureCheckout": "Secure checkout",
+    "stepCart": "Cart",
+    "stepPay": "Payment",
+    "stepDelivery": "Delivery",
+    "secureNote": "Your payment is checked before anything is sent."
   },
   "order": {
     "title": "Order #{number}",
@@ -383,7 +399,18 @@
     "cryptoSteps2": "Send USDT on {network} only.",
     "cryptoSteps3": "Paste the transaction hash and submit. We check it on the blockchain.",
     "methodAuto": "Automatic",
-    "storeCreditHtg": "Wallet balance is store credit in gourdes: spend it on Haiti Gaming or send it to another customer. It cannot be withdrawn."
+    "storeCreditHtg": "Wallet balance is store credit in gourdes: spend it on Haiti Gaming or send it to another customer. It cannot be withdrawn.",
+    "showBalance": "Show balance",
+    "hideBalance": "Hide balance",
+    "onHoldLabel": "On hold",
+    "eyebrow": "Your Haiti Gaming balance",
+    "helpWa": "Hello Haiti Gaming, I have a question about my wallet.",
+    "helpTitle": "Question about a deposit or your balance?",
+    "f_all": "All",
+    "f_deposits": "Deposits",
+    "f_purchases": "Purchases",
+    "f_transfers": "Transfers",
+    "done": "Done"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -518,7 +545,10 @@
       "Codes that have been delivered cannot be refunded, because they can be used immediately.",
       "If a top-up was sent to the wrong player ID because of a typing error, we cannot recover it.",
       "Contact us on WhatsApp with your order number for any problem."
-    ]
+    ],
+    "fraudTitle": "Security notice",
+    "fraudBody": "Only pay on haitigaming.net or to our WhatsApp number. We never ask for your MonCash or NatCash PIN.",
+    "stepLabel": "Step"
   },
   "news": {
     "title": "News",
@@ -643,7 +673,8 @@
     "secure": "Secure connection",
     "loginSub": "Sign in to see your orders and wallet.",
     "registerSub": "Free. You can buy right after.",
-    "welcomeBack": "Welcome back!"
+    "welcomeBack": "Welcome back!",
+    "madeInHaiti": "Made in Haiti, for gamers"
   },
   "verifyGate": {
     "title": "Confirm your email to continue",
@@ -992,7 +1023,10 @@
     "allSold": "No accounts available right now. Check back later.",
     "pendingMine": "{n, plural, one {Your account is} other {# of your accounts are}} being checked by our team",
     "memberSince": "Member since",
-    "similar": "More {game} accounts"
+    "similar": "More {game} accounts",
+    "escrowEyebrow": "Haiti Gaming protection",
+    "sellerBandEyebrow": "Turn your account into cash",
+    "sellerBandTitle": "An account you don't play anymore? Sell it safely."
   },
   "chat": {
     "title": "Messages",

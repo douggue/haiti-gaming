@@ -28,7 +28,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       items: { include: { codes: true, variant: { include: { product: { select: { slug: true } } } } } },
       events: { orderBy: { createdAt: "asc" } },
       payments: { orderBy: { createdAt: "desc" }, take: 1 },
-      review: { select: { id: true } },
+      review: { select: { id: true, createdAt: true } },
       deliveryZone: { select: { name: true } },
     },
   });
@@ -69,6 +69,8 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       </div>
 
       {order.status === "FULFILLED" && !order.review && <ReviewRequest orderId={order.id} city={(await prisma.user.findUnique({ where: { id: user.id }, select: { city: true } }))?.city ?? ""} />}
+      {/* Thank-you stays visible for a day after the review is sent (the page re-renders right after saving) */}
+      {order.status === "FULFILLED" && order.review && Date.now() - order.review.createdAt.getTime() < 86_400_000 && <ReviewRequest orderId={order.id} city="" submitted />}
 
       {order.status === "AWAITING_PAYMENT" && order.paymentMethod === "MANUAL" && manual && (
         <section className="card border-warning p-5">

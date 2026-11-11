@@ -144,7 +144,11 @@
     "favorite": "Mete nan favori",
     "unfavorite": "Retire nan favori",
     "activeFilters": "Filtre ki aktif",
-    "remove": "Retire {name}"
+    "remove": "Retire {name}",
+    "eyebrow": "Fèt an Ayiti, pou jwè yo",
+    "promiseInstant": "Kòd yo livre touswit",
+    "promisePay": "Peye ak MonCash oswa NatCash",
+    "promiseHelp": "Èd sou WhatsApp an Kreyòl"
   },
   "product": {
     "chooseOption": "Chwazi yon opsyon",
@@ -176,7 +180,14 @@
     "playerOk": "ID a bon",
     "playerInvalid": "ID sa a pa bon, oswa li pa nan bon rejyon an pou pwodwi sa a.",
     "playerBusy": "Twòp verifikasyon. Eseye ankò nan yon minit.",
-    "playerUnavailable": "Nou pa ka verifye kounye a. Ou ka kontinye achte."
+    "playerUnavailable": "Nou pa ka verifye kounye a. Ou ka kontinye achte.",
+    "instantShort": "Touswit",
+    "payStep": "Peye",
+    "totalToPay": "Total pou peye",
+    "securePay": "Peman an sekirite ak MonCash, NatCash oswa bous",
+    "safe": "An sekirite",
+    "checkedByTeam": "Ekip la verifye",
+    "localPay": "Peye lokal"
   },
   "cart": {
     "title": "Panye ou",
@@ -233,7 +244,12 @@
     "deliveryPhone": "Telefòn (WhatsApp)",
     "deliveryAddress": "Adrès konplè",
     "deliveryNote": "Detay pou livrè a (si w vle)",
-    "deliveryFee": "Livrezon"
+    "deliveryFee": "Livrezon",
+    "secureCheckout": "Peman an sekirite",
+    "stepCart": "Panye",
+    "stepPay": "Peman",
+    "stepDelivery": "Livrezon",
+    "secureNote": "Nou verifye peman ou anvan nou voye anyen."
   },
   "order": {
     "title": "Kòmand #{number}",
@@ -383,7 +399,18 @@
     "cryptoSteps2": "Voye USDT sou {network} sèlman.",
     "cryptoSteps3": "Kole hash tranzaksyon an epi voye. N ap verifye l sou blockchain lan.",
     "methodAuto": "Otomatik",
-    "storeCreditHtg": "Lajan nan bous la se kredi boutik an goud: depanse l sou Haiti Gaming oswa voye l bay yon lòt kliyan. Ou pa ka retire l."
+    "storeCreditHtg": "Lajan nan bous la se kredi boutik an goud: depanse l sou Haiti Gaming oswa voye l bay yon lòt kliyan. Ou pa ka retire l.",
+    "showBalance": "Montre balans lan",
+    "hideBalance": "Kache balans lan",
+    "onHoldLabel": "An atant",
+    "eyebrow": "Balans Haiti Gaming ou",
+    "helpWa": "Bonjou Haiti Gaming, mwen gen yon kesyon sou bous mwen.",
+    "helpTitle": "Kesyon sou yon depo oswa balans ou?",
+    "f_all": "Tout",
+    "f_deposits": "Depo",
+    "f_purchases": "Acha",
+    "f_transfers": "Transfè",
+    "done": "Fini"
   },
   "auth": {
     "loginTitle": "Konekte",
@@ -518,7 +545,10 @@
       "Nou pa ka ranbouse kòd ki deja livre, paske moun ka itilize yo touswit.",
       "Si yon rechaj ale sou move ID jwè akòz yon erè tape, nou pa ka rekipere l.",
       "Kontakte nou sou WhatsApp ak nimewo kòmand ou pou nenpòt pwoblèm."
-    ]
+    ],
+    "fraudTitle": "Avètisman sekirite",
+    "fraudBody": "Peye sèlman sou haitigaming.net oswa sou nimewo WhatsApp nou an. Nou p ap janm mande w PIN MonCash oswa NatCash ou.",
+    "stepLabel": "Etap"
   },
   "news": {
     "title": "Nouvèl",
@@ -643,7 +673,8 @@
     "secure": "Koneksyon sekirize",
     "loginSub": "Konekte pou wè kòmand ou ak bous ou.",
     "registerSub": "Gratis. Ou ka achte touswit apre.",
-    "welcomeBack": "Bon retou!"
+    "welcomeBack": "Bon retou!",
+    "madeInHaiti": "Fèt an Ayiti, pou jwè yo"
   },
   "verifyGate": {
     "title": "Konfime imèl ou pou kontinye",
@@ -992,7 +1023,10 @@
     "allSold": "Nou pa gen kont disponib kounye a. Tcheke pita.",
     "pendingMine": "{n, plural, one {Kont ou a} other {# nan kont ou yo}} ap tcheke pa ekip nou an",
     "memberSince": "Manm depi",
-    "similar": "Lòt kont {game}"
+    "similar": "Lòt kont {game}",
+    "escrowEyebrow": "Pwoteksyon Haiti Gaming",
+    "sellerBandEyebrow": "Fè kòb ak kont ou",
+    "sellerBandTitle": "Yon kont ou pa jwe ankò? Vann li an sekirite."
   },
   "chat": {
     "title": "Mesaj",

@@ -144,7 +144,11 @@
     "favorite": "Añadir a favoritos",
     "unfavorite": "Quitar de favoritos",
     "activeFilters": "Filtros activos",
-    "remove": "Quitar {name}"
+    "remove": "Quitar {name}",
+    "eyebrow": "Hecho en Haití, para jugadores",
+    "promiseInstant": "Códigos entregados al instante",
+    "promisePay": "Paga con MonCash o NatCash",
+    "promiseHelp": "Ayuda por WhatsApp en criollo"
   },
   "product": {
     "chooseOption": "Elige una opción",
@@ -176,7 +180,14 @@
     "playerOk": "ID válido",
     "playerInvalid": "Este ID no es válido o no es de la región correcta para este producto.",
     "playerBusy": "Demasiadas verificaciones. Inténtalo en un minuto.",
-    "playerUnavailable": "No se puede verificar ahora. Aún puedes comprar."
+    "playerUnavailable": "No se puede verificar ahora. Aún puedes comprar.",
+    "instantShort": "Al instante",
+    "payStep": "Pagar",
+    "totalToPay": "Total a pagar",
+    "securePay": "Pago seguro con MonCash, NatCash o monedero",
+    "safe": "Seguro",
+    "checkedByTeam": "Revisado por el equipo",
+    "localPay": "Pago local"
   },
   "cart": {
     "title": "Tu carrito",
@@ -233,7 +244,12 @@
     "deliveryPhone": "Teléfono (WhatsApp)",
     "deliveryAddress": "Dirección completa",
     "deliveryNote": "Detalles para el repartidor (opcional)",
-    "deliveryFee": "Entrega"
+    "deliveryFee": "Entrega",
+    "secureCheckout": "Pago seguro",
+    "stepCart": "Carrito",
+    "stepPay": "Pago",
+    "stepDelivery": "Entrega",
+    "secureNote": "Verificamos tu pago antes de enviar nada."
   },
   "order": {
     "title": "Pedido #{number}",
@@ -383,7 +399,18 @@
     "cryptoSteps2": "Envíe USDT solo en {network}.",
     "cryptoSteps3": "Pegue el hash de la transacción y envíe. Lo verificamos en la blockchain.",
     "methodAuto": "Automático",
-    "storeCreditHtg": "El saldo del monedero es crédito de la tienda en gourdes: gástalo en Haiti Gaming o envíalo a otro cliente. No se puede retirar."
+    "storeCreditHtg": "El saldo del monedero es crédito de la tienda en gourdes: gástalo en Haiti Gaming o envíalo a otro cliente. No se puede retirar.",
+    "showBalance": "Mostrar saldo",
+    "hideBalance": "Ocultar saldo",
+    "onHoldLabel": "En espera",
+    "eyebrow": "Tu saldo de Haiti Gaming",
+    "helpWa": "Hola Haiti Gaming, tengo una pregunta sobre mi monedero.",
+    "helpTitle": "¿Pregunta sobre un depósito o tu saldo?",
+    "f_all": "Todo",
+    "f_deposits": "Depósitos",
+    "f_purchases": "Compras",
+    "f_transfers": "Transferencias",
+    "done": "Hecho"
   },
   "auth": {
     "loginTitle": "Iniciar sesión",
@@ -518,7 +545,10 @@
       "Los códigos ya entregados no se reembolsan, porque pueden usarse de inmediato.",
       "Si una recarga se envió a un ID equivocado por un error de escritura, no podemos recuperarla.",
       "Escríbenos por WhatsApp con tu número de pedido ante cualquier problema."
-    ]
+    ],
+    "fraudTitle": "Aviso de seguridad",
+    "fraudBody": "Paga solo en haitigaming.net o a nuestro número de WhatsApp. Nunca pedimos tu PIN de MonCash o NatCash.",
+    "stepLabel": "Paso"
   },
   "news": {
     "title": "Noticias",
@@ -643,7 +673,8 @@
     "secure": "Conexión segura",
     "loginSub": "Inicia sesión para ver tus pedidos y tu billetera.",
     "registerSub": "Gratis. Puedes comprar enseguida.",
-    "welcomeBack": "¡Hola de nuevo!"
+    "welcomeBack": "¡Hola de nuevo!",
+    "madeInHaiti": "Hecho en Haití, para jugadores"
   },
   "verifyGate": {
     "title": "Confirma tu correo para continuar",
@@ -992,7 +1023,10 @@
     "allSold": "No hay cuentas disponibles por ahora. Vuelve más tarde.",
     "pendingMine": "{n, plural, one {Tu cuenta está} other {# de tus cuentas están}} en revisión por nuestro equipo",
     "memberSince": "Miembro desde",
-    "similar": "Más cuentas de {game}"
+    "similar": "Más cuentas de {game}",
+    "escrowEyebrow": "Protección Haiti Gaming",
+    "sellerBandEyebrow": "Convierte tu cuenta en dinero",
+    "sellerBandTitle": "¿Una cuenta que ya no usas? Véndela con seguridad."
   },
   "chat": {
     "title": "Mensajes",

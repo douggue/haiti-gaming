@@ -609,3 +609,25 @@ html[data-style="cyber"].dark .cat-plain[data-tint="2"]::before { background: #8
 html[data-style="cyber"].dark .cat-plain[data-tint="3"]::before { background: #10b981; }
 html[data-style="cyber"].dark .cat-plain .cat-count { color: #94a3b8; }
 html[data-style="cyber"].dark .cat-plain:hover { border-color: rgb(59 108 246 / 0.45); box-shadow: 0 0 22px -4px rgb(29 78 216 / 0.45); }
+/* Product cards: glass panel, blue edge glow on hover */
+html[data-style="cyber"].dark .game-card {
+  background: linear-gradient(180deg, rgb(30 41 59 / 0.55), rgb(17 24 39 / 0.85));
+  border-color: rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.game-card:hover {
+  border-color: rgb(59 108 246 / 0.5);
+  box-shadow: 0 0 24px -6px rgb(29 78 216 / 0.55);
+}
+/* Sign-in / sign-up card: gradient top edge and a soft blue halo */
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, #1d4ed8, #7c3aed, #dc2626);
+}
+html[data-style="cyber"].dark .auth-card {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 30px 80px -30px rgb(29 78 216 / 0.7);
+}

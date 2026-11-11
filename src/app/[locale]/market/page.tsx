@@ -131,6 +131,33 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
           };
         })}
       />
+
+      {/* How the protection works: 4 steps */}
+      <section className="rounded-3xl border border-border bg-surface/80 p-5 sm:p-7">
+        <p className="eyebrow flex items-center gap-1.5 text-emerald-400">🛡️ {t("escrowEyebrow")}</p>
+        <h2 className="display mt-1 text-2xl font-extrabold tracking-tight">{t("howTitle")}</h2>
+        <ol className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {(["how1", "how2", "how3", "how4"] as const).map((k, i) => (
+            <li key={k} className="relative rounded-2xl border border-border bg-surface-2/60 p-4">
+              <span className="display text-3xl font-extrabold text-[#3b82f6]/80">0{i + 1}</span>
+              <p className="mt-2 text-sm">{t(k)}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Seller band */}
+      <section className="relative overflow-hidden rounded-3xl border border-amber-400/30 bg-gradient-to-r from-amber-400/15 via-[#7c3aed]/10 to-[#1d4ed8]/20 p-5 sm:p-7">
+        <span aria-hidden className="ds-hide pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-amber-400/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-xl">
+            <p className="eyebrow inline-flex rounded-full bg-amber-400/20 px-2.5 py-1 text-amber-300">💸 {t("sellerBandEyebrow")}</p>
+            <h2 className="display mt-2 text-2xl font-extrabold tracking-tight">{t("sellerBandTitle")}</h2>
+            <p className="mt-1 text-sm text-muted">{t("commissionHint", { pct: settings.marketCommissionBps / 100 })}</p>
+          </div>
+          <Link href="/market/sell" className="btn-primary min-h-12 shrink-0 !bg-amber-400 px-6 !text-black">＋ {t("sell")}</Link>
+        </div>
+      </section>
     </div>
   );
 }

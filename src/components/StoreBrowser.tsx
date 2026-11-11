@@ -9,6 +9,7 @@ import { useStore } from "./cart/CartProvider";
 import { Price } from "./Money";
 import { BoltIcon, CloseIcon, SearchIcon } from "./Icons";
 import { ProductArt } from "./ProductArt";
+import { GameCard } from "./GameCard";
 
 export type StoreProduct = {
   id: string;
@@ -168,12 +169,25 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="display text-3xl font-bold sm:text-4xl">{ts("title")}</h1>
-          <p className="mt-1 text-muted">{ts("subtitle")}</p>
+      {/* Store header: eyebrow, title, and three promises (instant, MonCash/NatCash, help) */}
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/60 to-[#7c3aed]/15 p-5 sm:p-7">
+        <span aria-hidden className="ds-hide pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-[#3b82f6]/25 blur-3xl" />
+        <div className="relative flex flex-wrap items-end justify-between gap-4">
+          <div className="max-w-2xl">
+            <p className="eyebrow inline-flex items-center gap-1.5 text-emerald-400"><span className="size-1.5 animate-pulse rounded-full bg-emerald-400" /> {ts("eyebrow")}</p>
+            <h1 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{ts("title")}</h1>
+            <p className="mt-1 text-sm text-muted sm:text-base">{ts("subtitle")}</p>
+          </div>
+          <p className="rounded-full border border-border bg-surface-2/70 px-3 py-1.5 text-sm font-semibold" aria-live="polite">{ts("results", { count: list.length })}</p>
         </div>
-        <p className="text-sm text-muted" aria-live="polite">{ts("results", { count: list.length })}</p>
+        <ul className="relative mt-5 grid gap-2 text-xs sm:grid-cols-3 sm:text-sm">
+          {(["promiseInstant", "promisePay", "promiseHelp"] as const).map((k, i) => (
+            <li key={k} className="flex items-center gap-2 rounded-xl bg-surface-2/60 px-3 py-2">
+              <span aria-hidden className={`grid size-7 shrink-0 place-items-center rounded-lg text-sm ${["bg-emerald-500/20", "bg-[#831843]/40", "bg-[#1fa855]/20"][i]}`}>{["⚡", "📱", "💬"][i]}</span>
+              <span className="font-semibold">{ts(k)}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       <form className="mt-6 flex flex-col gap-3 sm:flex-row" role="search" onSubmit={(e) => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }}>
@@ -382,29 +396,20 @@ function Tile({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => v
   const tc = useTranslations("common");
   const tp = useTranslations("product");
   return (
-    <Link href={`/products/${p.slug}`} className="card lift group flex flex-col bg-[linear-gradient(180deg,var(--surface-2),var(--surface))] p-3">
-      <div className="relative">
-        <ProductArt name={p.name} accent={p.accent} image={p.image} />
-        {p.tags[0] && <span className="badge absolute right-2 top-2 block max-w-[calc(100%-3.5rem)] truncate bg-[#060b1a]/60 text-[11px] text-white backdrop-blur">{p.tags.slice(0, 2).join(" · ")}</span>}
-        {p.onSale && <span className="badge absolute bottom-2 left-2 bg-danger text-white">−%</span>}
-        <FavButton fav={fav} onFav={onFav} />
-      </div>
-      <div className="flex flex-1 flex-col px-1 pb-1 pt-3">
-        <h3 className="line-clamp-2 font-semibold leading-snug">{p.name}</h3>
-        <Delivery p={p} />
-        <div className="mt-auto flex flex-col gap-2.5 pt-3">
-          <p className="text-sm">
-            <span className="text-muted">{tc("from")} </span>
-            <Price htg={p.price} className="font-bold text-text" />
-          </p>
-          {p.soldOut ? (
-            <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-surface-2 px-3 text-sm font-bold text-danger">{tp("soldOut")}</span>
-          ) : (
-            <span className="flex min-h-10 w-full items-center justify-center rounded-xl bg-primary px-3 text-sm font-bold text-white transition-colors group-hover:bg-primary-hover">{tc("choose")}</span>
-          )}
-        </div>
-      </div>
-    </Link>
+    <GameCard
+      slug={p.slug}
+      name={p.name}
+      image={p.image}
+      accent={p.accent}
+      tags={p.tags}
+      onSale={p.onSale}
+      instant={p.instant}
+      delivery={p.delivery}
+      price={p.price}
+      soldOut={!!p.soldOut}
+      labels={{ from: tc("from"), choose: tc("choose"), soldOut: tp("soldOut"), instant: tp("instantShort") }}
+      fav={<FavButton fav={fav} onFav={onFav} />}
+    />
   );
 }
 

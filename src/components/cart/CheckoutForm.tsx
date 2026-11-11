@@ -101,15 +101,28 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   ];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+    <div className="space-y-6">
+      {/* Progress: 1 cart ✓ · 2 payment (here) · 3 delivery */}
+      <div className="rounded-2xl border border-border bg-surface/80 p-4">
+        <p className="eyebrow flex items-center gap-1.5 text-emerald-400"><span aria-hidden>🔒</span> {tc("secureCheckout")}</p>
+        <ol className="mt-3 grid grid-cols-3 gap-2 text-[11px] font-bold uppercase tracking-wide sm:text-xs">
+          {[tc("stepCart"), tc("stepPay"), tc("stepDelivery")].map((label, i) => (
+            <li key={label}>
+              <span className={`block h-1.5 rounded-full ${i === 0 ? "bg-emerald-500" : i === 1 ? "bg-gradient-to-r from-[#1d4ed8] to-[#3b82f6]" : "bg-surface-2"}`} />
+              <span className={`mt-1.5 flex items-center gap-1 ${i === 0 ? "text-emerald-400" : i === 1 ? "text-[#60a5fa]" : "text-muted"}`}>{i === 0 ? "✓" : `${i + 1}.`} {label}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold tracking-tight">{tc("title")}</h1>
+        <h1 className="display text-3xl font-extrabold tracking-tight">{tc("title")}</h1>
         <fieldset className="space-y-3">
           <legend className="label">{tc("paymentMethod")}</legend>
           {options.filter((o) => o.enabled).map((o) => (
             <label
               key={o.id}
-              className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-4 ${method === o.id ? "border-primary bg-primary-soft" : "border-border bg-surface"}`}
+              className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-4 transition-all ${method === o.id ? "border-[#3b82f6] bg-[#1d4ed8]/15 shadow-[0_0_22px_-6px_rgba(59,130,246,.7)]" : "border-border bg-surface hover:border-[#3b82f6]/50"}`}
             >
               <input type="radio" name="method" className="mt-1 accent-[var(--primary)]" checked={method === o.id} onChange={() => setMethod(o.id)} />
               <span className="flex-1">
@@ -167,8 +180,9 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
         </div>
       </div>
 
-      <aside className="card h-fit space-y-4 p-5 lg:sticky lg:top-24">
-        <h2 className="font-semibold">{tc("summary")}</h2>
+      <aside className="card relative h-fit space-y-4 overflow-hidden p-5 lg:sticky lg:top-24">
+        <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[#1d4ed8] via-[#7c3aed] to-[#dc2626]" />
+        <h2 className="display text-lg font-bold">{tc("summary")}</h2>
         <ul className="space-y-2 text-sm">
           {store.lines.map((l) => (
             <li key={l.key} className="flex justify-between gap-3">
@@ -186,15 +200,17 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
             <span className="font-medium">{fee ? fmt(fee, currency) : tc("free")}</span>
           </div>
         )}
-        <div className="flex items-center justify-between border-t border-border pt-4">
-          <span className="font-semibold">{tc("total")}</span>
-          <span className="text-xl font-bold">{fmt(total, currency)}</span>
+        <div className="flex items-end justify-between rounded-xl bg-surface-2/70 px-4 py-3">
+          <span className="eyebrow text-muted">{tc("total")}</span>
+          <span className="display text-2xl font-extrabold text-[#60a5fa]">{fmt(total, currency)}</span>
         </div>
         {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
         <button type="button" className="btn-primary min-h-12 w-full" onClick={submit} disabled={pending || insufficient || !store.ready || (hasPhysical && (!zone || !dName.trim() || dAddress.trim().length < 5))}>
           {pending ? tc("placing") : tc("placeOrder")}
         </button>
+        <p className="text-center text-[11px] text-muted">🔒 {tc("secureNote")}</p>
       </aside>
+    </div>
     </div>
   );
 }

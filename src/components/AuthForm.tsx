@@ -109,7 +109,7 @@ export function AuthForm({ mode: firstMode, google = false }: { mode: "login" | 
 
   if (totp) {
     return (
-      <form method="post" onSubmit={onTotp} className="card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
+      <form method="post" onSubmit={onTotp} className="auth-card card relative mx-auto w-full max-w-md space-y-4 overflow-hidden p-6 sm:p-8">
         <h1 className="text-2xl font-bold tracking-tight">{t2("totpTitle")}</h1>
         <p className="text-sm text-muted">{useBackup ? t2("backupIntro") : t2("totpIntro")}</p>
         <input key={useBackup ? "b" : "t"} name="code" required autoFocus autoComplete="one-time-code" inputMode={useBackup ? "text" : "numeric"} aria-label={t2("totpTitle")} className="input text-center text-xl tracking-[0.3em]" />
@@ -121,7 +121,7 @@ export function AuthForm({ mode: firstMode, google = false }: { mode: "login" | 
   }
 
   return (
-    <form method="post" onSubmit={onSubmit} className="card glow-card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
+    <form method="post" onSubmit={onSubmit} className="auth-card card glow-card relative mx-auto w-full max-w-md space-y-4 overflow-hidden p-6 sm:p-8">
       <nav className="grid grid-cols-2 rounded-2xl bg-surface-2 p-1" aria-label={t("loginTitle")}>
         <Link href={`/auth/login${nextQs}`} onClick={(e) => switchTo(e, "login")} aria-current={mode === "login" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "login" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
         <Link href={`/auth/register${nextQs}`} onClick={(e) => switchTo(e, "register")} aria-current={mode === "register" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "register" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
