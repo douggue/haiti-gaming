@@ -1,8 +1,8 @@
 "use client";
 import { usePathname } from "@/i18n/navigation";
 
-/** Pages with their own WhatsApp card or a bottom action bar: the round button would only cover their buttons on a phone. */
-const OWN_HELP = ["/account", "/cart", "/checkout", "/faq", "/contact", "/guides", "/auth"];
+/** Pages with their own WhatsApp card, a bottom action bar or product grids: on a phone the round button would cover their buttons. */
+const OWN_HELP = ["/account", "/cart", "/checkout", "/faq", "/contact", "/guides", "/auth", "/store", "/categories", "/products"];
 
 export function WhatsAppFloat({ children, className, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
   const pathname = usePathname();
