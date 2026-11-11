@@ -159,7 +159,6 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
                   key={o.id}
                   className={`relative flex cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#60a5fa] items-center gap-3 rounded-2xl border p-3.5 transition-all sm:p-4 ${on ? "border-[#3b82f6] bg-gradient-to-r from-[#1d4ed8]/20 to-[#111827] shadow-[0_0_0_1px_#3b82f6,0_16px_32px_-18px_rgba(59,130,246,.9)]" : "border-border bg-surface/90 hover:border-[#3b82f6]/50"}`}
                 >
-                  <input type="radio" name="method" className="absolute inset-0 z-10 cursor-pointer opacity-0" checked={on} onChange={() => setMethod(o.id)} />
                   <span className={`grid size-12 shrink-0 place-items-center rounded-xl ${o.tone}`} aria-hidden>{o.icon}</span>
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
@@ -171,6 +170,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
                   <span className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors ${on ? "border-[#93c5fd] bg-[#93c5fd] text-[#0b1a4a]" : "border-white/20 bg-[#0b0f19]/50"}`} aria-hidden>
                     {on && <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}
                   </span>
+                  <input type="radio" name="method" className="absolute right-3.5 top-1/2 z-10 size-6 -translate-y-1/2 cursor-pointer opacity-0 sm:right-4" checked={on} onChange={() => setMethod(o.id)} />
                 </label>
               );
             })}
