@@ -214,7 +214,8 @@
     "examplePrefix": "E.g.",
     "toastAdded": "Added to cart",
     "toastMore": "Quantity updated: {n} in cart",
-    "toastCta": "See cart"
+    "toastCta": "See cart",
+    "nothingToFill": "Nothing to fill in: pay, and we send what you bought (for example the account and its password) to your order page."
   },
   "cart": {
     "title": "Your cart",
@@ -872,7 +873,7 @@
     "receiptWhen": "When"
   },
   "market": {
-    "eyebrow": "Accounts between players",
+    "eyebrow": "Accounts",
     "title": "Market",
     "subtitle": "Buy and sell game and social media accounts. A Haiti Gaming agent holds the money and the account until both sides are happy.",
     "sell": "Sell an account",

@@ -180,9 +180,10 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                 } ${!v.inStock ? "cursor-not-allowed opacity-60" : ""}`}
               >
                 <input type="radio" name="variant" value={v.id} checked={active} disabled={!v.inStock} onChange={() => setVariantId(v.id)} className="sr-only" />
-                <span className={`flex items-start gap-1.5 pr-4 text-[15px] font-bold leading-snug ${!v.inStock ? "text-muted line-through decoration-danger decoration-2" : "text-[#60a5fa]"}`}>
-                  <TileIcon width={16} height={16} className="mt-0.5 shrink-0" />
-                  <span className="display min-w-0">{t(v.name, locale)}</span>
+                <span className={`flex items-center gap-1.5 pr-3 text-[14px] font-bold leading-snug sm:text-[15px] ${!v.inStock ? "text-muted line-through decoration-danger decoration-2" : "text-[#60a5fa]"}`}>
+                  <TileIcon width={15} height={15} className="shrink-0" />
+                  {/* One line: long names shrink to fit and end with "…" instead of wrapping (full name on long-press/hover) */}
+                  <span className="display min-w-0 truncate" title={t(v.name, locale)}>{t(v.name, locale)}</span>
                 </span>
                 <span className="mt-auto flex items-end justify-between gap-2 pt-3">
                   <span className="min-w-0">
@@ -293,6 +294,13 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
       {/* Last step: quantity, then the total bar that stays at the bottom of the screen with the buttons */}
       <section className="space-y-3">
         {step(n++, tp("payStep"))}
+        {/* Nothing to fill in (e.g. streaming: the account is delivered to you) */}
+        {product.fields.length === 0 && !product.physical && !mode && (
+          <p className="flex items-start gap-2 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm">
+            <GiftIcon width={18} height={18} className="mt-0.5 shrink-0 text-emerald-400" />
+            <span>{tp("nothingToFill")}</span>
+          </p>
+        )}
         {!mode && (
           <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface/80 px-4 py-3">
             <label className="font-semibold" htmlFor="qty">{tp("quantity")}</label>

@@ -117,7 +117,7 @@ export function MarketBrowser({ items, initialPlatform, initialQuery, soldCount 
           {items.length ? (
             <button type="button" className="btn-secondary mt-4" onClick={() => { setPlatform(""); setQ(""); }}>{t("clearFilters")}</button>
           ) : (
-            <Link href="/market/sell" className="btn-primary mt-4">{soldCount ? `＋ ${t("sell")}` : t("sellFirst")}</Link>
+            <Link href="/market/sell" className="btn-primary mt-4">{soldCount ? t("sell") : t("sellFirst")}</Link>
           )}
         </div>
       ) : (

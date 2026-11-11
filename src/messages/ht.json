@@ -214,7 +214,8 @@
     "examplePrefix": "Egz:",
     "toastAdded": "Ajoute nan panye",
     "toastMore": "Kantite a monte: {n} nan panye",
-    "toastCta": "Wè panye"
+    "toastCta": "Wè panye",
+    "nothingToFill": "Ou pa bezwen ranpli anyen: peye, epi n ap voye sa w achte a (egzanp kont lan ak modpas li) sou paj kòmand ou."
   },
   "cart": {
     "title": "Panye ou",
@@ -872,7 +873,7 @@
     "receiptWhen": "Lè"
   },
   "market": {
-    "eyebrow": "Kont ant jwè",
+    "eyebrow": "Kont",
     "title": "Market",
     "subtitle": "Achte ak vann kont jwèt ak rezo sosyal. Yon ajan Haiti Gaming kenbe lajan an ak kont lan jiskaske tou de bò yo kontan.",
     "sell": "Vann yon kont",

@@ -214,7 +214,8 @@
     "examplePrefix": "Ex :",
     "toastAdded": "Ajouté au panier",
     "toastMore": "Quantité augmentée : {n} dans le panier",
-    "toastCta": "Voir le panier"
+    "toastCta": "Voir le panier",
+    "nothingToFill": "Rien à remplir : payez, et nous envoyons votre achat (par exemple le compte et son mot de passe) sur la page de votre commande."
   },
   "cart": {
     "title": "Votre panier",
@@ -872,7 +873,7 @@
     "receiptWhen": "Date"
   },
   "market": {
-    "eyebrow": "Comptes entre joueurs",
+    "eyebrow": "Comptes",
     "title": "Market",
     "subtitle": "Achetez et vendez des comptes de jeux et de réseaux sociaux. Un agent Haiti Gaming garde l'argent et le compte jusqu'à ce que les deux parties soient satisfaites.",
     "sell": "Vendre un compte",

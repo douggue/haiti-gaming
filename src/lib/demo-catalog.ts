@@ -17,12 +17,6 @@ const playerIdField = {
   required: true,
   placeholder: "123456789",
 };
-const emailField = {
-  key: "accountEmail",
-  label: L("Imèl kont lan", "E-mail du compte", "Account email", "Correo de la cuenta"),
-  type: "email",
-  required: true,
-};
 
 const categories = [
   { slug: "game-top-ups", icon: "🎮", name: L("Rechaj jwèt", "Recharges de jeux", "Game top-ups", "Recargas de juegos"), sortOrder: 1 },
@@ -148,12 +142,12 @@ const products: SeedProduct[] = [
     slug: "netflix-subscription", category: "subscriptions", accent: "#DC2626", featured: true, fulfillment: "MANUAL",
     name: L("Abònman Netflix", "Abonnement Netflix", "Netflix Subscription", "Suscripción Netflix"),
     description: L(
-      "Nou aktive abònman an sou imèl kont ou. Ekip nou an ap kontakte w si nou bezwen plis enfòmasyon.",
-      "Nous activons l'abonnement sur l'e-mail de votre compte. Notre équipe vous contacte si besoin.",
-      "We activate the subscription on your account email. Our team contacts you if anything else is needed.",
-      "Activamos la suscripción en el correo de tu cuenta. Nuestro equipo te contacta si hace falta.",
+      "Ou resevwa yon kont Netflix pare pou itilize: imèl ak modpas parèt sou paj kòmand ou. Ou pa bezwen bay anyen.",
+      "Vous recevez un compte Netflix prêt à l'emploi : l'e-mail et le mot de passe s'affichent sur la page de votre commande. Rien à fournir.",
+      "You get a ready-to-use Netflix account: the email and password appear on your order page. Nothing to provide.",
+      "Recibes una cuenta de Netflix lista para usar: el correo y la contraseña aparecen en la página de tu pedido. No tienes que dar nada.",
     ),
-    delivery: L("1 a 6 èdtan", "1 à 6 heures", "1 to 6 hours", "1 a 6 horas"), fields: [emailField],
+    delivery: L("1 a 6 èdtan", "1 à 6 heures", "1 to 6 hours", "1 a 6 horas"), fields: [],
     variants: [
       { name: L("1 mwa – Estanda", "1 mois – Standard", "1 month – Standard", "1 mes – Estándar"), price: 2100 },
       { name: L("1 mwa – Premium", "1 mois – Premium", "1 month – Premium", "1 mes – Premium"), price: 3100 },
@@ -163,12 +157,12 @@ const products: SeedProduct[] = [
     slug: "spotify-premium", category: "subscriptions", accent: "#16A34A", fulfillment: "MANUAL",
     name: L("Spotify Premium", "Spotify Premium", "Spotify Premium", "Spotify Premium"),
     description: L(
-      "Mizik san piblisite. Nou aktive l sou imèl kont ou.",
-      "Musique sans publicité. Activé sur l'e-mail de votre compte.",
-      "Ad-free music, activated on your account email.",
-      "Música sin anuncios, activada en el correo de tu cuenta.",
+      "Mizik san piblisite. Ou resevwa yon kont Spotify pare: imèl ak modpas parèt sou paj kòmand ou.",
+      "Musique sans publicité. Vous recevez un compte Spotify prêt : e-mail et mot de passe sur la page de votre commande.",
+      "Ad-free music. You get a ready Spotify account: email and password on your order page.",
+      "Música sin anuncios. Recibes una cuenta de Spotify lista: correo y contraseña en la página de tu pedido.",
     ),
-    delivery: L("1 a 6 èdtan", "1 à 6 heures", "1 to 6 hours", "1 a 6 horas"), fields: [emailField],
+    delivery: L("1 a 6 èdtan", "1 à 6 heures", "1 to 6 hours", "1 a 6 horas"), fields: [],
     variants: [
       { name: L("1 mwa", "1 mois", "1 month", "1 mes"), price: 1350 },
       { name: L("3 mwa", "3 mois", "3 months", "3 meses"), price: 3900, sale: 3650 },

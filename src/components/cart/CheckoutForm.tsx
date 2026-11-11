@@ -274,7 +274,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
           </section>
         ) : (
           <button type="button" onClick={() => setShowNote(true)} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-1 text-sm font-semibold text-[#60a5fa] hover:underline">
-            <span aria-hidden className="text-lg leading-none">＋</span> {tc("addNote")}
+            {tc("addNote")}
           </button>
         )}
       </div>

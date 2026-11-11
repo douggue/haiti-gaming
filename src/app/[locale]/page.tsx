@@ -18,7 +18,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { HaitiEyebrow } from "@/components/HaitiEyebrow";
 import { ReviewsSection } from "@/components/ReviewsSection";
-import { ArrowRightIcon, BoltIcon, ChatIcon, HelpIcon, PinIcon, PlusIcon, ShieldIcon, WalletIcon, WhatsAppIcon } from "@/components/Icons";
+import { ArrowRightIcon, BoltIcon, ChatIcon, HelpIcon, PinIcon, ShieldIcon, WalletIcon, WhatsAppIcon } from "@/components/Icons";
 import { PayLogo } from "@/components/PayLogo";
 import { getBalances } from "@/lib/ledger";
 import { formatMoney } from "@/lib/money";
@@ -182,7 +182,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
               </div>
               <div className="flex gap-2">
                 <Link href={signedIn ? "/account/wallet/deposit" : "/auth/login?next=/account/wallet/deposit"} className="btn-primary min-h-12 flex-1 text-base">
-                  <PlusIcon width={18} height={18} /> {th("walletDeposit")}
+                  {th("walletDeposit")} <ArrowRightIcon width={17} height={17} />
                 </Link>
                 <Link href="/account/wallet" className="btn-secondary min-h-12 px-5">{th("walletDetails")}</Link>
               </div>

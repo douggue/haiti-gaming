@@ -123,7 +123,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
           </div>
           <span className="flex gap-2">
             <Link href="/market" className="btn-secondary min-h-10 !border-white/30 !bg-white/10 px-3 text-sm !text-white">{t("browse")}</Link>
-            <Link href="/market/sell" className="btn-primary min-h-10 !bg-amber-400 px-3 text-sm !text-black">＋ {t("sell")}</Link>
+            <Link href="/market/sell" className="btn-primary min-h-10 !bg-amber-400 px-3 text-sm !text-black">{t("sell")}</Link>
           </span>
         </div>
         <dl className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -183,7 +183,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
         ))}
 
       {tab === "sales" &&
-        (sales.length === 0 ? empty(t("noSales"), <Link href="/market/sell" className="btn-primary">＋ {t("sell")}</Link>) : (
+        (sales.length === 0 ? empty(t("noSales"), <Link href="/market/sell" className="btn-primary">{t("sell")}</Link>) : (
           <ul className="space-y-3">
             {sales.map((d) => {
               const c = cut(d);
@@ -220,7 +220,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
         ))}
 
       {tab === "listings" &&
-        (listings.length === 0 ? empty(t("noListings"), <Link href="/market/sell" className="btn-primary">＋ {t("sell")}</Link>) : (
+        (listings.length === 0 ? empty(t("noListings"), <Link href="/market/sell" className="btn-primary">{t("sell")}</Link>) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {listings.map((l) => (
               <li key={l.id} className="card flex gap-3 p-3">

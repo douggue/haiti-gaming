@@ -75,7 +75,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
             <a href="#listings" className="btn-primary min-h-12 !bg-white px-5 !text-[#1d2a8a]"><UI.CartIcon width={18} height={18} /> {t("browseCta")}</a>
-            <Link href="/market/sell" className="btn-primary min-h-12 !bg-amber-400 px-5 !text-black shadow-lg">＋ {t("sell")}</Link>
+            <Link href="/market/sell" className="btn-primary min-h-12 !bg-amber-400 px-5 !text-black shadow-lg">{t("sell")}</Link>
           </div>
           <div className="mt-3"><span className="[&_button]:text-white/90 [&_button]:underline"><RulesLink /></span></div>
         </div>
@@ -156,7 +156,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
             <h2 className="display mt-2 text-2xl font-extrabold tracking-tight">{t("sellerBandTitle")}</h2>
             <p className="mt-1 text-sm text-muted">{t("commissionHint", { pct: settings.marketCommissionBps / 100 })}</p>
           </div>
-          <Link href="/market/sell" className="btn-primary min-h-12 shrink-0 !bg-amber-400 px-6 !text-black">＋ {t("sell")}</Link>
+          <Link href="/market/sell" className="btn-primary min-h-12 shrink-0 !bg-amber-400 px-6 !text-black">{t("sell")}</Link>
         </div>
       </section>
     </div>

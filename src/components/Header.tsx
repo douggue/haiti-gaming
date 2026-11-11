@@ -7,9 +7,10 @@ import { getDisplaySettings } from "@/lib/settings";
 import { footerPages } from "@/lib/footer-pages";
 import { t as txt } from "@/lib/text";
 import { Logo } from "./Logo";
+import { ArrowDownLeftIcon } from "./account/AccountIcons";
 import { Avatar } from "./Avatar";
 import { PriorityNav } from "./NavMore";
-import { BellIcon, ChatIcon, PlusIcon, SearchIcon, UserIcon, WalletIcon } from "./Icons";
+import { BellIcon, ChatIcon, SearchIcon, UserIcon, WalletIcon } from "./Icons";
 import { getBalances } from "@/lib/ledger";
 import { formatMoney } from "@/lib/money";
 import { unreadChats } from "@/lib/market-data";
@@ -71,7 +72,7 @@ export async function Header() {
           <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex xl:hidden" aria-label={t("search")}>
             <SearchIcon />
           </Link>
-          {/* Wallet chip: balance (opens the wallet) and "+" to add money */}
+          {/* Wallet chip: balance (opens the wallet) and an arrow to add money */}
           {user && (
             <span className="hidden min-h-10 items-center rounded-full border border-border bg-surface-2/70 p-1 text-sm font-bold lg:inline-flex" data-testid="header-wallet">
               <Link href="/account/wallet" className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 hover:text-[#93c5fd]">
@@ -79,7 +80,7 @@ export async function Header() {
                 <HiddenMoney text={formatMoney(balance, "HTG", locale)} />
               </Link>
               <Link href="/account/wallet/deposit" aria-label={ta("deposit")} title={ta("deposit")} className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-white  hover:brightness-110">
-                <PlusIcon width={15} height={15} />
+                <ArrowDownLeftIcon width={15} height={15} />
               </Link>
             </span>
           )}

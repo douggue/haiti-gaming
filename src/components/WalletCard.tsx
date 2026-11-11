@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/money";
-import { PlusIcon, StoreIcon, SendIcon, SwapIcon, WalletIcon } from "./Icons";
+import { StoreIcon, SendIcon, SwapIcon, WalletIcon } from "./Icons";
+import { ArrowDownLeftIcon } from "./account/AccountIcons";
 import { useHiddenBalance } from "./HiddenMoney";
 
 type B = { available: number; held: number };
@@ -25,7 +26,7 @@ export function WalletCard({ balances, initial, showUsd = true, reviewing = 0 }:
   const b = balances[cur];
   const money = (n: number) => (hidden ? "••••" : formatMoney(n, cur, locale));
   const actions = [
-    ["/account/wallet/deposit", PlusIcon, ta("deposit"), "bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-white"],
+    ["/account/wallet/deposit", ArrowDownLeftIcon, ta("deposit"), "bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-white"],
     ["/account/wallet/transfer", SendIcon, ta("transfer"), "bg-emerald-500/20 text-emerald-300"],
     ["/store", StoreIcon, tc("store"), "bg-amber-500/20 text-amber-300"],
     ...(usdVisible ? ([["/account/wallet/exchange", SwapIcon, ta("exchange"), "bg-violet-500/20 text-violet-300"]] as const) : []),
