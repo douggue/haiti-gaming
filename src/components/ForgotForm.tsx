@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
-import { WhatsAppIcon } from "./Icons";
+import { LockIcon, WhatsAppIcon } from "./Icons";
 import { Turnstile, turnstileOn } from "./Turnstile";
 
 /** With email configured: sends a reset link. Without: hands the customer to WhatsApp support (staff send a one-time link). */
@@ -23,8 +23,9 @@ export function ForgotForm({ emailEnabled, whatsappNumber }: { emailEnabled: boo
   const waText = encodeURIComponent(t("forgotWhatsappMessage", { email: email.trim() || "—" }));
 
   return (
-    <div className="card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
-      <h1 className="text-2xl font-bold tracking-tight">{t("forgotTitle")}</h1>
+    <div className="auth-card card glow-card relative mx-auto w-full max-w-md space-y-5 overflow-hidden p-5 sm:p-8">
+      <span aria-hidden className="grid size-12 place-items-center rounded-2xl bg-[#1d4ed8]/20 text-[#60a5fa] ring-1 ring-[#3b82f6]/30"><LockIcon width={22} height={22} /></span>
+      <h1 className="display text-3xl font-extrabold tracking-tight">{t("forgotTitle")}</h1>
       {emailEnabled ? (
         sent ? (
           <p className="rounded-xl bg-success-soft px-4 py-3 text-sm text-success" role="status">{t("forgotSent")}</p>

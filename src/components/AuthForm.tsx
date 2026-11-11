@@ -1,5 +1,6 @@
 "use client";
-import { LoginIcon, UserPlusIcon } from "./Icons";
+import { ArrowRightIcon, LockIcon, LoginIcon, UserIcon, UserPlusIcon, WhatsAppIcon } from "./Icons";
+import { PayLogo } from "./PayLogo";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname as useRawPathname, useSearchParams } from "next/navigation";
@@ -29,6 +30,7 @@ export function AuthForm({ mode: firstMode, google = false }: { mode: "login" | 
   const [useBackup, setUseBackup] = useState(false);
   const t2 = useTranslations("auth2");
   const tu = useTranslations("authUi");
+  const th = useTranslations("home");
   const [showPw, setShowPw] = useState(false);
   const [pw, setPw] = useState("");
   // Rough guide only; the server also rejects passwords found in data breaches.
@@ -120,109 +122,148 @@ export function AuthForm({ mode: firstMode, google = false }: { mode: "login" | 
     );
   }
 
+  const googleButton = google && (
+    <button
+      type="button"
+      disabled={!hydrated || loading}
+      onClick={async () => {
+        setError("");
+        setLoading(true);
+        const done = `/${locale}${next && next.startsWith("/") && !next.startsWith("//") ? next.replace(/^\/(ht|fr|en|es)(?=\/|$)/, "") || "/account" : "/account"}`;
+        const r = await authClient.signIn.social({ provider: "google", callbackURL: done, errorCallbackURL: `/${locale}/auth/login?error=google` });
+        if (r?.error) {
+          setLoading(false);
+          setError(tg("error"));
+        }
+      }}
+      className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-border bg-surface-2/70 px-4 text-sm font-bold transition hover:border-[#3b82f6]/60 hover:bg-surface-2 disabled:opacity-60"
+    >
+      <GoogleLogo />
+      {tg("continue")}
+    </button>
+  );
+
   return (
-    <form method="post" onSubmit={onSubmit} className="auth-card card glow-card relative mx-auto w-full max-w-md space-y-4 overflow-hidden p-6 sm:p-8">
-      <nav className="grid grid-cols-2 rounded-2xl bg-surface-2 p-1" aria-label={t("loginTitle")}>
-        <Link href={`/auth/login${nextQs}`} onClick={(e) => switchTo(e, "login")} aria-current={mode === "login" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "login" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
-        <Link href={`/auth/register${nextQs}`} onClick={(e) => switchTo(e, "register")} aria-current={mode === "register" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "register" ? "bg-surface text-text shadow-sm" : "text-muted"}`}><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
-      </nav>
-      <div>
-        <h1 className="display text-3xl font-bold">{mode === "login" ? tu("welcomeBack") : t("registerTitle")}</h1>
-        <p className="mt-1 text-muted">{mode === "login" ? tu("loginSub") : tu("registerSub")}</p>
-      </div>
-      {google && (
-        <>
-          <button
-            type="button"
-            disabled={!hydrated || loading}
-            onClick={async () => {
-              setError("");
-              setLoading(true);
-              const done = `/${locale}${next && next.startsWith("/") && !next.startsWith("//") ? next.replace(/^\/(ht|fr|en|es)(?=\/|$)/, "") || "/account" : "/account"}`;
-              const r = await authClient.signIn.social({ provider: "google", callbackURL: done, errorCallbackURL: `/${locale}/auth/login?error=google` });
-              if (r?.error) {
-                setLoading(false);
-                setError(tg("error"));
-              }
-            }}
-            className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border border-border bg-white px-4 text-sm font-bold text-[#1f1f1f] shadow-sm transition hover:bg-[#f7f8fa] disabled:opacity-60"
-          >
-            <GoogleLogo />
-            {tg("continue")}
-          </button>
-          <div className="flex items-center gap-3 text-xs text-muted" aria-hidden>
-            <span className="h-px flex-1 bg-border" />
-            {tg("or")}
-            <span className="h-px flex-1 bg-border" />
-          </div>
-        </>
-      )}
-      {mode === "register" && (
-        <div className="animate-rise">
-          <label htmlFor="name" className="label">{t("name")}</label>
-          <input id="name" name="name" required maxLength={80} autoComplete="name" className="input" />
-        </div>
-      )}
-      <div>
-        <label htmlFor="email" className="label">{t("email")}</label>
-        <input id="email" name="email" type="email" required autoComplete="email" className="input" />
-      </div>
-      {mode === "register" && (
-        <div className="animate-rise">
-          <label htmlFor="phone" className="label">{t("phone")}</label>
-          <PhoneInput id="phone" name="phone" />
-        </div>
-      )}
-      <div>
-        <label htmlFor="password" className="label">{t("password")}</label>
-        <div className="relative">
-          <input
-            id="password"
-            name="password"
-            type={showPw ? "text" : "password"}
-            required
-            minLength={8}
-            maxLength={128}
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            className="input pr-20"
-            onChange={(e) => setPw(e.target.value)}
-          />
-          <button type="button" onClick={() => setShowPw(!showPw)} aria-pressed={showPw} className="absolute right-1 top-1/2 min-h-10 -translate-y-1/2 rounded-lg px-3 text-xs font-bold text-muted hover:text-text">
-            {showPw ? tu("hide") : tu("show")}
-          </button>
+    <div className="mx-auto w-full max-w-md space-y-4">
+      <form method="post" onSubmit={onSubmit} className="auth-card card glow-card relative w-full space-y-5 overflow-hidden p-5 sm:p-8">
+        <nav className="grid grid-cols-2 rounded-2xl border border-border bg-bg/60 p-1" aria-label={t("loginTitle")}>
+          <Link href={`/auth/login${nextQs}`} onClick={(e) => switchTo(e, "login")} aria-current={mode === "login" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "login" ? "bg-surface-2 text-text shadow-sm ring-1 ring-white/5" : "text-muted hover:text-text"}`}><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
+          <Link href={`/auth/register${nextQs}`} onClick={(e) => switchTo(e, "register")} aria-current={mode === "register" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "register" ? "bg-surface-2 text-text shadow-sm ring-1 ring-white/5" : "text-muted hover:text-text"}`}><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
+        </nav>
+        <div>
+          <h1 className="display text-3xl font-extrabold tracking-tight">{mode === "login" ? tu("welcomeBack") : t("registerTitle")}</h1>
+          <p className="mt-1 text-sm text-muted">{mode === "login" ? tu("loginSub") : tu("registerSub")}</p>
         </div>
         {mode === "register" && (
+          <div className="animate-rise">
+            <FieldLabel htmlFor="name" icon={<UserIcon width={16} height={16} />}>{t("name")}</FieldLabel>
+            <input id="name" name="name" required maxLength={80} autoComplete="name" className="input" />
+          </div>
+        )}
+        <div>
+          <FieldLabel htmlFor="email" icon={<MailIcon />}>{t("email")}</FieldLabel>
+          <input id="email" name="email" type="email" required autoComplete="email" className="input" />
+        </div>
+        {mode === "register" && (
+          <div className="animate-rise">
+            <FieldLabel htmlFor="phone" icon={<PhoneIcon />} extra={<span className="flex items-center gap-1"><PayLogo brand="moncash" height={18} /><PayLogo brand="natcash" height={18} /></span>}>{t("phone")}</FieldLabel>
+            <PhoneInput id="phone" name="phone" />
+          </div>
+        )}
+        <div>
+          <FieldLabel
+            htmlFor="password"
+            icon={<KeyIcon />}
+            extra={mode === "login" ? <Link href="/auth/forgot" className="text-xs font-semibold text-[#60a5fa] hover:underline">{t("forgot")}</Link> : undefined}
+          >
+            {t("password")}
+          </FieldLabel>
+          <div className="relative">
+            <input
+              id="password"
+              name="password"
+              type={showPw ? "text" : "password"}
+              required
+              minLength={8}
+              maxLength={128}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              className="input pr-20"
+              onChange={(e) => setPw(e.target.value)}
+            />
+            <button type="button" onClick={() => setShowPw(!showPw)} aria-pressed={showPw} className="absolute right-1 top-1/2 min-h-10 -translate-y-1/2 rounded-lg px-3 text-xs font-bold text-muted hover:text-text">
+              {showPw ? tu("hide") : tu("show")}
+            </button>
+          </div>
+          {mode === "register" && (
+            <>
+              <div className="mt-2 grid grid-cols-4 gap-1.5" aria-hidden>
+                {[1, 2, 3, 4].map((i) => <span key={i} className={`h-1.5 rounded-full ${score >= i ? (score <= 1 ? "bg-danger" : score === 2 ? "bg-warning" : "bg-success") : "bg-border"}`} />)}
+              </div>
+              <p className="mt-1 text-xs text-muted" aria-live="polite">{pw && <b className={score <= 1 ? "text-danger" : score === 2 ? "text-warning" : "text-success"}>{scoreLabel}. </b>}{t("passwordHint")}</p>
+            </>
+          )}
+        </div>
+        <Turnstile key={captchaKey} onToken={setCaptcha} locale={locale} />
+        {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
+        <button className="btn-primary glow-btn min-h-[3.25rem] w-full text-base" disabled={loading || !hydrated || (turnstileOn && !captcha)}>
+          {loading ? (
+            tc("loading")
+          ) : (
+            <>
+              {mode === "login" ? <LoginIcon width={20} height={20} aria-hidden /> : <UserPlusIcon width={20} height={20} aria-hidden />}
+              {mode === "login" ? tc("signIn") : tc("signUp")}
+              <ArrowRightIcon width={18} height={18} aria-hidden />
+            </>
+          )}
+        </button>
+        {google && (
           <>
-            <div className="mt-2 grid grid-cols-4 gap-1.5" aria-hidden>
-              {[1, 2, 3, 4].map((i) => <span key={i} className={`h-1.5 rounded-full ${score >= i ? (score <= 1 ? "bg-danger" : score === 2 ? "bg-warning" : "bg-success") : "bg-border"}`} />)}
+            <div className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.16em] text-muted" aria-hidden>
+              <span className="h-px flex-1 bg-border" />
+              {tu("orQuick")}
+              <span className="h-px flex-1 bg-border" />
             </div>
-            <p className="mt-1 text-xs text-muted" aria-live="polite">{pw && <b className={score <= 1 ? "text-danger" : score === 2 ? "text-warning" : "text-success"}>{scoreLabel}. </b>}{t("passwordHint")}</p>
+            {googleButton}
           </>
         )}
-        {mode === "login" && (
-          <Link href="/auth/forgot" className="mt-2 inline-block text-sm font-semibold text-primary">{t("forgot")}</Link>
-        )}
-      </div>
-      <Turnstile key={captchaKey} onToken={setCaptcha} locale={locale} />
-      {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
-      <button className="btn-primary glow-btn min-h-12 w-full text-base" disabled={loading || !hydrated || (turnstileOn && !captcha)}>
-        {loading ? (
-          tc("loading")
-        ) : (
-          <>
-            {mode === "login" ? <LoginIcon width={20} height={20} aria-hidden /> : <UserPlusIcon width={20} height={20} aria-hidden />}
-            {mode === "login" ? tc("signIn") : tc("signUp")}
-          </>
-        )}
-      </button>
+      </form>
       <p className="text-center text-sm text-muted">
         {mode === "login" ? t("noAccount") : t("haveAccount")}{" "}
-        <Link href={`${mode === "login" ? "/auth/register" : "/auth/login"}${nextQs}`} onClick={(e) => switchTo(e, mode === "login" ? "register" : "login")} className="font-semibold text-primary">
+        <Link href={`${mode === "login" ? "/auth/register" : "/auth/login"}${nextQs}`} onClick={(e) => switchTo(e, mode === "login" ? "register" : "login")} className="font-semibold text-[#60a5fa]">
           {mode === "login" ? tc("signUp") : tc("signIn")}
         </Link>
       </p>
-    </form>
+      {/* Only true promises: how payment works and where help is */}
+      <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-border bg-surface/70 px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-muted">
+        <span className="inline-flex items-center gap-1.5"><LockIcon width={14} height={14} className="text-emerald-400" /> {th("trustSecure")}</span>
+        <span aria-hidden>•</span>
+        <span className="inline-flex items-center gap-1.5"><WhatsAppIcon width={14} height={14} className="text-[#25d366]" /> {tc("whatsappHelp")}</span>
+      </p>
+    </div>
   );
+}
+
+function FieldLabel({ htmlFor, icon, extra, children }: { htmlFor: string; icon: React.ReactNode; extra?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="mb-1.5 flex items-center justify-between gap-2">
+      <label htmlFor={htmlFor} className="flex items-center gap-2 text-sm font-bold">
+        <span className="text-[#60a5fa]" aria-hidden>{icon}</span>
+        {children}
+      </label>
+      {extra}
+    </div>
+  );
+}
+
+const svgProps = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+function MailIcon() {
+  return <svg {...svgProps}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>;
+}
+function KeyIcon() {
+  return <svg {...svgProps}><circle cx="7.5" cy="15.5" r="4.5" /><path d="m10.7 12.3 9.3-9.3M16 7l3 3M14 9l2 2" /></svg>;
+}
+function PhoneIcon() {
+  return <svg {...svgProps}><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M11 18h2" /></svg>;
 }
 
 /** Google's official "G" mark (multicolor), as Google's sign-in branding asks. */

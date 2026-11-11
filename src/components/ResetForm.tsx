@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth-client";
+import { LockIcon } from "./Icons";
 
 export function ResetForm() {
   const t = useTranslations("auth");
@@ -17,8 +18,9 @@ export function ResetForm() {
   useEffect(() => setHydrated(true), []);
 
   return (
-    <div className="card mx-auto w-full max-w-md space-y-4 p-6 sm:p-8">
-      <h1 className="text-2xl font-bold tracking-tight">{t("resetTitle")}</h1>
+    <div className="auth-card card glow-card relative mx-auto w-full max-w-md space-y-5 overflow-hidden p-5 sm:p-8">
+      <span aria-hidden className="grid size-12 place-items-center rounded-2xl bg-[#1d4ed8]/20 text-[#60a5fa] ring-1 ring-[#3b82f6]/30"><LockIcon width={22} height={22} /></span>
+      <h1 className="display text-3xl font-extrabold tracking-tight">{t("resetTitle")}</h1>
       {done ? (
         <>
           <p className="rounded-xl bg-success-soft px-4 py-3 text-sm text-success" role="status">{t("resetDone")}</p>

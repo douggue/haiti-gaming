@@ -152,6 +152,8 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
   const catCount = (c: string) => products.filter((p) => byText(p) && byTags(p) && byPrice(p) && byFav(p) && byCat(p, c)).length;
   const tagCount = (tg: string) => products.filter((p) => byText(p) && byPrice(p) && byCat(p) && byFav(p) && p.tags.includes(tg)).length;
 
+  // Short names of the first products (the store's own order), for the quick-pick chips
+  const quick = useMemo(() => [...new Set(products.filter((p) => !p.soldOut).map((p) => p.name.trim()))].slice(0, 6), [products]);
   const activeCount = picked.length + (min ? 1 : 0) + (max ? 1 : 0);
   const anything = !!(q || cat || picked.length || min || max || favOnly);
   const clearAll = () => {
@@ -164,36 +166,36 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
   };
   const toggleTag = (tg: string) => setPicked(picked.includes(tg) ? picked.filter((x) => x !== tg) : [...picked, tg]);
 
-  const tab = (on: boolean) => `shrink-0 inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${on ? "glow-btn bg-primary text-white" : "text-muted hover:text-text"}`;
+  const tab = (on: boolean) => `shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-bold transition-colors ${on ? "glow-btn border-transparent bg-primary text-white" : "border-border bg-surface/80 text-muted hover:text-text"}`;
   const pill = (on: boolean) => `rounded-full px-1.5 py-px text-[11px] ${on ? "bg-white/25" : "bg-surface-2"}`;
 
   return (
     <>
-      {/* Store header: eyebrow, title, and three promises (instant, MonCash/NatCash, help) */}
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/60 to-[#7c3aed]/15 p-5 sm:p-7">
+      {/* Store header: eyebrow, title + count, and three promises (small chips on phones so products show sooner) */}
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/60 to-[#7c3aed]/15 p-4 sm:p-7">
         <span aria-hidden className="ds-hide pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-[#3b82f6]/25 blur-3xl" />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
-          <div className="max-w-2xl">
+        <div className="relative flex items-end justify-between gap-3">
+          <div className="min-w-0 max-w-2xl">
             <p className="eyebrow inline-flex items-center gap-1.5 text-emerald-400"><span className="size-1.5 animate-pulse rounded-full bg-emerald-400" /> {ts("eyebrow")}</p>
-            <h1 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{ts("title")}</h1>
-            <p className="mt-1 text-sm text-muted sm:text-base">{ts("subtitle")}</p>
+            <h1 className="display mt-1 text-2xl font-extrabold tracking-tight sm:text-4xl">{ts("title")}</h1>
+            <p className="mt-1 hidden text-sm text-muted sm:block sm:text-base">{ts("subtitle")}</p>
           </div>
-          <p className="rounded-full border border-border bg-surface-2/70 px-3 py-1.5 text-sm font-semibold" aria-live="polite">{ts("results", { count: list.length })}</p>
+          <p className="shrink-0 rounded-full border border-border bg-surface-2/70 px-3 py-1.5 text-xs font-semibold sm:text-sm" aria-live="polite">{ts("results", { count: list.length })}</p>
         </div>
-        <ul className="relative mt-5 grid gap-2 text-xs sm:grid-cols-3 sm:text-sm">
+        <ul className="relative -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 text-xs sm:mx-0 sm:mt-5 sm:grid sm:grid-cols-3 sm:px-0 sm:text-sm">
           {(["promiseInstant", "promisePay", "promiseHelp"] as const).map((k, i) => (
-            <li key={k} className="flex items-center gap-2 rounded-xl bg-surface-2/60 px-3 py-2">
-              <span aria-hidden className={`grid size-7 shrink-0 place-items-center rounded-lg text-sm ${["bg-emerald-500/20", "bg-[#831843]/40", "bg-[#1fa855]/20"][i]}`}>{["⚡", "📱", "💬"][i]}</span>
-              <span className="font-semibold">{ts(k)}</span>
+            <li key={k} className="flex shrink-0 items-center gap-2 rounded-full bg-surface-2/60 py-1 pl-1 pr-3 sm:rounded-xl sm:px-3 sm:py-2">
+              <span aria-hidden className={`grid size-6 shrink-0 place-items-center rounded-full text-xs sm:size-7 sm:rounded-lg sm:text-sm ${["bg-emerald-500/20", "bg-[#831843]/40", "bg-[#1fa855]/20"][i]}`}>{["⚡", "📱", "💬"][i]}</span>
+              <span className="whitespace-nowrap font-semibold">{ts(k)}</span>
             </li>
           ))}
         </ul>
       </div>
 
-      <form className="mt-6 flex flex-col gap-3 sm:flex-row" role="search" onSubmit={(e) => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }}>
+      <form className="mt-4 flex flex-col gap-3 sm:mt-6 sm:flex-row" role="search" onSubmit={(e) => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }}>
         <label className="relative flex-1">
           <span className="sr-only">{tc("search")}</span>
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" width={18} height={18} />
+          <SearchIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#60a5fa]" width={20} height={20} />
           <input
             name="q"
             type="search"
@@ -202,7 +204,7 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
             placeholder={tc("searchPlaceholder")}
             autoComplete="off"
             enterKeyHint="search"
-            className={`input pl-9 pr-11 text-base [&::-webkit-search-cancel-button]:hidden ${q ? "border-primary" : ""}`}
+            className={`input min-h-13 rounded-2xl bg-surface-2/70 pl-12 pr-11 text-base [&::-webkit-search-cancel-button]:hidden ${q ? "border-primary" : ""}`}
           />
           {q && (
             <button type="button" onClick={() => setQ("")} aria-label={ts("clearSearch")} className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg bg-surface-2 text-muted hover:text-text">
@@ -253,7 +255,22 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
         </p>
       )}
 
-      <nav className="-mx-4 mt-5 flex gap-1 overflow-x-auto px-4 pb-1 sm:mx-0 sm:rounded-2xl sm:border sm:border-border sm:bg-surface sm:p-1.5" aria-label={tc("categories")}>
+      {/* Quick picks: the first games of the store, one tap searches them */}
+      {quick.length > 0 && (
+        <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0" aria-label={ts("quickPicks")} role="group">
+          {quick.map((name, i) => {
+            const on = q.trim().toLowerCase() === name.toLowerCase();
+            return (
+              <button key={name} type="button" onClick={() => setQ(on ? "" : name)} aria-pressed={on} className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-bold transition-colors ${on ? "border-[#3b82f6] bg-[#1d4ed8]/25 text-text" : "border-border bg-surface/80 text-muted hover:text-text"}`}>
+                {i === 0 && <span aria-hidden className="text-amber-300">🔥</span>}
+                {name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <nav className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0" aria-label={tc("categories")}>
         <button type="button" onClick={() => { setCat(""); setFavOnly(false); }} aria-pressed={!cat && !favOnly} className={tab(!cat && !favOnly)}>
           {ts("all")} <span className={pill(!cat && !favOnly)}>{catCount("")}</span>
         </button>

@@ -30,8 +30,12 @@ export default async function CustomPage({ params }: { params: P }) {
   const blocks = parsed.success ? parsed.data : [];
   const productLists = await Promise.all(blocks.map((b) => (b.type === "products" ? searchProducts({ category: b.category, take: 8 }) : Promise.resolve(null))));
   return (
-    <div className="container-page max-w-4xl space-y-6 py-10 sm:py-14">
-      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t(page.title, locale)}</h1>
+    <div className="container-page max-w-4xl space-y-6 py-6 sm:py-10">
+      <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/70 to-[#7c3aed]/15 p-5 sm:p-8">
+        <span aria-hidden className="ds-hide pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-[#3b82f6]/25 blur-3xl" />
+        <p className="eyebrow relative text-[#60a5fa]">Haiti Gaming</p>
+        <h1 className="display relative mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{t(page.title, locale)}</h1>
+      </header>
       {blocks.map((b, i) => {
         switch (b.type) {
           case "heading":
@@ -49,9 +53,9 @@ export default async function CustomPage({ params }: { params: P }) {
             return <div key={i}><Link href={safeHref(b.href)} className="btn-primary">{t(b.label, locale)}</Link></div>;
           case "faq":
             return (
-              <div key={i} className="divide-y divide-border rounded-2xl border border-border bg-surface">
+              <div key={i} className="space-y-3">
                 {b.items.map((it, j) => (
-                  <details key={j} className="p-5"><summary className="cursor-pointer font-semibold">{t(it.q, locale)}</summary><p className="mt-2 whitespace-pre-line text-muted">{t(it.a, locale)}</p></details>
+                  <details key={j} className="rounded-2xl border border-border bg-surface/80 p-5 open:border-[#3b82f6]/40"><summary className="cursor-pointer font-semibold">{t(it.q, locale)}</summary><p className="mt-2 whitespace-pre-line text-muted">{t(it.a, locale)}</p></details>
                 ))}
               </div>
             );

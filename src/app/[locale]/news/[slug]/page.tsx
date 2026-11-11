@@ -33,18 +33,18 @@ export default async function ArticlePage({ params }: { params: P }) {
     ...(a.image ? { image: [a.image] } : {}),
   };
   return (
-    <article className="container-page max-w-3xl py-8 sm:py-12">
+    <article className="container-page max-w-3xl py-6 sm:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Link href="/news" className="text-sm text-muted hover:text-text">← {tn("back")}</Link>
-      <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
-      {a.publishedAt && <time className="mt-2 block text-sm text-muted" dateTime={a.publishedAt.toISOString()}>{formatDate(a.publishedAt, locale, "long")}</time>}
+      <Link href="/news" className="inline-flex min-h-9 items-center rounded-full border border-border bg-surface/80 px-3 text-sm text-muted hover:text-text">← {tn("back")}</Link>
+      {a.publishedAt && <time className="eyebrow mt-5 block text-[#60a5fa]" dateTime={a.publishedAt.toISOString()}>{formatDate(a.publishedAt, locale, "long")}</time>}
+      <h1 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>
       {a.image && (
-        <div className="relative mt-6 aspect-[16/9] overflow-hidden rounded-2xl bg-surface-2">
+        <div className="relative mt-6 aspect-[16/9] overflow-hidden rounded-3xl border border-border bg-surface-2">
           <Image src={a.image} alt="" fill priority sizes="(min-width: 768px) 768px, 100vw" className="object-cover" />
         </div>
       )}
       {/* Plain text with paragraphs: no HTML is ever rendered from the editor. */}
-      <div className="mt-6 space-y-4 text-[15px] leading-relaxed">
+      <div className="mt-6 space-y-4 rounded-3xl border border-border bg-surface/80 p-5 text-[15px] leading-relaxed sm:p-7">
         {t(a.body, locale).split(/\n{2,}/).map((para, i) => <p key={i} className="whitespace-pre-line">{para}</p>)}
       </div>
     </article>
