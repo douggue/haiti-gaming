@@ -1,4 +1,5 @@
 import { siteUrl } from "@/lib/site-url";
+import { jsonLd as toJsonLd } from "@/lib/json-ld";
 import { Fragment } from "react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -282,7 +283,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([orgJsonLd, faqJsonLd]) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd([orgJsonLd, faqJsonLd]) }} />
 
       {preview && (
         <div className="bg-warning px-4 py-2 text-center text-sm font-semibold text-midnight">Preview of the unpublished homepage draft</div>

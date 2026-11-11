@@ -1,4 +1,5 @@
 import { siteUrl } from "@/lib/site-url";
+import { jsonLd as toJsonLd } from "@/lib/json-ld";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -95,7 +96,7 @@ export default async function ProductPage({ params }: { params: P }) {
 
   return (
     <div className="container-page py-6 sm:py-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, crumbs]) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd([jsonLd, crumbs]) }} />
       <nav className="flex items-center gap-1.5 text-xs font-semibold text-muted" aria-label="Breadcrumb">
         <Link href="/store" className="hover:text-text">{tc("store")}</Link> <span aria-hidden>›</span>
         <Link href={`/categories/${product.category.slug}`} className="hover:text-text">{t(product.category.name, locale)}</Link>

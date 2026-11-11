@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { jsonLd as toJsonLd } from "@/lib/json-ld";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -34,7 +35,7 @@ export default async function ArticlePage({ params }: { params: P }) {
   };
   return (
     <article className="container-page max-w-3xl py-6 sm:py-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(jsonLd) }} />
       <Link href="/news" className="inline-flex min-h-9 items-center rounded-full border border-border bg-surface/80 px-3 text-sm text-muted hover:text-text">← {tn("back")}</Link>
       {a.publishedAt && <time className="eyebrow mt-5 block text-[#60a5fa]" dateTime={a.publishedAt.toISOString()}>{formatDate(a.publishedAt, locale, "long")}</time>}
       <h1 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>

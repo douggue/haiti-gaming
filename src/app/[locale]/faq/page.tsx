@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { jsonLd as toJsonLd } from "@/lib/json-ld";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { pageSeo } from "@/lib/seo";
 import { getDisplaySettings } from "@/lib/settings";
@@ -31,7 +32,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
   const jsonLd = { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: items.map((i) => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } })) };
   return (
     <div className="container-page py-6 sm:py-10">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toJsonLd(jsonLd) }} />
       <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/20 via-surface to-surface px-5 pb-14 pt-8 text-center sm:px-8 sm:pb-16 sm:pt-12">
         <span aria-hidden className="ds-hide pointer-events-none absolute -left-16 -top-20 size-64 rounded-full bg-[#3b82f6]/25 blur-3xl" />
         <span aria-hidden className="ds-hide pointer-events-none absolute -bottom-24 -right-10 size-64 rounded-full bg-[#7c3aed]/25 blur-3xl" />
