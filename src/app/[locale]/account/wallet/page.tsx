@@ -9,6 +9,8 @@ import { formatMoney } from "@/lib/money";
 import { WalletCard } from "@/components/WalletCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { LedgerRow } from "@/components/account/LedgerRow";
+import { InstantTabs } from "@/components/InstantTabs";
+import { Celebrate } from "@/components/Celebrate";
 
 const FILTERS = { all: null, deposits: ["DEPOSIT", "HOLD_RELEASE"], purchases: ["PURCHASE", "REFUND"], transfers: ["TRANSFER"] } as const;
 type Filter = keyof typeof FILTERS;
@@ -26,9 +28,10 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
     getDisplayCurrency(),
     getSettings(),
     prisma.ledgerEntry.findMany({
-      where: { account: { userId: user.id }, ...(FILTERS[filter] ? { transaction: { type: { in: [...FILTERS[filter]!] } } } : {}) },
+      // Everything is sent once; the tabs filter it in the browser (no reload per tab).
+      where: { account: { userId: user.id } },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: 100,
       include: { transaction: true, account: { select: { type: true } } },
     }),
     prisma.paymentIntent.findMany({
@@ -39,8 +42,24 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
   ]);
   const usd = settings.showUsd || balances.USD.available + balances.USD.held > 0;
   const tOrder = await getTranslations("order");
+  // Deposit that just went through (or just reached the team): the "it worked" moment, once on this phone
+  const tcel = await getTranslations("celebrate");
+  const lastDeposit = await prisma.paymentIntent.findFirst({
+    where: { userId: user.id, orderId: null, status: { in: ["SUCCEEDED", "REVIEW"] }, updatedAt: { gte: new Date(Date.now() - 20 * 60_000) } },
+    orderBy: { updatedAt: "desc" },
+  });
   return (
     <div className="space-y-6">
+      {lastDeposit && (
+        <Celebrate
+          kind={lastDeposit.status === "SUCCEEDED" ? "success" : "pending"}
+          onceKey={`dep_${lastDeposit.id}_${lastDeposit.status}`}
+          title={lastDeposit.status === "SUCCEEDED" ? tcel("depositTitle") : tcel("depositPendingTitle")}
+          amount={`+${formatMoney(lastDeposit.amount, lastDeposit.currency, locale)}`}
+          subtitle={lastDeposit.status === "SUCCEEDED" ? tcel("depositSub") : tcel("depositPendingSub")}
+          cta={tcel("continue")}
+        />
+      )}
       <div>
         <p className="eyebrow text-[#60a5fa]">{tw("eyebrow")}</p>
         <h1 className="display text-2xl font-extrabold tracking-tight sm:text-3xl">{tw("title")}</h1>
@@ -72,21 +91,18 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
       </div>
 
       <section>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="display text-lg font-bold sm:text-xl">{tw("history")}</h2>
-          <nav className="flex gap-1 overflow-x-auto rounded-full bg-surface-2 p-1 text-xs font-bold" aria-label={tw("history")}>
-            {(Object.keys(FILTERS) as Filter[]).map((k) => (
-              <a key={k} href={`?f=${k}`} aria-current={filter === k ? "page" : undefined} className={`shrink-0 rounded-full px-3 py-1.5 ${filter === k ? "bg-primary text-white" : "text-muted hover:text-text"}`}>{tw(`f_${k}`)}</a>
-            ))}
-          </nav>
-        </div>
-        {entries.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted"><span className="block text-3xl" aria-hidden>🪙</span>{tw("noHistory")}</p>
-        ) : (
-          <ul className="space-y-2">
-            {entries.map((e) => (
+        <InstantTabs
+          label={tw("history")}
+          param="f"
+          initial={filter}
+          title={<h2 className="display text-lg font-bold sm:text-xl">{tw("history")}</h2>}
+          tabs={(Object.keys(FILTERS) as Filter[]).map((k) => ({ key: k, label: tw(`f_${k}`) }))}
+          empty={<p className="py-10 text-center text-sm text-muted"><span className="block text-3xl" aria-hidden>🪙</span>{tw("noHistory")}</p>}
+          items={entries.map((e) => ({
+            id: e.id,
+            groups: (Object.keys(FILTERS) as Filter[]).filter((k) => (FILTERS[k] as readonly string[] | null)?.includes(e.transaction.type)),
+            node: (
               <LedgerRow
-                key={e.id}
                 type={e.transaction.type}
                 amount={e.amount}
                 currency={e.currency}
@@ -98,9 +114,9 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
                 heldLabel={tw("onHoldLabel")}
                 doneLabel={tw("done")}
               />
-            ))}
-          </ul>
-        )}
+            ),
+          }))}
+        />
       </section>
     </div>
   );

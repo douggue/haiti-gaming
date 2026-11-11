@@ -1196,5 +1196,19 @@
     "exReference": "Transaction reference",
     "exChecked": "Checked by the team",
     "exPlayerId": "Player ID"
+  },
+  "celebrate": {
+    "paidTitle": "Payment complete!",
+    "paidDelivered": "Your codes are ready. You will find them on this page.",
+    "paidProcessing": "Payment received. We are delivering your order now.",
+    "placedTitle": "Order placed!",
+    "placedSub": "Our team is checking the payment. We will let you know when it is done.",
+    "depositTitle": "Money received!",
+    "depositSub": "It is now available in your wallet.",
+    "depositPendingTitle": "Deposit received!",
+    "depositPendingSub": "Our team is checking it. The money will show in your wallet once done.",
+    "transferTitle": "Money sent!",
+    "transferSub": "{name} received it right away.",
+    "continue": "Continue"
   }
 }

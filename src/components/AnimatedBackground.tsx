@@ -137,7 +137,7 @@ export function AnimatedBackground() {
       const want = allowed() && document.visibilityState === "visible";
       if (want && !running && setup()) {
         running = true;
-        canvas.style.opacity = "1";
+        canvas.style.opacity = "var(--hg-bg-strength, 0.32)";
         raf = requestAnimationFrame(frame);
       } else if (!want && running) {
         running = false;

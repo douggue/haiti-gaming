@@ -22,10 +22,10 @@ export type CardOrder = Prisma.OrderGetPayload<{ include: typeof orderCardInclud
 
 export const ACTIVE_STATUSES = ["AWAITING_PAYMENT", "PAYMENT_REVIEW", "PAID", "PROCESSING"] as const;
 export type OrderTab = "all" | "active" | "done";
-export function tabWhere(tab: OrderTab): Prisma.OrderWhereInput {
-  if (tab === "active") return { status: { in: [...ACTIVE_STATUSES] } };
-  if (tab === "done") return { status: "FULFILLED" };
-  return {};
+/** Which tabs (besides "all") an order shows under. */
+export function orderGroups(status: string): OrderTab[] {
+  if ((ACTIVE_STATUSES as readonly string[]).includes(status)) return ["active"];
+  return status === "FULFILLED" ? ["done"] : [];
 }
 export function parseTab(v: string | undefined): OrderTab {
   return v === "active" || v === "done" ? v : "all";
@@ -42,25 +42,6 @@ const STATUS_TONE: Record<string, string> = {
   REFUNDED: "text-muted",
 };
 
-/** Tout / Aktif / Fini, as links so the page works without JavaScript. */
-export async function OrderTabs({ base, tab, counts }: { base: string; tab: OrderTab; counts: Record<OrderTab, number> }) {
-  const ta = await getTranslations("accountUi");
-  return (
-    <nav className="grid grid-cols-3 gap-1 rounded-2xl border border-border bg-surface/70 p-1 text-sm font-bold" aria-label={ta("orderHistory")}>
-      {(["all", "active", "done"] as const).map((k) => (
-        <Link
-          key={k}
-          href={k === "all" ? base : `${base}?tab=${k}`}
-          scroll={false}
-          aria-current={tab === k ? "page" : undefined}
-          className={`rounded-xl px-2 py-2.5 text-center transition-colors ${tab === k ? "bg-surface-2 text-text shadow-[inset_0_0_0_1px_rgba(255,255,255,.06)]" : "text-muted hover:text-text"}`}
-        >
-          {ta(`tab_${k}`)} ({counts[k]})
-        </Link>
-      ))}
-    </nav>
-  );
-}
 
 function PayBadge({ method, walletLabel, otherLabel }: { method: string; walletLabel: string; otherLabel: string }) {
   if (method === "MONCASH" || method === "NATCASH") {

@@ -12,6 +12,7 @@ import { audit } from "@/lib/audit";
 import { t } from "@/lib/text";
 import { StatusBadge } from "@/components/StatusBadge";
 import { CopyButton } from "@/components/CopyButton";
+import { Celebrate } from "@/components/Celebrate";
 import { NatcashOrderForm, MoncashRetryButton } from "@/components/OrderPayment";
 import { WhatsAppIcon } from "@/components/Icons";
 import { ReviewRequest } from "@/components/ReviewRequest";
@@ -69,10 +70,34 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
     MANUAL: { label: manual ? t(manual.name, locale) : order.paymentMethod, tone: "bg-slate-500/25 text-slate-200" },
   };
   const paid = method[order.paymentMethod] ?? { label: order.paymentMethod, tone: "bg-surface-2 text-muted" };
+  // The moment it worked: shown once on this phone, only right after paying or placing the order
+  const tcel = await getTranslations("celebrate");
+  const fresh = (d: Date | null | undefined) => !!d && Date.now() - d.getTime() < 20 * 60_000;
+  const justPaid = ["PAID", "PROCESSING", "FULFILLED"].includes(order.status) && fresh(order.paidAt);
+  const justPlaced = !justPaid && fresh(order.createdAt) && (order.status === "PAYMENT_REVIEW" || (order.paymentMethod === "COD" && order.status === "AWAITING_PAYMENT"));
   const payBox = "relative overflow-hidden rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-400/10 to-surface/90 p-5";
 
   return (
     <div className="space-y-5">
+      {justPaid && (
+        <Celebrate
+          onceKey={`paid_${order.id}`}
+          title={tcel("paidTitle")}
+          amount={formatMoney(order.total, order.currency, locale)}
+          subtitle={order.status === "FULFILLED" ? tcel("paidDelivered") : tcel("paidProcessing")}
+          cta={tcel("continue")}
+        />
+      )}
+      {justPlaced && (
+        <Celebrate
+          kind="pending"
+          onceKey={`placed_${order.id}`}
+          title={tcel("placedTitle")}
+          amount={formatMoney(order.total, order.currency, locale)}
+          subtitle={order.paymentMethod === "COD" ? to("codWaiting") : tcel("placedSub")}
+          cta={tcel("continue")}
+        />
+      )}
       <Link href="/account/orders" className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-text">← {tc("orders")}</Link>
 
       {/* Receipt header: number, date, status, how it was paid and the total */}

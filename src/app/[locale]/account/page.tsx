@@ -16,7 +16,8 @@ import { LocaleSwitch, SignOutButton } from "@/components/HeaderClient";
 import { BellIcon, ChatIcon, GiftIcon, GlobeIcon, HeadsetIcon, LockIcon, PinIcon, ShieldIcon, UserIcon, WhatsAppIcon } from "@/components/Icons";
 import { ChevronRightIcon, GaugeIcon, ReceiptIcon, SlidersIcon, StorefrontIcon, WalletCardIcon } from "@/components/account/AccountIcons";
 import { LedgerRow } from "@/components/account/LedgerRow";
-import { ACTIVE_STATUSES, OrderCard, OrderTabs, orderCardInclude, parseTab, tabWhere } from "@/components/account/OrderCard";
+import { ACTIVE_STATUSES, OrderCard, orderCardInclude, orderGroups, parseTab } from "@/components/account/OrderCard";
+import { InstantTabs } from "@/components/InstantTabs";
 import { DataSaverSwitch } from "@/components/account/DataSaverSwitch";
 
 type Row = { href?: string; icon: React.ReactNode; tone: string; title: string; sub?: string; badge?: string; right?: React.ReactNode };
@@ -38,7 +39,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
     getBalances(prisma, user.id),
     getDisplayCurrency(),
     prisma.user.findUnique({ where: { id: user.id }, select: { phone: true, city: true } }),
-    prisma.order.findMany({ where: { userId: user.id, ...tabWhere(tab) }, orderBy: { createdAt: "desc" }, take: 3, include: orderCardInclude }),
+    prisma.order.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" }, take: 30, include: orderCardInclude }),
     prisma.order.groupBy({ by: ["status"], where: { userId: user.id }, _count: true }),
     prisma.ledgerEntry.findMany({
       where: { account: { userId: user.id } },
@@ -153,20 +154,26 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h2 className="display flex items-center gap-2 text-lg font-bold sm:text-xl"><ReceiptIcon width={22} height={22} className="text-[#60a5fa]" /> {tu("orderHistory")}</h2>
-          <Link href={tab === "all" ? "/account/orders" : `/account/orders?tab=${tab}`} className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
+          <Link href="/account/orders" className="text-sm font-semibold text-primary">{tc("viewAll")}</Link>
         </div>
-        <OrderTabs base="/account" tab={tab} counts={counts} />
-        {orders.length === 0 ? (
-          <div className="rounded-3xl border border-border bg-surface/80 p-8 text-center text-sm text-muted">
-            <span className="mb-2 block text-3xl" aria-hidden>🎮</span>
-            {tab === "all" ? ta("noOrders") : tu("noneInTab")}
-            {tab === "all" && <Link href="/store" className="btn-primary mx-auto mt-4 flex w-fit min-h-11 px-5">{tc("shopNow")}</Link>}
-          </div>
-        ) : (
-          <ul className="space-y-3">
-            {orders.map((o) => <OrderCard key={o.id} order={o} locale={locale} />)}
-          </ul>
-        )}
+        <InstantTabs
+          label={tu("orderHistory")}
+          param="tab"
+          initial={tab}
+          variant="segmented"
+          limit={3}
+          counts={counts}
+          tabs={(["all", "active", "done"] as const).map((k) => ({ key: k, label: tu(`tab_${k}`) }))}
+          empty={
+            <div className="rounded-3xl border border-border bg-surface/80 p-8 text-center text-sm text-muted">
+              <span className="mb-2 block text-3xl" aria-hidden>🎮</span>
+              {ta("noOrders")}
+              <Link href="/store" className="btn-primary mx-auto mt-4 flex w-fit min-h-11 px-5">{tc("shopNow")}</Link>
+            </div>
+          }
+          emptyTab={<div className="rounded-3xl border border-border bg-surface/80 p-8 text-center text-sm text-muted"><span className="mb-2 block text-3xl" aria-hidden>🎮</span>{tu("noneInTab")}</div>}
+          items={orders.map((o) => ({ id: o.id, groups: orderGroups(o.status), node: <OrderCard order={o} locale={locale} /> }))}
+        />
       </section>
 
       {/* Account & settings */}

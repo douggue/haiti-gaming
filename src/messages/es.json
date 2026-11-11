@@ -1196,5 +1196,19 @@
     "exReference": "Referencia de transacción",
     "exChecked": "Verificado por el equipo",
     "exPlayerId": "ID de jugador"
+  },
+  "celebrate": {
+    "paidTitle": "¡Pago completado!",
+    "paidDelivered": "Tus códigos están listos. Los encontrarás en esta página.",
+    "paidProcessing": "Pago recibido. Estamos entregando tu pedido ahora.",
+    "placedTitle": "¡Pedido registrado!",
+    "placedSub": "El equipo está verificando el pago. Te avisaremos cuando termine.",
+    "depositTitle": "¡Dinero recibido!",
+    "depositSub": "Ya está disponible en tu billetera.",
+    "depositPendingTitle": "¡Depósito recibido!",
+    "depositPendingSub": "El equipo lo está verificando. El dinero aparecerá en tu billetera al terminar.",
+    "transferTitle": "¡Dinero enviado!",
+    "transferSub": "{name} lo recibió al instante.",
+    "continue": "Continuar"
   }
 }

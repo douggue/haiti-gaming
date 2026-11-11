@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { lookupRecipient, sendMoney } from "@/actions/transfer";
 import { formatMoney, parseAmount } from "@/lib/money";
 import { CopyButton } from "./CopyButton";
+import { Celebrate } from "./Celebrate";
 import { WhatsAppIcon } from "./Icons";
 
 /** "My code": what other customers type to send me money. */
@@ -40,6 +41,8 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
+  const [sent, setSent] = useState<{ amount: string; name: string } | null>(null);
+  const tcel = useTranslations("celebrate");
   const [key, setKey] = useState(newKey);
   const [pending, start] = useTransition();
   const minor = parseAmount(amount);
@@ -69,6 +72,7 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
   return (
     <section className="card space-y-4 p-5">
       <h2 className="font-semibold">{t("send")}</h2>
+      <Celebrate open={!!sent} onClose={() => setSent(null)} title={tcel("transferTitle")} amount={sent?.amount} subtitle={sent ? tcel("transferSub", { name: sent.name }) : undefined} cta={tcel("continue")} />
       {done && <p className="rounded-xl bg-success-soft px-4 py-3 text-sm text-success" role="status">{done}</p>}
       <label className="block">
         <span className="label">{t("codeLabel")}</span>
@@ -106,6 +110,7 @@ export function TransferForm({ balance, left }: { balance: number; left: number 
                   setConfirming(false);
                   if (r.ok) {
                     setDone(t("sent", { amount: formatMoney(minor ?? 0, "HTG", locale), name: r.name ?? "" }));
+                    setSent({ amount: formatMoney(minor ?? 0, "HTG", locale), name: r.name ?? "" });
                     setAmount("");
                     setNote("");
                     setCode("");

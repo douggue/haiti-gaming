@@ -297,7 +297,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
               )}
             </span>
             <button type="button" className="btn-secondary min-h-11 shrink-0 px-3 text-sm" onClick={() => submit(false)} disabled={!variant?.inStock} aria-label={tp("addToCart")}>
-              {added ? "✓" : <CartIcon width={18} height={18} />}
+              {added ? <span key="ok" className="copy-pop inline-flex text-emerald-400" aria-hidden>✓</span> : <CartIcon width={18} height={18} />}
               <span className="hidden md:inline">{added ? tp("added") : tp("addToCart")}</span>
             </button>
             <button type="button" className="btn-primary min-h-11 shrink-0 px-4 text-sm md:hidden" onClick={() => submit(true)} disabled={!variant?.inStock}>
