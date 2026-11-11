@@ -128,6 +128,10 @@ export type ThemeConfig = {
   heroGrid: boolean;
   /** Words in the scrolling band under the hero, per language, separated by commas. Empty = no band. */
   marquee: Record<string, string>;
+  /** "cyber" = Cyber Caribbean look (Outfit + Plus Jakarta Sans, glass cards, red/green accents); "classic" = the earlier look */
+  style: "classic" | "cyber";
+  /** Moving light ribbons behind every page (off in data saver and for visitors who ask for reduced motion) */
+  animatedBg: boolean;
 };
 
 export const DEFAULT_THEME: ThemeConfig = {
@@ -149,6 +153,8 @@ export const DEFAULT_THEME: ThemeConfig = {
     en: "Game top-ups, Gift cards, Subscriptions, Instant delivery, MonCash, NatCash",
     es: "Recargas de juegos, Tarjetas de regalo, Suscripciones, Entrega inmediata, MonCash, NatCash",
   },
+  style: "cyber",
+  animatedBg: true,
 };
 
 /** Saved themes from before these settings existed get the new defaults for anything missing. */

@@ -8,7 +8,9 @@ import { t as txt } from "@/lib/text";
 import { Logo } from "./Logo";
 import { Avatar } from "./Avatar";
 import { PriorityNav } from "./NavMore";
-import { BellIcon, ChatIcon, SearchIcon, UserIcon } from "./Icons";
+import { BellIcon, ChatIcon, SearchIcon, UserIcon, WalletIcon } from "./Icons";
+import { getBalances } from "@/lib/ledger";
+import { formatMoney } from "@/lib/money";
 import { unreadChats } from "@/lib/market-data";
 import { realtimeConfig } from "@/lib/realtime";
 import { LiveRefresh } from "./LiveRefresh";
@@ -32,7 +34,11 @@ export async function Header() {
     { href: "/faq", label: t("faqShort") },
   ];
   // The Market link shows even with a custom menu, until staff adds it themselves or turns the Market off.
-  const nav = settings.marketEnabled && !base.some((l) => l.href.startsWith("/market")) ? [base[0], { href: "/market", label: t("market") }, ...base.slice(1)] : base;
+  const withMarket: { href: string; label: string; badge?: string }[] = settings.marketEnabled && !base.some((l) => l.href.startsWith("/market")) ? [base[0], { href: "/market", label: t("market") }, ...base.slice(1)] : base;
+  // Red "HOT" pill on the Market link
+  const nav = withMarket.map((l) => (settings.marketEnabled && l.href.startsWith("/market") ? { ...l, badge: "HOT" } : l));
+  // Wallet balance chip (computers, signed-in customers)
+  const balance = user ? (await getBalances(prisma, user.id)).HTG.available : 0;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/85 backdrop-blur-md">
@@ -52,9 +58,20 @@ export async function Header() {
             <LocaleSwitch />
             {settings.showUsd && <CurrencySwitch compact />}
           </div>
-          <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex" aria-label={t("search")}>
+          {/* Wide screens: a real search box (opens the Store with the results); tablets: the icon */}
+          <form action={`/${locale}/store`} className="relative hidden xl:block" role="search">
+            <SearchIcon width={16} height={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+            <input name="q" type="search" placeholder={t("searchPlaceholder")} aria-label={t("search")} className="input min-h-10 w-56 rounded-xl pl-9 text-sm" />
+          </form>
+          <Link href="/store" className="btn-ghost hidden min-h-10 px-2.5 md:inline-flex xl:hidden" aria-label={t("search")}>
             <SearchIcon />
           </Link>
+          {user && (
+            <Link href="/account/wallet" className="hidden min-h-10 items-center gap-1.5 rounded-xl border border-border bg-surface-2 px-3 text-sm font-bold lg:inline-flex" data-testid="header-wallet">
+              <WalletIcon width={16} height={16} className="text-primary" />
+              {formatMoney(balance, "HTG", locale)}
+            </Link>
+          )}
           {/* New chat messages update the counter at once (Pusher); without it, on the next page load. */}
           {user && settings.marketEnabled && realtimeConfig() && <LiveRefresh config={realtimeConfig()!} channel={`private-user-${user.id}`} />}
           {hasChats && (
@@ -69,8 +86,8 @@ export async function Header() {
               {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-danger ring-2 ring-surface" />}
             </Link>
           )}
-          {/* Phones: search and cart live in the bottom bar, leaving room for the currency toggle */}
-          <div className="hidden md:block">
+          {/* Phones: with the Market in the bottom bar, the cart lives here */}
+          <div className={settings.marketEnabled ? "block" : "hidden md:block"}>
             <CartButton />
           </div>
           {user ? (

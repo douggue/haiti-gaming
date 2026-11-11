@@ -415,7 +415,7 @@ function useKeyboardFlag() {
 }
 
 /** Phone-only bottom navigation: the five places customers go most. */
-export function BottomNav({ signedIn }: { signedIn: boolean }) {
+export function BottomNav({ signedIn, market = false }: { signedIn: boolean; market?: boolean }) {
   const t = useTranslations("common");
   const pathname = usePathname();
   const { count, ready } = useStore();
@@ -423,9 +423,12 @@ export function BottomNav({ signedIn }: { signedIn: boolean }) {
   const items = [
     { href: "/", label: t("home"), icon: HomeIcon, active: pathname === "/" },
     { href: "/store", label: t("store"), icon: StoreIcon, active: pathname.startsWith("/store") || pathname.startsWith("/categories") || pathname.startsWith("/products") },
-    { href: "/cart", label: t("cart"), icon: CartIcon, active: pathname.startsWith("/cart") || pathname.startsWith("/checkout"), badge: ready ? count : 0 },
+    // With the Market on, it takes the cart's place (the cart is then in the header)
+    market
+      ? { href: "/market", label: t("market"), icon: TagIcon, active: pathname.startsWith("/market") || pathname.startsWith("/account/market") || pathname.startsWith("/account/messages"), badge: 0 }
+      : { href: "/cart", label: t("cart"), icon: CartIcon, active: pathname.startsWith("/cart") || pathname.startsWith("/checkout"), badge: ready ? count : 0 },
     { href: signedIn ? "/account/wallet" : "/auth/login?next=/account/wallet", label: t("wallet"), icon: WalletIcon, active: pathname.startsWith("/account/wallet") },
-    { href: signedIn ? "/account" : "/auth/login", label: t("tabAccount"), icon: UserIcon, active: (pathname.startsWith("/account") && !pathname.startsWith("/account/wallet")) || pathname.startsWith("/auth") },
+    { href: signedIn ? "/account" : "/auth/login", label: t("tabAccount"), icon: UserIcon, active: (pathname.startsWith("/account") && !pathname.startsWith("/account/wallet") && !pathname.startsWith("/account/market") && !pathname.startsWith("/account/messages")) || pathname.startsWith("/auth") },
   ];
   return (
     <nav

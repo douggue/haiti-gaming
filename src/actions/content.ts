@@ -267,6 +267,8 @@ export async function saveTheme(input: ThemeConfig): Promise<R> {
       displayFont: theme.displayFont === "plain" ? "plain" : "gaming",
       heroGrid: !!theme.heroGrid,
       marquee,
+      style: theme.style === "classic" ? "classic" : "cyber",
+      animatedBg: !!theme.animatedBg,
     };
     const s = await getSettings();
     const history = [{ at: new Date().toISOString(), by: staff.name, theme: fullTheme(s.theme) }, ...(s.themeHistory ?? [])].slice(0, 10);

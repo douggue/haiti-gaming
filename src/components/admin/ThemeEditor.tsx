@@ -80,6 +80,19 @@ export function ThemeEditor({ initial, defaults, history }: { initial: ThemeConf
         </section>
 
         <section className="card space-y-4 p-5">
+          <h2 className="font-bold">Look</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {([["cyber", "Cyber Caribbean", "New look: Outfit + Plus Jakarta Sans, glass cards, red/green accents"], ["classic", "Classic", "The earlier look"]] as const).map(([id, name, desc]) => (
+              <label key={id} className={`flex cursor-pointer items-start gap-2 rounded-xl border-2 p-3 ${th.style === id ? "border-primary bg-primary-soft" : "border-border"}`}>
+                <input type="radio" name="style" className="mt-1" checked={th.style === id} onChange={() => set("style", id)} />
+                <span><b className="block text-sm">{name}</b><span className="text-xs text-muted">{desc}</span></span>
+              </label>
+            ))}
+          </div>
+          <label className="flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={th.animatedBg} onChange={(e) => set("animatedBg", e.target.checked)} /> <span>Animated background on every page <span className="text-muted">(moving light ribbons; off in data-saver mode, for visitors who ask for reduced motion, and on weak phones)</span></span></label>
+        </section>
+
+        <section className="card space-y-4 p-5">
           <h2 className="font-bold">Style and motion</h2>
           <fieldset className="space-y-2">
             <legend className="label">Motion style</legend>

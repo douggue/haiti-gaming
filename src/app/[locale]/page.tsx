@@ -18,7 +18,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { CategoryCard } from "@/components/CategoryCard";
 import { HaitiEyebrow } from "@/components/HaitiEyebrow";
 import { ReviewsSection } from "@/components/ReviewsSection";
-import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon } from "@/components/Icons";
+import { ArrowRightIcon, BoltIcon, ChatIcon, PinIcon, ShieldIcon, WalletIcon, WhatsAppIcon } from "@/components/Icons";
 import { PayLogo } from "@/components/PayLogo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -55,6 +55,8 @@ export default async function HomePage({ params, searchParams }: { params: Promi
   const sp = await searchParams;
   const viewer = sp.preview ? await getUser() : null;
   const preview = !!viewer && isStaff(viewer.role) && !!viewer.twoFactorEnabled;
+  // The closing band offers "Create account" only to visitors who aren't signed in
+  const signedIn = !!(viewer ?? (await getUser()));
   const [th, tc, tf, featured, categories, settings, news] = await Promise.all([
     getTranslations("home"),
     getTranslations("common"),
@@ -155,6 +157,34 @@ export default async function HomePage({ params, searchParams }: { params: Promi
         </div>
       </section>
       </>
+    ),
+    help: (
+      <section className="container-page mt-10">
+        <div className="flex flex-col items-start gap-4 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent p-5 sm:flex-row sm:items-center">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#1fa855] text-white"><WhatsAppIcon /></span>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold">{th("helpTitle")}</h2>
+            <p className="text-sm text-muted">{th("helpBody", { hours: settings.supportHours })}</p>
+          </div>
+          <a href={`https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(tc("whatsappMessage"))}`} target="_blank" rel="noopener" className="btn shrink-0 bg-[#1fa855] text-white hover:bg-[#178a45]">
+            <WhatsAppIcon width={18} height={18} /> {tc("whatsappHelp")}
+          </a>
+        </div>
+      </section>
+    ),
+    cta: (
+      <section className="container-page mt-16">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#1d4ed8] via-[#312e81] to-[#b91c1c] px-6 py-10 text-center text-white shadow-[0_30px_60px_-30px_rgba(29,78,216,.8)] sm:py-14">
+          <span aria-hidden className="ds-hide pointer-events-none absolute -left-16 -top-16 size-56 rounded-full bg-white/10 blur-3xl" />
+          <p className="eyebrow relative inline-flex rounded-full bg-emerald-400/20 px-3 py-1 text-emerald-200">{th("ctaEyebrow")}</p>
+          <h2 className="display relative mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">{th("ctaTitle")}</h2>
+          <p className="relative mx-auto mt-2 max-w-xl text-sm text-white/85 sm:text-base">{th("ctaBody")}</p>
+          <div className="relative mt-6 flex flex-wrap justify-center gap-3">
+            <Link href={home.ctaHref || "/store"} className="btn bg-white text-[#1d4ed8] hover:bg-white/90">{tc("shopNow")} <ArrowRightIcon width={18} height={18} /></Link>
+            {!signedIn && <Link href="/auth/register" className="btn border border-white/40 text-white hover:bg-white/10">{tc("signUp")}</Link>}
+          </div>
+        </div>
+      </section>
     ),
     reviews: <ReviewsSection locale={locale} />,
     trust: (
@@ -280,7 +310,7 @@ export default async function HomePage({ params, searchParams }: { params: Promi
               </div>
               <div className="animate-rise absolute bottom-0 left-0 flex w-52 flex-col gap-1 rounded-2xl bg-[linear-gradient(135deg,#2f74ff,#1340a8)] p-4 shadow-[0_24px_50px_-20px_rgba(47,116,255,.9)]">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[#cfe0ff]">{tc("wallet")}</span>
-                <span className="text-2xl font-extrabold">HTG · USD</span>
+                <span className="text-2xl font-extrabold">{settings.showUsd ? "HTG · USD" : "HTG"}</span>
                 <span className="text-sm text-[#cfe0ff]">{th("walletTitle")}</span>
               </div>
             </div>

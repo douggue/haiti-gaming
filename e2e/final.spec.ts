@@ -228,7 +228,7 @@ test("customer: announcement, menu, custom page, newsletter, manual deposit, rec
 
   // Wallet now holds the deposit
   await c.goto("/ht/account/wallet");
-  await expect(c.getByText(/1[\s,. ]?500/).first()).toBeVisible();
+  await expect(c.locator("main").getByText(/1[\s,. ]?500/).first()).toBeVisible();
 
   // Health check
   const h = await request.get("/api/health");

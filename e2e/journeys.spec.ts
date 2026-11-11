@@ -83,7 +83,7 @@ test("customer pays a manual top-up from the wallet, admin delivers it", async (
   await page.getByLabel("Modpas").fill(customer.password);
   await page.getByRole("button", { name: "Konekte" }).click();
   await page.waitForURL("**/ht/account");
-  await expect(page.getByText("2 500 HTG").first()).toBeVisible();
+  await expect(page.locator("main").getByText("2 500 HTG").first()).toBeVisible();
 
   await page.goto("/ht/products/free-fire-diamonds");
   await page.getByLabel(/ID jwè/).fill("123456789");

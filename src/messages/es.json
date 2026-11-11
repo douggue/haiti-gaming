@@ -66,7 +66,8 @@
     "market": "Market",
     "messages": "Mensajes",
     "sellerCallout": "¿Tienes una cuenta de Free Fire, PUBG o TikTok que no usas? Conviértela en dinero 💸",
-    "sellerCalloutCta": "Hazte vendedor en el Market →"
+    "sellerCalloutCta": "Hazte vendedor en el Market →",
+    "acceptedPayments": "Pagos aceptados"
   },
   "home": {
     "eyebrow": "Hecho en Haití, para gamers",
@@ -96,7 +97,12 @@
     "walletTitle": "Recarga tu billetera una vez y compra con un toque",
     "walletBody": "Agrega gourdes a tu billetera Haiti Gaming con MonCash o NatCash y paga cualquier pedido al instante.",
     "walletCta": "Abrir mi billetera",
-    "newsTitle": "Últimas noticias"
+    "newsTitle": "Últimas noticias",
+    "helpTitle": "¿Necesitas ayuda con una recarga?",
+    "helpBody": "Nuestro equipo en Haití responde por WhatsApp en criollo, francés o inglés ({hours}).",
+    "ctaEyebrow": "Listo para jugar",
+    "ctaTitle": "Sube de nivel hoy.",
+    "ctaBody": "Recarga, compra tarjetas de regalo e intercambia cuentas, pagando en gourdes con MonCash o NatCash."
   },
   "faq": {
     "q1": "¿Cuánto tarda la entrega?",

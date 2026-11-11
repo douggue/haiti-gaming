@@ -66,7 +66,8 @@
     "market": "Market",
     "messages": "Mesaj",
     "sellerCallout": "Ou gen yon kont Free Fire, PUBG oswa TikTok w pa itilize? Fè kòb ak li 💸",
-    "sellerCalloutCta": "Vin vandè sou Market la →"
+    "sellerCalloutCta": "Vin vandè sou Market la →",
+    "acceptedPayments": "Peman aksepte"
   },
   "home": {
     "eyebrow": "Fèt an Ayiti, pou jwè yo",
@@ -96,7 +97,12 @@
     "walletTitle": "Mete lajan nan bous ou yon fwa, achte nan yon sèl klik",
     "walletBody": "Mete goud nan bous Haiti Gaming ou ak MonCash oswa NatCash, epi peye nenpòt kòmand touswit.",
     "walletCta": "Ouvri bous mwen",
-    "newsTitle": "Dènye nouvèl"
+    "newsTitle": "Dènye nouvèl",
+    "helpTitle": "Ou bezwen èd pou yon rechaj?",
+    "helpBody": "Ekip nou an Ayiti reponn sou WhatsApp an Kreyòl, Franse oswa Angle ({hours}).",
+    "ctaEyebrow": "Pare pou jwe",
+    "ctaTitle": "Monte nivo jwèt ou jodi a.",
+    "ctaBody": "Rechaje, achte kat kado epi vann oswa achte kont, peye an goud ak MonCash oswa NatCash."
   },
   "faq": {
     "q1": "Konbyen tan livrezon an pran?",

@@ -9,7 +9,7 @@ const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayout
  * Header links: as many as fit in the space really available (any language, any screen), the rest under "More ▾".
  * Widths are measured from an invisible copy of the row, and re-measured when the window is resized.
  */
-export function PriorityNav({ items, moreLabel }: { items: { href: string; label: string }[]; moreLabel: string }) {
+export function PriorityNav({ items, moreLabel }: { items: { href: string; label: string; badge?: string }[]; moreLabel: string }) {
   const box = useRef<HTMLDivElement>(null);
   const ruler = useRef<HTMLDivElement>(null);
   const [count, setCount] = useState(Math.min(2, items.length));
@@ -39,17 +39,22 @@ export function PriorityNav({ items, moreLabel }: { items: { href: string; label
     <div ref={box} className="relative ml-4 hidden min-w-0 flex-1 md:block">
       {/* invisible copy used only to measure each link */}
       <div ref={ruler} aria-hidden className="invisible absolute flex gap-1" style={{ left: -9999 }}>
-        {items.map((n) => <span key={n.href} className={LINK}>{n.label}</span>)}
+        {items.map((n) => <span key={n.href} className={LINK}>{n.label}{n.badge && <Badge text={n.badge} />}</span>)}
         <span className={LINK}>{moreLabel} ▾</span>
       </div>
       <nav className="flex items-center gap-1" aria-label="Main">
         {items.slice(0, count).map((n) => (
-          <Link key={n.href} href={n.href} className={LINK}>{n.label}</Link>
+          <Link key={n.href} href={n.href} className={LINK}>{n.label}{n.badge && <Badge text={n.badge} />}</Link>
         ))}
         {hidden.length > 0 && <MoreMenu label={moreLabel} items={hidden} />}
       </nav>
     </div>
   );
+}
+
+/** Small red pill next to a menu link (e.g. "HOT" on the Market). */
+function Badge({ text }: { text: string }) {
+  return <span className="ml-1.5 rounded-md bg-red-600 px-1.5 py-0.5 align-[1px] text-[10px] font-extrabold tracking-wide text-white">{text}</span>;
 }
 
 /** "More ▾": closes on navigation, outside tap and Escape. */

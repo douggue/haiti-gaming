@@ -16,7 +16,8 @@ import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { alternates } from "@/lib/seo";
 import { themeAttrs, themeCss, themeScript, cssGuardScript } from "@/lib/theme-css";
 import { fullTheme } from "@/lib/settings";
-import { Chakra_Petch, Figtree } from "next/font/google";
+import { Chakra_Petch, Figtree, Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { cookies, headers } from "next/headers";
 import { getUser } from "@/lib/session";
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -55,6 +56,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 // Self-hosted at build time by Next.js (no request to Google from visitors' phones).
 const sans = Figtree({ subsets: ["latin", "latin-ext"], variable: "--font-body", display: "swap" });
 const display = Chakra_Petch({ subsets: ["latin", "latin-ext"], weight: ["600", "700"], variable: "--font-display-face", display: "optional" });
+// Cyber Caribbean look (Admin → Appearance → Look): headings, prices and buttons in Outfit, text in Plus Jakarta Sans
+const outfit = Outfit({ subsets: ["latin", "latin-ext"], weight: ["600", "700", "800"], variable: "--font-outfit", display: "swap" });
+const jakarta = Plus_Jakarta_Sans({ subsets: ["latin", "latin-ext"], variable: "--font-jakarta", display: "swap" });
 
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -68,7 +72,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const dark = themeCookie ? themeCookie === "dark" : fullTheme(settings.theme).defaultMode === "dark";
 
   return (
-    <html lang={locale} suppressHydrationWarning className={`${sans.variable} ${display.variable}${dataSaver ? " data-saver" : ""}${dark ? " dark" : ""}`} {...themeAttrs(settings.theme)}>
+    <html lang={locale} suppressHydrationWarning className={`${sans.variable} ${display.variable} ${outfit.variable} ${jakarta.variable}${dataSaver ? " data-saver" : ""}${dark ? " dark" : ""}`} {...themeAttrs(settings.theme)}>
       <head>
         {/* Applies light/dark before paint to avoid a flash */}
         <script dangerouslySetInnerHTML={{ __html: themeScript(fullTheme(settings.theme).defaultMode) }} />
@@ -76,6 +80,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         {themeCss(settings.theme) && <style dangerouslySetInnerHTML={{ __html: themeCss(settings.theme) }} />}
       </head>
       <body className="min-h-dvh antialiased">
+        {fullTheme(settings.theme).style === "cyber" && fullTheme(settings.theme).animatedBg && <AnimatedBackground />}
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2">
           {t("skipToContent")}
         </a>
@@ -89,7 +94,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
             <WhatsAppButton number={settings.whatsappNumber} />
             {/* Room for the phone bottom navigation so it never covers the footer */}
             <div className="md:hidden" style={{ height: "calc(4rem + env(safe-area-inset-bottom, 0px))" }} aria-hidden />
-            <BottomNav signedIn={!!user} />
+            <BottomNav signedIn={!!user} market={settings.marketEnabled} />
             <ThemeKeeper defaultMode={fullTheme(settings.theme).defaultMode} />
             <ServiceWorker />
             <InstallPrompt />

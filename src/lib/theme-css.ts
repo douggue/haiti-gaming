@@ -35,6 +35,8 @@ export function themeAttrs(theme: Partial<ThemeConfig> | undefined) {
     "data-motion": t.animations ? t.motion : "off",
     "data-font": t.displayFont,
     "data-grid": t.heroGrid ? "on" : "off",
+    "data-style": t.style,
+    "data-bg": t.animatedBg && t.animations ? "on" : "off",
   };
 }
 

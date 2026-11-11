@@ -481,3 +481,131 @@ body[data-chat] .wa-float { display: none; }
   .inspect-btn::after { animation: none; }
 }
 @media (max-width: 1023px) { body[data-buybar] .wa-float { display: none; } }
+
+/* ───────────── Cyber Caribbean look (Admin → Appearance → Look) ─────────────
+   Midnight/cyber-navy surfaces, royal blue actions, crimson for promos, emerald for "instant/verified",
+   glass cards with a thin light edge, Outfit for headings/prices/buttons and Plus Jakarta Sans for text. */
+html[data-style="cyber"] {
+  --font-body: var(--font-jakarta);
+  --font-display-face: var(--font-outfit);
+  --crimson: #dc2626;
+  --emerald: #10b981;
+}
+html[data-style="cyber"].dark {
+  --bg: #0b0f19;
+  --surface: #111827;
+  --surface-2: #1e293b;
+  --border: rgb(255 255 255 / 0.09);
+  --text: #e6e9f4;
+  --muted: #94a3b8;
+  --primary: #3b6cf6;
+  --primary-hover: #5b84f8;
+  --primary-soft: #172554;
+  --success: #10b981;
+  --success-soft: #052e22;
+  --danger: #f05252;
+  --midnight: #0b0f19;
+  --navy: #111827;
+  --glow: rgb(29 78 216 / 0.45);
+}
+html[data-style="cyber"].dark body {
+  /* Still fallback for the animated background (data saver, light phones, reduced motion) */
+  background:
+    radial-gradient(1100px 560px at 75% -10%, rgb(29 78 216 / 0.22), transparent 60%),
+    radial-gradient(800px 500px at -10% 40%, rgb(124 58 237 / 0.12), transparent 60%),
+    #0b0f19;
+  background-attachment: fixed;
+}
+html[data-style="cyber"] :is(h1, h2, h3, .display) {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+/* Glass cards with a fine light edge; links that are cards glow on hover */
+html[data-style="cyber"].dark .card {
+  background: rgb(17 24 39 / 0.78);
+  border-color: rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+html[data-style="cyber"].dark a.card:hover,
+html[data-style="cyber"].dark .card-hover:hover {
+  border-color: rgb(59 108 246 / 0.45);
+  box-shadow: 0 0 22px -4px rgb(29 78 216 / 0.45);
+}
+html[data-style="cyber"] :is(.btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-danger) {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+/* Primary buttons: royal blue → indigo, unless a page gives the button its own color */
+html[data-style="cyber"] .btn-primary:not([class*="!bg-"]) {
+  background-image: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #3b82f6);
+  box-shadow: 0 10px 26px -12px rgb(37 99 235 / 0.8);
+}
+html[data-style="cyber"] .btn-primary:not([class*="!bg-"]):hover {
+  background-image: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+html[data-style="cyber"].dark .btn-secondary {
+  background: rgb(30 41 59 / 0.6);
+  border-color: rgb(255 255 255 / 0.14);
+}
+html[data-style="cyber"].dark .input {
+  background: #0f1625;
+  border-color: #334155;
+}
+html[data-style="cyber"].dark .input:focus {
+  border-color: #3b6cf6;
+  box-shadow: 0 0 0 3px rgb(59 108 246 / 0.2);
+}
+/* The hero lets the animated background show through */
+html[data-style="cyber"].dark .hero-dark {
+  background: radial-gradient(900px 420px at 80% 8%, rgb(29 78 216 / 0.25), transparent 60%), linear-gradient(180deg, rgb(11 15 25 / 0.35), rgb(11 15 25 / 0.75));
+}
+html[data-style="cyber"][data-bg="on"] .hero-grid {
+  display: none;
+}
+/* Eyebrow labels (MADE IN HAITI, 01, …) */
+.eyebrow {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+/* Animated background canvas: behind everything, stretched (drawn small, blurred by scaling) */
+.hg-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+html:not(.dark) .hg-bg,
+html.data-saver .hg-bg {
+  display: none;
+}
+/* Category tiles without a picture: dark glass with a colored glow instead of pale pastel */
+html[data-style="cyber"].dark .cat-plain {
+  background: linear-gradient(145deg, rgb(30 41 59 / 0.9), rgb(17 24 39 / 0.9)) !important;
+  color: #e6e9f4;
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+html[data-style="cyber"].dark .cat-plain::before {
+  content: "";
+  position: absolute;
+  inset: auto -30% -50% auto;
+  width: 80%;
+  height: 90%;
+  border-radius: 9999px;
+  filter: blur(40px);
+  opacity: 0.45;
+  background: #f59e0b;
+  pointer-events: none;
+}
+html[data-style="cyber"].dark .cat-plain[data-tint="1"]::before { background: #3b82f6; }
+html[data-style="cyber"].dark .cat-plain[data-tint="2"]::before { background: #8b5cf6; }
+html[data-style="cyber"].dark .cat-plain[data-tint="3"]::before { background: #10b981; }
+html[data-style="cyber"].dark .cat-plain .cat-count { color: #94a3b8; }
+html[data-style="cyber"].dark .cat-plain:hover { border-color: rgb(59 108 246 / 0.45); box-shadow: 0 0 22px -4px rgb(29 78 216 / 0.45); }

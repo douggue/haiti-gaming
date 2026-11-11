@@ -1,4 +1,5 @@
-export const HOME_SECTIONS = ["categories", "featured", "howItWorks", "wallet", "news", "reviews", "trust", "faq"] as const;
+// Default order follows the Cyber Caribbean layout: trust before reviews, help strip, closing band last.
+export const HOME_SECTIONS = ["categories", "featured", "howItWorks", "wallet", "trust", "help", "reviews", "news", "faq", "cta"] as const;
 export type HomeSectionId = (typeof HOME_SECTIONS)[number];
 
 export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
@@ -10,6 +11,8 @@ export const HOME_SECTION_LABELS: Record<HomeSectionId, string> = {
   reviews: "Customer reviews (Admin → Trust; hidden until one is approved)",
   trust: "Why players choose us",
   faq: "Frequently asked questions",
+  help: "WhatsApp help strip",
+  cta: "Closing band (Shop now / Create account)",
 };
 
 export type HomepageConfig = {

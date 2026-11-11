@@ -5,6 +5,7 @@ import type { Settings } from "@/lib/settings";
 import { Logo } from "./Logo";
 import { PinIcon } from "./Icons";
 import { DataSaverToggle } from "./DataSaverToggle";
+import { PayLogo } from "./PayLogo";
 import { InstallLink } from "./InstallPrompt";
 import { NewsletterForm } from "./NewsletterForm";
 import { prisma } from "@/lib/db";
@@ -30,7 +31,7 @@ export async function Footer({ settings }: { settings: Settings }) {
   ].filter(([, url]) => url);
 
   return (
-    <footer className="mt-20 border-t border-border bg-surface">
+    <footer className="mt-20 border-t border-border bg-surface/80 backdrop-blur">
       <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-3">
           <Logo src={settings.logoUrl} darkSrc={settings.logoDarkUrl} alt={settings.businessName} />
@@ -88,7 +89,17 @@ export async function Footer({ settings }: { settings: Settings }) {
         </div>
       </div>
       {settings.newsletterEnabled && <div className="container-page pb-6"><NewsletterForm /></div>}
-      <div className="container-page flex flex-wrap items-center gap-x-6 gap-y-3 pb-6"><DataSaverToggle /><InstallLink /></div>
+      {/* Accepted payments + data saver, like a receipt footer */}
+      <div className="container-page pb-6">
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-2xl border border-border bg-surface-2/60 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="eyebrow text-muted">{t("acceptedPayments")}</span>
+            <PayLogo brand="moncash" height={24} />
+            <PayLogo brand="natcash" height={24} />
+          </div>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2"><DataSaverToggle /><InstallLink /></div>
+        </div>
+      </div>
       <div className="border-t border-border py-5 text-center text-xs text-muted">
         © {new Date().getFullYear()} {settings.businessName}. {t("rights")}
       </div>
