@@ -1,4 +1,5 @@
 "use client";
+import * as UI from "@/components/Icons";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
@@ -142,7 +143,7 @@ export function InstallLink() {
   const t = useTranslations("pwa");
   return (
     <button type="button" onClick={() => window.dispatchEvent(new Event(INSTALL_EVENT))} className="install-link items-center gap-2 text-sm font-semibold text-primary hover:underline">
-      📲 {t("installLink")}
+      <UI.PhoneDownIcon width={15} height={15} className="inline-block shrink-0 align-[-2px]" /> {t("installLink")}
     </button>
   );
 }

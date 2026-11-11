@@ -1,4 +1,5 @@
 "use client";
+import * as UI from "@/components/Icons";
 import { checkPlayer } from "@/actions/player";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
@@ -101,7 +102,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
   const step = (n: number, title: string, aside?: React.ReactNode) => (
     <div className="flex items-center justify-between gap-3">
       <h2 className="display flex items-center gap-2.5 text-lg font-bold">
-        <span className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-sm font-extrabold text-white shadow-[0_0_16px_-2px_rgba(59,130,246,.8)]">{n}</span>
+        <span className="step-dot">{n}</span>
         {title}
       </h2>
       {aside}
@@ -140,7 +141,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
             {mode.presets.length > 0 && (
               <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {mode.presets.map((p) => (
-                  <button key={p} type="button" onClick={() => setAmountText(String(p))} className={`display min-h-12 rounded-xl border-2 px-3 text-base font-extrabold transition-all ${amount === p * 100 ? "border-[#3b82f6] bg-[#1d4ed8]/20 text-[#93c5fd] shadow-[0_0_18px_-6px_rgba(59,130,246,.8)]" : "border-border bg-surface hover:border-[#3b82f6]/50"}`}>
+                  <button key={p} type="button" onClick={() => setAmountText(String(p))} className={`display min-h-12 rounded-xl border-2 px-3 text-base font-extrabold transition-all ${amount === p * 100 ? "border-[#3b82f6] bg-[#1d4ed8]/20 text-[#93c5fd] " : "border-border bg-surface hover:border-[#3b82f6]/50"}`}>
                     ${p}
                   </button>
                 ))}
@@ -172,7 +173,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                 key={v.id}
                 className={`pkg-tile relative flex min-h-[7.5rem] cursor-pointer flex-col rounded-2xl border p-3.5 transition-all ${
                   active
-                    ? "border-[#3b82f6] bg-gradient-to-br from-[#1d4ed8]/25 to-[#1e293b] shadow-[0_0_0_1px_#3b82f6,0_18px_36px_-18px_rgba(59,130,246,.9)]"
+                    ? "border-[#3b82f6] bg-gradient-to-br from-[#1d4ed8]/25 to-[#1e293b] shadow-[0_0_0_1px_#3b82f6]"
                     : "border-border bg-surface/90 hover:border-[#3b82f6]/50"
                 } ${!v.inStock ? "cursor-not-allowed opacity-60" : ""}`}
               >
@@ -271,7 +272,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
                 )}
                 {fieldError?.key === f.key && (
                   <p id={`field-${f.key}-error`} role="alert" className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-danger">
-                    <span aria-hidden>⚠</span> {fieldError.msg}
+                    <UI.AlertIcon width={15} height={15} className="inline-block shrink-0 align-[-2px]" /> {fieldError.msg}
                   </p>
                 )}
               </div>
@@ -312,7 +313,7 @@ export function ProductPurchase({ product, saved, pricing }: Props) {
           {error && <p className="mb-2 rounded-xl bg-danger-soft px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
           <div className="flex items-center gap-2 md:items-end md:justify-between md:gap-3">
             <span className="min-w-0 flex-1">
-              <span className="eyebrow block text-[10px] text-muted">{tp("totalToPay")}</span>
+              <span className="eyebrow block truncate whitespace-nowrap text-[10px] text-muted">{tp("totalToPay")}</span>
               {total == null ? (
                 <b className="display text-xl font-extrabold md:text-2xl">—</b>
               ) : mode ? (

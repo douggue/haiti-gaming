@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { formatMoney } from "@/lib/money";
 import type { Currency } from "@prisma/client";
 import { ArrowDownLeftIcon, ArrowUpRightIcon, CardPlusIcon, CheckCheckIcon, GamepadIcon, UndoIcon, UnlockIcon, WrenchIcon } from "./AccountIcons";
@@ -48,7 +49,7 @@ export function LedgerRow({
           {incoming ? "+" : "−"}{formatMoney(Math.abs(amount), currency, locale)}
         </b>
         {held ? (
-          <span className="text-[11px] font-bold text-amber-400">⏳ {heldLabel}</span>
+          <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-400"><UI.HourglassIcon width={13} height={13} /> {heldLabel}</span>
         ) : (
           <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-emerald-400"><CheckCheckIcon width={13} height={13} /> {doneLabel}</span>
         )}

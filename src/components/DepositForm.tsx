@@ -220,7 +220,7 @@ export function DepositForm(p: Props) {
           <span className="size-2 rounded-full bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" aria-hidden />
           {tu("pickAmount")}
         </p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-6 gap-2">
           {presets.map((v, i) => {
             const on = minor === v * 100;
             return (
@@ -229,7 +229,7 @@ export function DepositForm(p: Props) {
                 type="button"
                 onClick={() => setAmount(String(v))}
                 aria-pressed={on}
-                className={`flex min-h-[4.5rem] flex-col items-center justify-center rounded-2xl border transition-all ${presets.length === 5 && i === 4 ? "col-span-2" : ""} ${on ? "border-[#3b82f6] bg-[#1d4ed8] text-white shadow-[0_0_22px_-6px_rgba(59,130,246,.9)]" : "border-border bg-surface-2/60 hover:border-[#3b82f6]/50"}`}
+                className={`flex min-h-[4.5rem] flex-col items-center justify-center rounded-2xl border transition-all ${presets.length === 4 || (presets.length === 5 && i >= 3) || (presets.length === 2) ? "col-span-3" : presets.length === 1 ? "col-span-6" : "col-span-2"} ${on ? "border-[#3b82f6] bg-[#1d4ed8] text-white " : "border-border bg-surface-2/60 hover:border-[#3b82f6]/50"}`}
               >
                 <span className="display text-xl font-extrabold tabular-nums sm:text-2xl">{crypto ? `$${v}` : v.toLocaleString(locale === "en" ? "en-US" : "fr-FR")}</span>
                 <span className={`text-[11px] font-bold ${on ? "text-white/80" : "text-muted"}`}>{crypto ? "USDT" : "HTG"}</span>
@@ -261,7 +261,7 @@ export function DepositForm(p: Props) {
                 role="tab"
                 aria-selected={on}
                 onClick={() => switchTo(x.key)}
-                className={`flex w-full min-w-0 items-center gap-3 rounded-2xl border p-3 text-left transition-all ${on ? "border-[#3b82f6]/70 bg-[#1d4ed8]/15 shadow-[0_0_20px_-8px_rgba(59,130,246,.9)]" : "border-border bg-surface/80 hover:border-[#3b82f6]/40"}`}
+                className={`flex w-full min-w-0 items-center gap-3 rounded-2xl border p-3 text-left transition-all ${on ? "border-[#3b82f6]/70 bg-[#1d4ed8]/15 " : "border-border bg-surface/80 hover:border-[#3b82f6]/40"}`}
               >
                 {x.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -282,7 +282,7 @@ export function DepositForm(p: Props) {
                     {x.kind === "moncash" ? tu("moncashSub") : x.kind === "crypto" ? tw("cryptoCredit") : x.recipientName ? `${tw("sendTo")} ${x.recipientName}` : "HTG"}
                   </span>
                 </span>
-                <span className={`grid size-7 shrink-0 place-items-center rounded-full ${on ? "bg-[#c7d2fe] text-[#1e1b4b]" : "border-2 border-muted/60 bg-surface-2"}`} aria-hidden>
+                <span className={`grid size-7 shrink-0 place-items-center rounded-full ${on ? "bg-primary text-white" : "border-2 border-muted/60 bg-surface-2"}`} aria-hidden>
                   {on && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}
                 </span>
               </button>

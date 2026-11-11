@@ -49,7 +49,7 @@ export function VerifyGate({ email }: { email: string }) {
 
   return (
     <section className="card animate-rise mx-auto max-w-lg space-y-5 p-6 text-center sm:p-8" aria-labelledby="verify-title">
-      <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-primary-soft text-primary shadow-[0_0_30px_-8px_var(--glow)]" aria-hidden>
+      <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-primary-soft text-primary " aria-hidden>
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="4" y="10.5" width="16" height="10.5" rx="2.5" />
           <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />

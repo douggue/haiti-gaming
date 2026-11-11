@@ -1,4 +1,6 @@
 "use client";
+import * as UI from "@/components/Icons";
+import * as AI from "@/components/account/AccountIcons";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -30,7 +32,7 @@ export function SecurityForms() {
           if (!r.error) (e.target as HTMLFormElement).reset();
         }}
       >
-        <h2 className="flex items-center gap-2 font-semibold"><span className="grid size-9 place-items-center rounded-xl bg-primary/15 text-lg" aria-hidden>🔑</span>{ts("changePassword")}</h2>
+        <h2 className="flex items-center gap-2 font-semibold"><span className="grid size-9 place-items-center rounded-xl bg-primary/15 text-primary" aria-hidden><AI.KeyIcon width={18} height={18} /></span>{ts("changePassword")}</h2>
         <div>
           <label className="label" htmlFor="current">{ts("currentPassword")}</label>
           <input id="current" name="current" type="password" required autoComplete="current-password" className="input" />
@@ -58,11 +60,11 @@ export function SessionsList({ sessions }: { sessions: DeviceSession[] }) {
   const others = sessions.filter((s) => !s.current).length;
   return (
     <section className="card p-5">
-      <h2 className="mb-3 flex items-center gap-2 font-semibold"><span className="grid size-9 place-items-center rounded-xl bg-violet-500/15 text-lg" aria-hidden>📱</span>{ts("sessions")}</h2>
+      <h2 className="mb-3 flex items-center gap-2 font-semibold"><span className="grid size-9 place-items-center rounded-xl bg-violet-500/15 text-violet-300" aria-hidden><UI.SmartphoneIcon width={18} height={18} /></span>{ts("sessions")}</h2>
       <ul className="divide-y divide-border">
         {sessions.map((s) => (
           <li key={s.token} className="flex items-center gap-3 py-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface-2 text-xl" aria-hidden>{s.mobile ? "📱" : "💻"}</span>
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface-2 text-muted" aria-hidden>{s.mobile ? <UI.SmartphoneIcon width={20} height={20} /> : <UI.LaptopIcon width={20} height={20} />}</span>
             <span className="min-w-0 flex-1">
               <b className="block truncate text-sm">
                 {s.device} · {s.browser}

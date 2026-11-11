@@ -34,7 +34,7 @@ export function WalletCard({ balances, initial, showUsd = true, reviewing = 0 }:
 
   return (
     <div className="space-y-3">
-      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(140deg,#1e3a8a_0%,#1d4ed8_40%,#0b1a4a_100%)] p-5 text-white shadow-[0_26px_50px_-24px_rgba(29,78,216,.9)] sm:p-6">
+      <div className="on-dark relative overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(140deg,#1e3a8a_0%,#1d4ed8_40%,#0b1a4a_100%)] p-5 text-white shadow-[0_26px_50px_-24px_rgba(29,78,216,.9)] sm:p-6">
         <div className="ds-hide pointer-events-none absolute -right-16 -top-20 h-60 w-60 rounded-full bg-[#38bdf8]/35 blur-3xl" aria-hidden />
         <div className="ds-hide pointer-events-none absolute -bottom-24 -left-10 h-52 w-52 rounded-full bg-[#7c3aed]/35 blur-3xl" aria-hidden />
         <div className="relative flex items-center justify-between gap-2">

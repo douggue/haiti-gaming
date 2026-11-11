@@ -1,4 +1,5 @@
 "use client";
+import * as UI from "@/components/Icons";
 import { useEffect, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -177,7 +178,7 @@ export function BuyButton({ listingId, locale, signedIn, rulesAccepted, disabled
   return (
     <div className="space-y-2">
       <button type="button" className="btn-primary min-h-12 w-full" disabled={pending} onClick={() => (accepted ? buy() : setRules(true))}>
-        🔒 {pending ? t("opening") : (label ?? t("buyNow"))}
+        <UI.LockIcon width={16} height={16} className="inline-block shrink-0 align-[-2px]" /> {pending ? t("opening") : (label ?? t("buyNow"))}
       </button>
       {error && <p className="rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger" role="alert">{error}</p>}
       <RulesSheet
@@ -199,7 +200,7 @@ export function ChatButton({ listingId, signedIn }: { listingId: string; signedI
   const router = useRouter();
   const [error, setError] = useState("");
   const [pending, start] = useTransition();
-  if (!signedIn) return <Link href={`/auth/login?next=/market/${listingId}`} className="btn-secondary min-h-11">💬 {t("writeSeller")}</Link>;
+  if (!signedIn) return <Link href={`/auth/login?next=/market/${listingId}`} className="btn-secondary min-h-11"><UI.ChatIcon width={16} height={16} className="inline-block shrink-0 align-[-2px]" /> {t("writeSeller")}</Link>;
   return (
     <span className="flex flex-col gap-1">
       <button
@@ -214,7 +215,7 @@ export function ChatButton({ listingId, signedIn }: { listingId: string; signedI
           })
         }
       >
-        💬 {t("writeSeller")}
+        <UI.ChatIcon width={16} height={16} className="inline-block shrink-0 align-[-2px]" /> {t("writeSeller")}
       </button>
       {error && <span className="text-xs text-danger">{error}</span>}
     </span>
@@ -242,7 +243,7 @@ export function ReportButton({ listingId, signedIn }: { listingId: string; signe
   if (!signedIn) return null;
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center px-1 text-xs font-medium text-muted underline-offset-2 hover:text-danger hover:underline">⚑ {t("report")}</button>
+      <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center px-1 text-xs font-medium text-muted underline-offset-2 hover:text-danger hover:underline gap-1"><UI.FlagIcon width={14} height={14} /> {t("report")}</button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t("reportTitle")}>
         {msg ? (
           <p className="rounded-xl bg-success-soft px-4 py-3 text-sm text-success">{msg}</p>
@@ -347,7 +348,7 @@ export function SellForm({ commissionPct, rulesAccepted }: { commissionPct: numb
         <textarea name="description" rows={4} maxLength={1500} placeholder={t("notesPlaceholder")} className="input py-2" />
       </label>
       <fieldset className="space-y-3 rounded-2xl border-2 border-amber-400/60 bg-amber-400/10 p-4">
-        <legend className="px-1 text-sm font-bold">🔐 {t("credTitle")}</legend>
+        <legend className="flex items-center gap-1.5 px-1 text-sm font-bold"><UI.LockIcon width={15} height={15} /> {t("credTitle")}</legend>
         <p className="text-xs text-muted">{t("credHint")}</p>
         <label className="block"><span className="label">{t("credLogin")}</span><input name="credLogin" required maxLength={120} autoComplete="off" autoCapitalize="none" spellCheck={false} className="input" /></label>
         <label className="block"><span className="label">{t("credPassword")}</span><input name="credPassword" type="password" required maxLength={120} autoComplete="new-password" className="input" /></label>

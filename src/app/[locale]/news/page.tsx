@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
@@ -26,7 +27,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
         <p className="relative mt-1 text-sm text-muted sm:text-base">{t("subtitle")}</p>
       </header>
       {articles.length === 0 ? (
-        <div className="mt-6 rounded-3xl border border-dashed border-border bg-surface/70 p-10 text-center text-muted"><span className="mb-2 block text-3xl" aria-hidden>📰</span>{t("empty")}</div>
+        <div className="mt-6 rounded-3xl border border-dashed border-border bg-surface/70 p-10 text-center text-muted"><span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><UI.NewsIcon width={28} height={28} /></span>{t("empty")}</div>
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{articles.map((a) => <NewsCard key={a.id} article={a} locale={locale} />)}</div>
       )}

@@ -41,7 +41,7 @@ export function InstantTabs({
 
   const nav =
     variant === "segmented" ? (
-      <div role="tablist" aria-label={label} className="grid gap-1 rounded-2xl border border-border bg-surface/70 p-1 text-sm font-bold" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
+      <div role="tablist" aria-label={label} className="seg">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -49,14 +49,14 @@ export function InstantTabs({
             role="tab"
             aria-selected={tab === t.key}
             onClick={() => pick(t.key)}
-            className={`rounded-xl px-2 py-2.5 text-center transition-all duration-200 ${tab === t.key ? "bg-surface-2 text-text shadow-[inset_0_0_0_1px_rgba(255,255,255,.06)]" : "text-muted hover:text-text"}`}
+            className="seg-btn px-2"
           >
             {t.label} ({count(t.key)})
           </button>
         ))}
       </div>
     ) : (
-      <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto rounded-full bg-surface-2 p-1 text-xs font-bold">
+      <div role="tablist" aria-label={label} className="seg seg-scroll max-w-full">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -64,7 +64,7 @@ export function InstantTabs({
             role="tab"
             aria-selected={tab === t.key}
             onClick={() => pick(t.key)}
-            className={`shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 ${tab === t.key ? "bg-primary text-white shadow-[0_0_14px_-4px_rgba(59,130,246,.9)]" : "text-muted hover:text-text"}`}
+            className="seg-btn"
           >
             {t.label}
           </button>

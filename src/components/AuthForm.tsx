@@ -146,9 +146,9 @@ export function AuthForm({ mode: firstMode, google = false }: { mode: "login" | 
   return (
     <div className="mx-auto w-full max-w-md space-y-4">
       <form method="post" onSubmit={onSubmit} className="auth-card card glow-card relative w-full space-y-5 overflow-hidden p-5 sm:p-8">
-        <nav className="grid grid-cols-2 rounded-2xl border border-border bg-bg/60 p-1" aria-label={t("loginTitle")}>
-          <Link href={`/auth/login${nextQs}`} onClick={(e) => switchTo(e, "login")} aria-current={mode === "login" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "login" ? "bg-surface-2 text-text shadow-sm ring-1 ring-white/5" : "text-muted hover:text-text"}`}><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
-          <Link href={`/auth/register${nextQs}`} onClick={(e) => switchTo(e, "register")} aria-current={mode === "register" ? "page" : undefined} className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold transition-colors duration-200 ${mode === "register" ? "bg-surface-2 text-text shadow-sm ring-1 ring-white/5" : "text-muted hover:text-text"}`}><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
+        <nav className="seg" aria-label={t("loginTitle")}>
+          <Link href={`/auth/login${nextQs}`} onClick={(e) => switchTo(e, "login")} aria-current={mode === "login" ? "page" : undefined} className="seg-btn"><LoginIcon width={17} height={17} aria-hidden />{tc("signIn")}</Link>
+          <Link href={`/auth/register${nextQs}`} onClick={(e) => switchTo(e, "register")} aria-current={mode === "register" ? "page" : undefined} className="seg-btn"><UserPlusIcon width={17} height={17} aria-hidden />{tc("signUp")}</Link>
         </nav>
         <div>
           <h1 className="display text-3xl font-extrabold tracking-tight">{mode === "login" ? tu("welcomeBack") : t("registerTitle")}</h1>

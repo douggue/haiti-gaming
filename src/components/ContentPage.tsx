@@ -22,9 +22,9 @@ export function ContentPage({
       <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/70 to-[#7c3aed]/15 p-5 sm:p-8">
         <span aria-hidden className="ds-hide pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-[#3b82f6]/25 blur-3xl" />
         <div className="relative flex items-start gap-4">
-          {icon && <span aria-hidden className="hidden size-12 shrink-0 place-items-center rounded-2xl bg-[#1d4ed8]/25 text-[#93c5fd] ring-1 ring-[#3b82f6]/30 sm:grid">{icon}</span>}
+          {icon && <span aria-hidden className="hidden size-12 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary sm:grid">{icon}</span>}
           <div className="min-w-0">
-            {eyebrow && <p className="eyebrow text-[#60a5fa]">{eyebrow}</p>}
+            {eyebrow && <p className="eyebrow link-accent text-primary">{eyebrow}</p>}
             <h1 className="display mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>
             {intro && <div className="mt-2 max-w-2xl text-sm text-muted sm:text-base">{intro}</div>}
           </div>
@@ -35,13 +35,13 @@ export function ContentPage({
   );
 }
 
-/** Numbered rules (terms, privacy, refunds) as cards: 01, 02… */
+/** Numbered rules (terms, privacy, refunds): one surface, a divider between clauses, the same step dots as everywhere. */
 export function NumberedCards({ items }: { items: string[] }) {
   return (
-    <ol className="grid gap-3">
+    <ol className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
       {items.map((p, i) => (
-        <li key={i} className="flex gap-4 rounded-2xl border border-border bg-surface/80 p-4 sm:p-5">
-          <span className="display shrink-0 text-2xl font-extrabold leading-none text-[#3b82f6]/80">{String(i + 1).padStart(2, "0")}</span>
+        <li key={i} className="flex gap-4 p-4 sm:p-5">
+          <span className="step-dot" aria-hidden>{i + 1}</span>
           <p className="text-[15px]">{p}</p>
         </li>
       ))}

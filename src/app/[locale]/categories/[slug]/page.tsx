@@ -26,9 +26,9 @@ export default async function CategoryPage({ params }: { params: P }) {
   const [tc, ts, products] = await Promise.all([getTranslations("common"), getTranslations("store"), searchProducts({ category: slug })]);
   return (
     <div className="container-page py-6 sm:py-10">
-      <nav className="text-sm text-muted" aria-label="Breadcrumb">
-        <Link href="/categories" className="hover:text-text">{tc("categories")}</Link> /{" "}
-        {category.parent && <><Link href={`/categories/${category.parent.slug}`} className="hover:text-text">{t(category.parent.name, locale)}</Link> / </>}
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted" aria-label="Breadcrumb">
+        <Link href="/categories" className="hover:text-text">{tc("categories")}</Link> <span aria-hidden>›</span>
+        {category.parent && <><Link href={`/categories/${category.parent.slug}`} className="hover:text-text">{t(category.parent.name, locale)}</Link> <span aria-hidden>›</span></>}
         <span>{t(category.name, locale)}</span>
       </nav>
       <header className="relative mt-3 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/70 to-[#7c3aed]/15 p-5 sm:p-7">

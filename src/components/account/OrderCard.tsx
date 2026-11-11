@@ -104,15 +104,15 @@ export async function OrderCard({ order, locale }: { order: CardOrder; locale: s
       </div>
 
       <div className="mt-3 flex flex-wrap justify-end gap-2">
-        <Link href={href} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-surface-2 px-3.5 text-sm font-bold hover:bg-surface-2/70">
+        <Link href={href} className="btn-secondary min-h-11 gap-1.5 px-3.5 text-sm">
           <ReceiptIcon width={16} height={16} /> {ta("viewDetails")}
         </Link>
         {fulfilled && codes > 0 ? (
-          <Link href={href} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-[#c7d2fe] px-3.5 text-sm font-bold text-[#1e1b4b] hover:bg-[#dbe1ff]">
+          <Link href={href} className="btn-primary min-h-11 gap-1.5 px-3.5 text-sm">
             <KeyIcon width={16} height={16} /> {ta("seeCodes")}
           </Link>
         ) : finished && product ? (
-          <Link href={`/products/${product.slug}`} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-[#1d4ed8] px-3.5 text-sm font-bold text-white hover:bg-[#2563eb]">
+          <Link href={`/products/${product.slug}`} className="btn-primary min-h-11 gap-1.5 px-3.5 text-sm">
             <ReorderIcon width={16} height={16} /> {ta("reorder")}
           </Link>
         ) : null}

@@ -1,4 +1,5 @@
 "use client";
+import * as UI from "@/components/Icons";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -227,7 +228,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
             return (
               <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <div className="w-64 max-w-[85%] rounded-2xl border-2 border-amber-400 bg-amber-400/10 p-3 text-sm">
-                  <p className="text-xs font-semibold text-muted">💰 {mine ? t("yourOffer") : t("theirOffer")}</p>
+                  <p className="flex items-center gap-1 text-xs font-semibold text-muted"><UI.MoneyIcon width={14} height={14} /> {mine ? t("yourOffer") : t("theirOffer")}</p>
                   <p className="text-xl font-extrabold">{money(m.offerAmount ?? 0)}</p>
                   {m.offerStatus === "PENDING" && role === "seller" ? (
                     <div className="mt-2 flex gap-2">
@@ -246,7 +247,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
           if (m.fromStaff)
             return (
               <div key={m.id} className="mx-auto max-w-[90%] rounded-2xl border border-primary/40 bg-primary/10 px-3 py-2 text-sm">
-                <p className="text-[11px] font-bold text-primary">🛡️ {t("agent")}</p>
+                <p className="flex items-center gap-1 text-xs font-bold text-primary"><UI.ShieldIcon width={13} height={13} /> {t("agent")}</p>
                 <p className="whitespace-pre-wrap break-words">{m.body}</p>
               </div>
             );
@@ -330,7 +331,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
           }
           className="shrink-0 rounded-full bg-white px-3 py-1.5 text-[11px] font-extrabold text-primary shadow disabled:bg-white/20 disabled:text-white"
         >
-          🛡️ {state.agentCalled ? t("agentComing") : t("callAgent")}
+          <UI.ShieldIcon width={16} height={16} className="inline-block shrink-0 align-[-2px]" /> {state.agentCalled ? t("agentComing") : t("callAgent")}
         </button>
       </div>
 
@@ -373,7 +374,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
       )}
 
       <div ref={list} className="relative flex-1 space-y-2 overflow-y-auto overscroll-contain bg-[radial-gradient(circle_at_1px_1px,rgb(127_127_127/0.12)_1px,transparent_0)] bg-[length:18px_18px] p-3" data-testid="chat-messages">
-        <p className="mx-auto w-fit max-w-[92%] rounded-xl bg-amber-400/15 px-3 py-2 text-center text-[11px] text-amber-700 dark:text-amber-300">🔒 {t("safety")}</p>
+        <p className="mx-auto w-fit max-w-[92%] rounded-xl bg-amber-400/15 px-3 py-2 text-center text-[11px] text-amber-700 dark:text-amber-300"><UI.LockIcon width={13} height={13} className="inline-block shrink-0 align-[-2px]" /> {t("safety")}</p>
         {messages.length === 0 && <p className="py-10 text-center text-sm text-muted">{t("empty")}</p>}
         {messages.map((m) => {
           const line =
@@ -400,7 +401,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
 
       {state.closed ? (
         <div className="border-t border-border bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-center" data-testid="chat-closed">
-          <p className="text-sm font-semibold">🔒 {t("closedTitle")}</p>
+          <p className="flex items-center justify-center gap-1.5 text-sm font-semibold"><UI.LockIcon width={15} height={15} /> {t("closedTitle")}</p>
           <p className="mt-0.5 text-xs text-muted">{state.reopenPending ? t("reopenPending") : t("closedHint")}</p>
           {!state.reopenPending && (
             <button type="button" onClick={() => setReopenOpen(true)} className="btn-secondary mt-2 min-h-10 px-4 text-sm">{t("askReopen")}</button>
@@ -418,7 +419,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
         }}
       >
         {canOffer && (
-          <button type="button" onClick={() => setKeypad(true)} className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-amber-400 px-3 text-xs font-extrabold text-black shadow">{t("makeOffer")}</button>
+          <button type="button" onClick={() => setKeypad(true)} className="min-h-11 shrink-0 whitespace-nowrap rounded-full border border-primary/60 bg-primary/15 px-3 text-sm font-bold text-text">{t("makeOffer")}</button>
         )}
         <button type="button" disabled={uploading || pending} onClick={() => fileRef.current?.click()} aria-label={t("photo")} className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 text-primary">
           {uploading ? <span className="size-4 animate-spin rounded-full border-2 border-primary border-t-transparent" /> : <ImageIcon />}
@@ -459,7 +460,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
         <div className="absolute inset-0 z-10 flex flex-col justify-end bg-black/40" onClick={() => setKeypad(false)}>
           <div className="max-h-full overflow-y-auto rounded-t-3xl bg-surface p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-2xl" onClick={(e) => e.stopPropagation()} data-testid="offer-sheet">
             <div className="mb-3 flex items-center justify-between">
-              <p className="font-bold">💰 {t("enterOffer")}</p>
+              <p className="flex items-center gap-1.5 font-bold"><UI.MoneyIcon width={18} height={18} className="text-primary" /> {t("enterOffer")}</p>
               <button type="button" onClick={() => setKeypad(false)} className="grid size-9 place-items-center rounded-full bg-surface-2" aria-label={t("close")}><CloseIcon width={16} height={16} /></button>
             </div>
             <p className="rounded-2xl border-2 border-amber-400 bg-amber-400/10 py-3 text-center text-3xl font-extrabold tabular-nums" data-testid="offer-amount">{money((Number(amount) || 0) * 100)}</p>
@@ -476,7 +477,7 @@ export function ChatRoom({ chatId, role, otherName, listing, initial, agreedPric
                 <button key={k} type="button" onClick={() => press(k)} aria-label={k === "⌫" ? t("erase") : k} className={`h-12 rounded-xl text-xl font-bold active:scale-95 ${k === "⌫" ? "bg-surface-2" : "border border-border bg-bg"}`}>{k}</button>
               ))}
             </div>
-            <button type="button" disabled={!amount || pending} onClick={offer} className="btn-primary mt-3 min-h-12 w-full !bg-amber-400 text-base !text-black">{t("sendOffer")}</button>
+            <button type="button" disabled={!amount || pending} onClick={offer} className="btn-primary mt-3 min-h-12 w-full text-base">{t("sendOffer")}</button>
           </div>
         </div>
       )}

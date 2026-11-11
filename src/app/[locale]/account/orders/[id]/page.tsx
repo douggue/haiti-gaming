@@ -104,7 +104,7 @@ export default async function OrderPage({ params }: { params: Promise<{ locale: 
       <Link href="/account/orders" className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-text">← {tc("orders")}</Link>
 
       {/* Receipt header: number, date, status, how it was paid and the total */}
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(140deg,#111827_0%,#1e293b_60%,#1d2a5a_100%)] p-5 sm:p-6">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-surface-2 via-surface to-primary/15 p-5 sm:p-6">
         <span aria-hidden className="ds-hide pointer-events-none absolute -right-16 -top-20 size-56 rounded-full bg-[#3b82f6]/25 blur-3xl" />
         <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[#1d4ed8] via-[#7c3aed] to-[#dc2626]" />
         <div className="relative flex flex-wrap items-start justify-between gap-3">

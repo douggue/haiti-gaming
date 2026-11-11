@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -50,7 +51,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
 
   return (
     <div className="container-page space-y-6 py-6 sm:py-10">
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1640] via-[#1d2a8a] to-[#6d28d9] p-5 text-white shadow-xl sm:p-8">
+      <section className="on-dark relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1640] via-[#1d2a8a] to-[#6d28d9] p-5 text-white shadow-xl sm:p-8">
         {/* Decoration: blurred glows and floating game icons */}
         <span aria-hidden className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-fuchsia-500/40 blur-3xl" />
         <span aria-hidden className="pointer-events-none absolute -bottom-20 -left-10 size-56 rounded-full bg-sky-400/30 blur-3xl" />
@@ -73,7 +74,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
             ))}
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
-            <a href="#listings" className="btn-primary min-h-12 !bg-white px-5 !text-[#1d2a8a] shadow-lg">🛒 {t("browseCta")}</a>
+            <a href="#listings" className="btn-primary min-h-12 !bg-white px-5 !text-[#1d2a8a]"><UI.CartIcon width={18} height={18} /> {t("browseCta")}</a>
             <Link href="/market/sell" className="btn-primary min-h-12 !bg-amber-400 px-5 !text-black shadow-lg">＋ {t("sell")}</Link>
           </div>
           <div className="mt-3"><span className="[&_button]:text-white/90 [&_button]:underline"><RulesLink /></span></div>
@@ -103,7 +104,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
 
       {myPending > 0 && (
         <Link href="/account/market?tab=listings" className="flex items-center gap-3 rounded-2xl border border-sky-500/40 bg-sky-500/10 p-4 text-sm">
-          <span className="text-2xl" aria-hidden>⏳</span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-500/15 text-sky-400" aria-hidden><UI.HourglassIcon width={20} height={20} /></span>
           <span><b className="block">{t("pendingMine", { n: myPending })}</b><span className="text-muted">{t("reviewHint")}</span></span>
         </Link>
       )}
@@ -134,12 +135,12 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
 
       {/* How the protection works: 4 steps */}
       <section className="rounded-3xl border border-border bg-surface/80 p-5 sm:p-7">
-        <p className="eyebrow flex items-center gap-1.5 text-emerald-400">🛡️ {t("escrowEyebrow")}</p>
+        <p className="eyebrow flex items-center gap-1.5 text-emerald-400"><UI.ShieldIcon width={14} height={14} /> {t("escrowEyebrow")}</p>
         <h2 className="display mt-1 text-2xl font-extrabold tracking-tight">{t("howTitle")}</h2>
         <ol className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {(["how1", "how2", "how3", "how4"] as const).map((k, i) => (
             <li key={k} className="relative rounded-2xl border border-border bg-surface-2/60 p-4">
-              <span className="display text-3xl font-extrabold text-[#3b82f6]/80">0{i + 1}</span>
+              <span className="step-dot lg" aria-hidden>{i + 1}</span>
               <p className="mt-2 text-sm">{t(k)}</p>
             </li>
           ))}
@@ -151,7 +152,7 @@ export default async function MarketPage({ params, searchParams }: { params: Pro
         <span aria-hidden className="ds-hide pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-amber-400/20 blur-3xl" />
         <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-xl">
-            <p className="eyebrow inline-flex rounded-full bg-amber-400/20 px-2.5 py-1 text-amber-300">💸 {t("sellerBandEyebrow")}</p>
+            <p className="eyebrow inline-flex rounded-full bg-amber-400/20 px-2.5 py-1 text-amber-300 items-center gap-1.5"><UI.MoneyIcon width={14} height={14} /> {t("sellerBandEyebrow")}</p>
             <h2 className="display mt-2 text-2xl font-extrabold tracking-tight">{t("sellerBandTitle")}</h2>
             <p className="mt-1 text-sm text-muted">{t("commissionHint", { pct: settings.marketCommissionBps / 100 })}</p>
           </div>

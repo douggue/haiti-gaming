@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
@@ -29,7 +30,7 @@ export default async function SellPage({ params }: { params: Promise<{ locale: s
   else if (vendor?.status === "PENDING")
     body = (
       <section className="card space-y-3 p-5" data-testid="vendor-pending">
-        <p className="text-3xl" aria-hidden>⏳</p>
+        <span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><UI.HourglassIcon width={28} height={28} /></span>
         <h2 className="text-lg font-bold">{t("vendorPendingTitle")}</h2>
         <p className="text-sm text-muted">{t("vendorPendingBody")}</p>
         <a href={wa} target="_blank" rel="noopener" className="btn-secondary min-h-11"><WhatsAppIcon width={16} height={16} className="text-[#1fa855]" /> {t("agent")}</a>

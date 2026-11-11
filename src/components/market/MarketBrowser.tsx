@@ -1,4 +1,6 @@
 "use client";
+import * as UI from "@/components/Icons";
+import * as AI from "@/components/account/AccountIcons";
 import { useEffect, useId, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -79,7 +81,7 @@ export function MarketBrowser({ items, initialPlatform, initialQuery, soldCount 
   return (
     <div className="space-y-5" id="listings">
       <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" aria-hidden>🔎</span>
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" aria-hidden><UI.SearchIcon width={18} height={18} /></span>
         <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("search")} aria-label={t("search")} className="input min-h-12 rounded-2xl pl-11 text-base" />
       </div>
 
@@ -110,7 +112,7 @@ export function MarketBrowser({ items, initialPlatform, initialQuery, soldCount 
 
       {shown.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-4xl" aria-hidden>🕹️</p>
+          <span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><AI.GamepadIcon width={28} height={28} /></span>
           <p className="mt-2 text-muted">{items.length ? t("noMatch") : soldCount ? t("allSold", { n: soldCount }) : t("empty")}</p>
           {items.length ? (
             <button type="button" className="btn-secondary mt-4" onClick={() => { setPlatform(""); setQ(""); }}>{t("clearFilters")}</button>
@@ -123,25 +125,26 @@ export function MarketBrowser({ items, initialPlatform, initialQuery, soldCount 
           {shown.map((l) => {
             const p = PLATFORMS.find((x) => x.key === l.platform) ?? PLATFORMS[PLATFORMS.length - 1];
             return (
-              <li key={l.id} className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10" data-testid="market-card">
+              <li key={l.id} className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/50" data-testid="market-card">
                 <Link href={`/market/${l.id}`} className={`relative block aspect-[4/3] overflow-hidden bg-gradient-to-br ${p.color}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {l.image ? <img src={l.image} alt="" loading="lazy" className="size-full object-cover transition-transform duration-300 group-hover:scale-105" /> : <span className="grid size-full place-items-center"><PlatformIcon platform={p.key} size={72} className="drop-shadow-xl" /></span>}
-                  <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 to-transparent" />
-                  <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 py-0.5 pl-0.5 pr-2 text-[11px] font-bold text-white shadow backdrop-blur"><PlatformIcon platform={p.key} size={18} /> {p.key === "other" ? t("otherPlatform") : p.label}</span>
+                  <span className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/50 to-transparent" />
+                  <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 py-0.5 pl-0.5 pr-2 text-xs font-bold text-white"><PlatformIcon platform={p.key} size={18} /> {p.key === "other" ? t("otherPlatform") : p.label}</span>
                   {l.reserved ? (
-                    <span className="absolute right-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-extrabold text-black">{t("reserved")}</span>
+                    <span className="absolute right-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-extrabold text-black">{t("reserved")}</span>
                   ) : l.views >= 50 ? (
-                    <span className="absolute right-2 top-2 rounded-full bg-rose-500 px-2 py-0.5 text-[11px] font-extrabold text-white">🔥 {t("hot")}</span>
+                    <span className="absolute right-2 top-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-extrabold text-white inline-flex items-center gap-1"><UI.FireIcon width={12} height={12} /> {t("hot")}</span>
                   ) : null}
-                  <span className="absolute bottom-2 left-2 right-2 text-white">
-                    <span className="line-clamp-2 text-sm font-bold leading-snug drop-shadow">{l.title}</span>
-                    <span className="mt-0.5 block text-lg font-extrabold text-amber-300 drop-shadow">{l.price}</span>
-                  </span>
                 </Link>
                 <div className="flex flex-1 flex-col gap-2 p-3">
+                  {/* Title and price under the picture: readable whatever the photo looks like */}
+                  <Link href={`/market/${l.id}`} className="block">
+                    <span className="line-clamp-2 text-sm font-bold leading-snug">{l.title}</span>
+                    <span className="display mt-0.5 block text-lg font-extrabold">{l.price}</span>
+                  </Link>
                   {l.details.length > 0 && (
-                    <p className="flex flex-wrap gap-1 text-[11px]">
+                    <p className="flex flex-wrap gap-1 text-xs">
                       {l.details.map((d) => <span key={d.label} className="rounded-md bg-surface-2 px-1.5 py-0.5"><span className="text-muted">{d.label}</span> <b>{d.value}</b></span>)}
                     </p>
                   )}
@@ -154,18 +157,18 @@ export function MarketBrowser({ items, initialPlatform, initialQuery, soldCount 
                   <div className="mt-auto flex items-center gap-1.5 pt-1">
                     <Link
                       href={`/market/${l.id}`}
-                      className="inspect-btn group/btn relative inline-flex min-h-10 flex-1 items-center justify-center gap-1.5 overflow-hidden rounded-xl bg-gradient-to-r from-primary via-indigo-500 to-fuchsia-500 px-2 text-xs font-extrabold text-white shadow-lg shadow-primary/30 transition-all hover:shadow-fuchsia-500/40 active:scale-95"
+                      className="btn-primary group/btn min-h-11 flex-1 gap-1.5 px-2 text-sm active:scale-95"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                         <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
                       {t("inspect")}
-                      <span aria-hidden className="transition-transform group-hover/btn:translate-x-1">→</span>
+                      
                     </Link>
                     <ShareButton compact iconOnly url={l.shareUrl} text={l.shareText} />
                   </div>
-                  <p className="text-[10px] text-muted">👁 {t("views", { n: l.views })}</p>
+                  <p className="flex items-center gap-1 text-xs text-muted"><UI.EyeIcon width={13} height={13} /> {t("views", { n: l.views })}</p>
                 </div>
               </li>
             );

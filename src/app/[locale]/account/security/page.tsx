@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { getAppFormatter } from "@/lib/formatter";
 import { headers } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -42,7 +43,7 @@ export default async function SecurityPage({ params }: { params: Promise<{ local
           <TwoFactorSettings enabled={!!user.twoFactorEnabled} />
         </>
       ) : (
-        <p className="card flex items-start gap-3 p-5 text-sm"><span className="text-2xl" aria-hidden>🔐</span><span>{tg("securityNote")}</span></p>
+        <p className="card flex items-start gap-3 p-5 text-sm"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary" aria-hidden><UI.LockIcon width={20} height={20} /></span><span>{tg("securityNote")}</span></p>
       )}
       <SessionsList
         sessions={sessions.map((s): DeviceSession => {

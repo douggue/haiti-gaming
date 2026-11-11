@@ -2,9 +2,12 @@ import Image from "next/image";
 
 /** Original artwork: an accent-colored tile with the product's initials, so no third-party imagery is needed. */
 export function ProductArt({ name, accent, image, size = "md", priority = false }: { name: string; accent?: string | null; image?: string | null; size?: "md" | "lg"; priority?: boolean }) {
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
   if (image) {
+    // Data saver: the photo isn't drawn (lazy images that aren't shown aren't downloaded); the initials tile shows instead
     return (
-      <div className={`relative aspect-[4/3] overflow-hidden bg-surface-2 ${size === "lg" ? "rounded-3xl" : "rounded-xl"}`}>
+      <div className={`ds-art relative aspect-[4/3] overflow-hidden bg-surface-2 ${size === "lg" ? "rounded-3xl" : "rounded-xl"}`}>
+        <span aria-hidden className={`ds-only absolute inset-0 place-items-center font-bold text-muted ${size === "lg" ? "text-6xl" : "text-3xl"}`}>{initials}</span>
         <Image
           src={image}
           alt={name}
@@ -16,7 +19,6 @@ export function ProductArt({ name, accent, image, size = "md", priority = false 
       </div>
     );
   }
-  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
   const color = accent ?? "#1467F5";
   return (
     <div

@@ -1,3 +1,4 @@
+import * as AI from "@/components/account/AccountIcons";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/db";
@@ -33,8 +34,8 @@ export default async function OrdersPage({ params, searchParams }: { params: Pro
         variant="segmented"
         counts={counts}
         tabs={(["all", "active", "done"] as const).map((k) => ({ key: k, label: tu(`tab_${k}`) }))}
-        empty={<div className="rounded-3xl border border-border bg-surface/80 p-10 text-center text-sm text-muted"><span className="mb-2 block text-3xl" aria-hidden>🎮</span>{ta("noOrders")}</div>}
-        emptyTab={<div className="rounded-3xl border border-border bg-surface/80 p-10 text-center text-sm text-muted"><span className="mb-2 block text-3xl" aria-hidden>🎮</span>{tu("noneInTab")}</div>}
+        empty={<div className="rounded-3xl border border-border bg-surface/80 p-10 text-center text-sm text-muted"><span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><AI.GamepadIcon width={28} height={28} /></span>{ta("noOrders")}</div>}
+        emptyTab={<div className="rounded-3xl border border-border bg-surface/80 p-10 text-center text-sm text-muted"><span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><AI.GamepadIcon width={28} height={28} /></span>{tu("noneInTab")}</div>}
         items={orders.map((o) => ({ id: o.id, groups: orderGroups(o.status), node: <OrderCard order={o} locale={locale} /> }))}
       />
     </div>

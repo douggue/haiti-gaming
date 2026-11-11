@@ -10,6 +10,7 @@ import { ProductArtSmall } from "./ProductArtSmall";
 import { MoneySplit } from "@/components/Money";
 import { LockIcon, WalletIcon } from "@/components/Icons";
 import { PhoneInput } from "@/components/PhoneInput";
+import { PayLogo } from "@/components/PayLogo";
 import { priceIn } from "@/lib/money";
 import { PENDING_ORDER_KEY } from "@/components/OrderPayment";
 
@@ -120,11 +121,11 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   const options: { id: Method; title: string; hint: string; enabled: boolean; icon: React.ReactNode; tone: string; tag?: string; tagTone?: string }[] = [
     {
       id: "MONCASH", title: tc("moncash"), hint: tc("moncashHint"), enabled: moncashEnabled,
-      icon: <PhoneGlyph />, tone: "bg-[#9f1239]/35 text-[#fda4af]", tag: tc("tagAuto"), tagTone: "bg-[#9f1239]/40 text-[#fecdd3]",
+      icon: <PayLogo brand="moncash" height={16} />, tone: "bg-white", tag: tc("tagAuto"), tagTone: "bg-[#9f1239]/40 text-[#fecdd3]",
     },
     {
       id: "NATCASH", title: tc("natcash"), hint: tc("natcashHint"), enabled: natcashEnabled,
-      icon: <PhoneGlyph />, tone: "bg-[#ea580c]/25 text-[#fdba74]", tag: tc("tagChecked"), tagTone: "bg-[#ea580c]/25 text-[#fed7aa]",
+      icon: <PayLogo brand="natcash" height={16} />, tone: "bg-white", tag: tc("tagChecked"), tagTone: "bg-[#ea580c]/25 text-[#fed7aa]",
     },
     {
       id: "WALLET",
@@ -154,7 +155,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   let n = 1;
   const step = (title: string) => (
     <h2 className="display flex items-center gap-2.5 text-lg font-bold">
-      <span className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-sm font-extrabold text-white shadow-[0_0_16px_-2px_rgba(59,130,246,.8)]">{n++}</span>
+      <span className="step-dot">{n++}</span>
       {title}
     </h2>
   );
@@ -202,9 +203,9 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
               return (
                 <label
                   key={o.id}
-                  className={`relative flex cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#60a5fa] items-center gap-3 rounded-2xl border p-3.5 transition-all sm:p-4 ${on ? "border-[#3b82f6] bg-gradient-to-r from-[#1d4ed8]/20 to-[#111827] shadow-[0_0_0_1px_#3b82f6,0_16px_32px_-18px_rgba(59,130,246,.9)]" : "border-border bg-surface/90 hover:border-[#3b82f6]/50"}`}
+                  className={`relative flex cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[#60a5fa] items-center gap-3 rounded-2xl border p-3.5 transition-all sm:p-4 ${on ? "border-[#3b82f6] bg-gradient-to-r from-[#1d4ed8]/20 to-[#111827] shadow-[0_0_0_1px_#3b82f6]" : "border-border bg-surface/90 hover:border-[#3b82f6]/50"}`}
                 >
-                  <span className={`grid size-12 shrink-0 place-items-center rounded-xl ${o.tone}`} aria-hidden>{o.icon}</span>
+                  <span className={`grid h-12 w-14 shrink-0 place-items-center rounded-xl px-1 ${o.tone}`} aria-hidden>{o.icon}</span>
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="display font-bold">{o.title}</span>
@@ -212,7 +213,7 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
                     </span>
                     <span className="mt-0.5 block text-sm text-muted">{o.hint}</span>
                   </span>
-                  <span className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors ${on ? "border-[#93c5fd] bg-[#93c5fd] text-[#0b1a4a]" : "border-white/20 bg-[#0b0f19]/50"}`} aria-hidden>
+                  <span className={`grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors ${on ? "border-primary bg-primary text-white" : "border-muted/60 bg-transparent"}`} aria-hidden>
                     {on && <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>}
                   </span>
                   <input type="radio" name="method" className="absolute right-3.5 top-1/2 z-10 size-6 -translate-y-1/2 cursor-pointer opacity-0 sm:right-4" checked={on} onChange={() => setMethod(o.id)} />
@@ -337,12 +338,6 @@ export function CheckoutForm({ balances, moncashEnabled, natcashEnabled, manualM
   );
 }
 
-const PhoneGlyph = () => (
-  <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
-    <path d="M10.5 18.5h3" />
-  </svg>
-);
 
 const CashGlyph = () => (
   <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" aria-hidden>

@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { Link } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/money";
 import type { Currency } from "@prisma/client";
@@ -36,7 +37,7 @@ export function DepositRow({
         <span className="shrink-0 text-right">
           {/* Not in the wallet yet: no "+" and not green */}
           <b className={`display block text-sm font-extrabold tabular-nums sm:text-base ${rejected ? "text-muted line-through" : ""}`}>{amountText}</b>
-          <span className={`text-[11px] font-bold ${rejected ? "text-danger" : review ? "text-amber-400" : "text-muted"}`}>{rejected ? "⛔" : "⏳"} {labels.status}</span>
+          <span className={`inline-flex items-center gap-1 text-xs font-bold ${rejected ? "text-danger" : review ? "text-amber-400" : "text-muted"}`}>{rejected ? <UI.BanIcon width={13} height={13} /> : <UI.HourglassIcon width={13} height={13} />} {labels.status}</span>
         </span>
       </div>
       {rejected && (

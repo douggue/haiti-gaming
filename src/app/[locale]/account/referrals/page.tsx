@@ -38,15 +38,16 @@ export default async function ReferralsPage({ params }: { params: Promise<{ loca
       <section className="card space-y-3 p-5">
         <p className="label">{t("yourLink")}</p>
         <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2">
-          <code className="flex-1 break-all text-sm font-semibold">{link}</code>
+          <code className="min-w-0 flex-1 truncate text-sm font-semibold" title={link}>{link.replace(/^https?:\/\//, "")}</code>
           <CopyButton value={link} label={to("copy")} done={to("copied")} />
         </div>
-        <a href={`https://wa.me/?text=${encodeURIComponent(t("shareText", { link }))}`} target="_blank" rel="noopener" className="btn min-h-11 bg-[#1fa855] text-white hover:bg-[#178a45]"><WhatsAppIcon width={18} height={18} /> {t("share")}</a>
+        <a href={`https://wa.me/?text=${encodeURIComponent(t("shareText", { link }))}`} target="_blank" rel="noopener" className="btn min-h-11 bg-wa"><WhatsAppIcon width={18} height={18} /> {t("share")}</a>
       </section>
       <div className="grid grid-cols-3 gap-3">
-        <div className="card p-4"><p className="text-xs text-muted">{t("invited")}</p><p className="text-2xl font-bold">{list.length}</p></div>
-        <div className="card p-4"><p className="text-xs text-muted">{t("rewarded")}</p><p className="text-2xl font-bold">{list.filter((r) => r.status === "REWARDED").length}</p></div>
-        <div className="card p-4"><p className="text-xs text-muted">{t("earned")}</p><p className="text-xl font-bold">{formatMoney(earned, "HTG", locale)}</p></div>
+        {/* Labels get two lines of room so the numbers line up */}
+        <div className="card flex flex-col justify-between gap-2 p-4"><p className="min-h-[2lh] text-xs text-muted">{t("invited")}</p><p className="text-2xl font-bold">{list.length}</p></div>
+        <div className="card flex flex-col justify-between gap-2 p-4"><p className="min-h-[2lh] text-xs text-muted">{t("rewarded")}</p><p className="text-2xl font-bold">{list.filter((r) => r.status === "REWARDED").length}</p></div>
+        <div className="card flex flex-col justify-between gap-2 p-4"><p className="min-h-[2lh] text-xs text-muted">{t("earned")}</p><p className="text-lg font-bold sm:text-xl">{formatMoney(earned, "HTG", locale)}</p></div>
       </div>
       <section className="card p-5">
         <h2 className="mb-3 font-semibold">{t("history")}</h2>

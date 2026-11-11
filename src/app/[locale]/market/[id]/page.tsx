@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { getAppFormatter } from "@/lib/formatter";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -57,7 +58,7 @@ export default async function ListingPage({ params }: { params: P }) {
   const tiles = details.slice(0, 4);
   const rest: [string, React.ReactNode][] = [
     ...details.slice(4).map((d) => [d.label, d.value] as [string, React.ReactNode]),
-    [t("withEmailShort"), l.withEmail ? `✅ ${t("yes")}` : t("no")],
+    [t("withEmailShort"), l.withEmail ? `✓ ${t("yes")}` : t("no")],
     [t("posted"), fmt.dateTime(l.createdAt, { dateStyle: "medium" })],
   ];
   const sellerName = l.seller.marketVendor?.shopName ?? shortName(l.seller.name);
@@ -82,7 +83,7 @@ export default async function ListingPage({ params }: { params: P }) {
   return (
     <div className="container-page pb-40 pt-4 sm:py-10 lg:pb-10">
       <ViewCounter id={l.id} />
-      {mine && l.status !== "ACTIVE" && <p className="mb-4 rounded-2xl bg-sky-500/10 px-4 py-3 text-sm">⏳ {t("ownPreview", { status: statusLabel })}</p>}
+      {mine && l.status !== "ACTIVE" && <p className="mb-4 rounded-2xl bg-sky-500/10 px-4 py-3 text-sm"><UI.HourglassIcon width={15} height={15} className="inline-block shrink-0 align-[-2px]" /> {t("ownPreview", { status: statusLabel })}</p>}
       <div className="grid gap-6 lg:grid-cols-[1.35fr_1fr]">
         <div className="min-w-0 space-y-5">
           <ListingGallery images={images} title={l.title} platform={p.key} color={p.color}>
@@ -100,7 +101,7 @@ export default async function ListingPage({ params }: { params: P }) {
             <h1 className="text-2xl font-black leading-tight tracking-tight">{l.title}</h1>
             <div className="flex flex-wrap items-center gap-2">
               <span className="bg-gradient-to-r from-amber-400 to-pink-500 bg-clip-text text-3xl font-black text-transparent">{price}</span>
-              <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">👁 {t("views", { n: l.views })}</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted"><UI.EyeIcon width={13} height={13} className="inline-block shrink-0 align-[-2px]" /> {t("views", { n: l.views })}</span>
             </div>
           </section>
 
@@ -117,7 +118,7 @@ export default async function ListingPage({ params }: { params: P }) {
 
           {l.description && (
             <section className="relative rounded-3xl border border-border bg-surface p-5">
-              <span aria-hidden className="absolute -top-3 left-5 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-white">💬 {t("sellerNotes")}</span>
+              <span aria-hidden className="absolute -top-3 left-5 rounded-full bg-primary px-3 py-0.5 text-xs font-bold text-white"><UI.ChatIcon width={13} height={13} className="inline-block shrink-0 align-[-2px]" /> {t("sellerNotes")}</span>
               <p className="whitespace-pre-wrap pt-1 text-sm leading-relaxed">{l.description}</p>
             </section>
           )}
@@ -138,7 +139,7 @@ export default async function ListingPage({ params }: { params: P }) {
             <h1 className="text-2xl font-black leading-tight tracking-tight">{l.title}</h1>
             <div className="flex items-center gap-2">
               <span className="bg-gradient-to-r from-amber-400 to-pink-500 bg-clip-text text-4xl font-black text-transparent">{price}</span>
-              <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">👁 {t("views", { n: l.views })}</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted"><UI.EyeIcon width={13} height={13} className="inline-block shrink-0 align-[-2px]" /> {t("views", { n: l.views })}</span>
             </div>
             {buy}
           </section>
@@ -152,10 +153,11 @@ export default async function ListingPage({ params }: { params: P }) {
                 {verified && <p className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">✓ {t("verified")}</p>}
               </div>
             </div>
-            <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-xl bg-surface-2 p-2"><dt className="text-[10px] text-muted">{t("statSold")}</dt><dd className="font-black">{stats?.sold ?? 0}</dd></div>
-              <div className="rounded-xl bg-surface-2 p-2"><dt className="text-[10px] text-muted">★</dt><dd className="font-black text-amber-500">{stats?.rating ? stats.rating.toFixed(1) : "—"}</dd></div>
-              <div className="rounded-xl bg-surface-2 p-2"><dt className="text-[10px] text-muted">{t("memberSince")}</dt><dd className="text-xs font-black">{fmt.dateTime(l.seller.createdAt, { month: "short", year: "numeric" })}</dd></div>
+            {/* The rating tile only appears once the seller has a rating (no empty "★ —") */}
+            <dl className={`mt-4 grid gap-2 text-center ${stats?.rating ? "grid-cols-3" : "grid-cols-2"}`}>
+              <div className="rounded-xl bg-surface-2 p-2"><dt className="text-xs text-muted">{t("statSold")}</dt><dd className="font-black">{stats?.sold ?? 0}</dd></div>
+              {stats?.rating ? <div className="rounded-xl bg-surface-2 p-2"><dt className="text-xs text-muted">★</dt><dd className="font-black text-amber-500">{stats.rating.toFixed(1)}</dd></div> : null}
+              <div className="rounded-xl bg-surface-2 p-2"><dt className="text-xs text-muted">{t("memberSince")}</dt><dd className="text-xs font-black">{fmt.dateTime(l.seller.createdAt, { month: "short", year: "numeric" })}</dd></div>
             </dl>
             <div className="mt-4 grid gap-2">
               {!mine && ["ACTIVE", "RESERVED"].includes(l.status) && <ChatButton listingId={l.id} signedIn={!!user} />}

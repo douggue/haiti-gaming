@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { getAppFormatter } from "@/lib/formatter";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -34,7 +35,7 @@ export default async function Messages({ params }: { params: Promise<{ locale: s
       </div>
       {chats.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-3xl" aria-hidden>💬</p>
+          <span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><UI.ChatIcon width={28} height={28} /></span>
           <p className="mt-2 text-muted">{t("none")}</p>
           <Link href="/market" className="btn-primary mt-4">{t("browse")}</Link>
         </div>
@@ -44,7 +45,7 @@ export default async function Messages({ params }: { params: Promise<{ locale: s
             const buyer = c.buyerId === user.id;
             const other = buyer ? (c.seller.marketVendor?.shopName ?? shortName(c.seller.name)) : shortName(c.buyer.name);
             const m = c.messages[0];
-            const preview = !m ? "" : m.kind === "SYSTEM" ? (t.has(`sys_${m.body}`) ? t(`sys_${m.body}` as "sys_closed") : m.body) : m.kind === "OFFER" ? `💰 ${formatMoney(m.offerAmount ?? 0, c.listing.currency, locale)}` : m.kind === "IMAGE" && !m.body ? `📷 ${t("photo")}` : m.fromStaff ? `🛡️ ${m.body}` : m.body;
+            const preview = !m ? "" : m.kind === "SYSTEM" ? (t.has(`sys_${m.body}`) ? t(`sys_${m.body}` as "sys_closed") : m.body) : m.kind === "OFFER" ? `${formatMoney(m.offerAmount ?? 0, c.listing.currency, locale)}` : m.kind === "IMAGE" && !m.body ? `${t("photo")}` : m.fromStaff ? `🛡️ ${m.body}` : m.body;
             const isNew = unread.get(c.id) ?? 0;
             return (
               <li key={c.id}>

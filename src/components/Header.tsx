@@ -77,7 +77,7 @@ export async function Header() {
                 <WalletIcon width={16} height={16} className="text-amber-300" />
                 <HiddenMoney text={formatMoney(balance, "HTG", locale)} />
               </Link>
-              <Link href="/account/wallet/deposit" aria-label={ta("deposit")} title={ta("deposit")} className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-white shadow-[0_0_12px_-2px_rgba(59,130,246,.8)] hover:brightness-110">
+              <Link href="/account/wallet/deposit" aria-label={ta("deposit")} title={ta("deposit")} className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] text-white  hover:brightness-110">
                 <PlusIcon width={15} height={15} />
               </Link>
             </span>

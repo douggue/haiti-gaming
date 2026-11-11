@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { getAppFormatter } from "@/lib/formatter";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -30,7 +31,7 @@ export default async function TicketPage({ params }: { params: Promise<{ locale:
           <li key={m.id} className={`max-w-[90%] rounded-2xl p-4 text-sm ${m.fromStaff ? "bg-surface border border-border" : "ml-auto bg-primary-soft"}`}>
             <p className="mb-1 text-xs font-semibold text-muted">{m.fromStaff ? t("team") : t("you")} · {fmt.dateTime(m.createdAt, { dateStyle: "medium", timeStyle: "short" })}</p>
             <p className="whitespace-pre-wrap">{m.body}</p>
-            {m.attachmentPath && <a href={`/api/support/attachment/${m.id}`} target="_blank" className="mt-2 inline-block text-xs font-semibold text-primary">📎 {t("attach")}</a>}
+            {m.attachmentPath && <a href={`/api/support/attachment/${m.id}`} target="_blank" className="mt-2 inline-block text-xs font-semibold text-primary"><UI.FileIcon width={14} height={14} className="inline-block shrink-0 align-[-2px]" /> {t("attach")}</a>}
           </li>
         ))}
       </ol>

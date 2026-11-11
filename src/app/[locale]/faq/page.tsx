@@ -32,7 +32,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
   return (
     <div className="container-page py-6 sm:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1d4ed8]/25 via-surface/70 to-[#7c3aed]/15 px-5 pb-14 pt-8 text-center sm:px-8 sm:pb-16 sm:pt-12">
+      <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/20 via-surface to-surface px-5 pb-14 pt-8 text-center sm:px-8 sm:pb-16 sm:pt-12">
         <span aria-hidden className="ds-hide pointer-events-none absolute -left-16 -top-20 size-64 rounded-full bg-[#3b82f6]/25 blur-3xl" />
         <span aria-hidden className="ds-hide pointer-events-none absolute -bottom-24 -right-10 size-64 rounded-full bg-[#7c3aed]/25 blur-3xl" />
         <p className="relative inline-flex items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
@@ -42,7 +42,7 @@ export default async function FaqPage({ params }: { params: Promise<{ locale: st
         <p className="relative mx-auto mt-2 max-w-2xl text-sm text-muted sm:text-base">{t("heroBody")}</p>
       </header>
       {/* The search box sits on the edge of the header card */}
-      <div className="relative z-10 -mt-[3.25rem] px-2">
+      <div className="relative z-10 -mt-[3.25rem] px-5 sm:px-8">
         <HelpSearch items={items} />
       </div>
       <HelpChannels settings={settings} />

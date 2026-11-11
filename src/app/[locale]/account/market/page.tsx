@@ -1,3 +1,5 @@
+import * as UI from "@/components/Icons";
+import * as AI from "@/components/account/AccountIcons";
 import { getAppFormatter } from "@/lib/formatter";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -50,7 +52,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
   const tch = await getTranslations("chat");
   const chatLink = (d: { listingId: string; buyerId: string }) => {
     const id = chatOf(d);
-    return id ? <Link href={`/account/messages/${id}`} className="btn-secondary min-h-11 px-3 text-xs">💬 {tch("openChat")}</Link> : null;
+    return id ? <Link href={`/account/messages/${id}`} className="btn-secondary min-h-11 px-3 text-sm"><UI.ChatIcon width={15} height={15} className="inline-block shrink-0 align-[-2px]" /> {tch("openChat")}</Link> : null;
   };
   const st = (s: string) => (t.has(`s_${s}`) ? t(`s_${s}` as "s_ACTIVE") : s);
   const badge = (s: string) => <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${TONE[s] ?? ""}`}>{st(s)}</span>;
@@ -98,7 +100,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
   };
   const empty = (text: string, cta: React.ReactNode) => (
     <div className="card p-10 text-center">
-      <p className="text-4xl" aria-hidden>🕹️</p>
+      <span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><AI.GamepadIcon width={28} height={28} /></span>
       <p className="mt-2 text-sm text-muted">{text}</p>
       <div className="mt-4">{cta}</div>
     </div>
@@ -107,7 +109,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
   return (
     <div className="space-y-5">
       {/* Header: who I am on the Market, and my numbers */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1640] via-[#1d2a8a] to-[#6d28d9] p-5 text-white shadow-lg">
+      <section className="on-dark relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0b1640] via-[#1d2a8a] to-[#6d28d9] p-5 text-white shadow-lg">
         <span aria-hidden className="pointer-events-none absolute -right-10 -top-10 size-40 rounded-full bg-fuchsia-500/40 blur-3xl" />
         <div className="relative flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -116,7 +118,7 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
             {vendor?.status === "APPROVED" ? (
               <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-xs font-bold text-emerald-200">✓ {t("verified")}</p>
             ) : vendor?.status === "PENDING" ? (
-              <p className="mt-1 inline-flex rounded-full bg-amber-400/20 px-2.5 py-0.5 text-xs font-bold text-amber-200">⏳ {t("vendorPendingTitle")}</p>
+              <p className="mt-1 inline-flex rounded-full bg-amber-400/20 px-2.5 py-0.5 text-xs font-bold text-amber-200"><UI.HourglassIcon width={14} height={14} className="inline-block shrink-0 align-[-2px]" /> {t("vendorPendingTitle")}</p>
             ) : null}
           </div>
           <span className="flex gap-2">
@@ -141,11 +143,11 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
 
       {sp.posted && <p className="rounded-2xl bg-success-soft px-4 py-3 text-sm font-medium text-success" role="status">✓ {t("posted_ok")}</p>}
 
-      <nav className="flex gap-1 rounded-2xl border border-border bg-surface p-1" aria-label={t("myTitle")}>
+      <nav className="seg" aria-label={t("myTitle")}>
         {tabs.map(([k, label, n]) => (
-          <Link key={k} href={`/account/market?tab=${k}`} aria-current={tab === k ? "page" : undefined} className={`flex flex-1 items-center justify-center gap-1 whitespace-nowrap rounded-xl px-1.5 py-2.5 text-xs font-bold sm:gap-1.5 sm:text-sm transition-colors ${tab === k ? "bg-primary text-white shadow" : "text-muted hover:text-text"}`}>
+          <Link key={k} href={`/account/market?tab=${k}`} aria-current={tab === k ? "page" : undefined} className="seg-btn gap-1 px-1.5 text-xs sm:text-sm">
             {label}
-            <span className={`rounded-full px-1.5 text-[11px] ${tab === k ? "bg-white/25" : "bg-surface-2"}`}>{n}</span>
+            <span className={`rounded-full px-1.5 text-xs ${tab === k ? "bg-white/25" : "bg-bg"}`}>{n}</span>
           </Link>
         ))}
       </nav>
@@ -229,9 +231,9 @@ export default async function MyMarket({ params, searchParams }: { params: Promi
                     {badge(l.status)}
                   </div>
                   <p className="font-black">{formatMoney(l.price, l.currency, locale)}</p>
-                  <p className="text-[11px] text-muted">👁 {t("views", { n: l.views })}</p>
+                  <p className="flex items-center gap-1 text-xs text-muted"><UI.EyeIcon width={13} height={13} className="inline-block shrink-0 align-[-2px]" /> {t("views", { n: l.views })}</p>
                   {l.status === "REJECTED" && l.staffNote && <p className="rounded-lg bg-danger-soft px-2 py-1 text-xs text-danger">{l.staffNote}</p>}
-                  {l.status === "PENDING" && <p className="text-xs text-sky-600 dark:text-sky-400">⏳ {t("reviewHint")}</p>}
+                  {l.status === "PENDING" && <p className="text-xs text-sky-600 dark:text-sky-400"><UI.HourglassIcon width={13} height={13} className="inline-block shrink-0 align-[-2px]" /> {t("reviewHint")}</p>}
                   {["PENDING", "ACTIVE", "REJECTED"].includes(l.status) && <MarketAction kind="remove" id={l.id} />}
                 </div>
               </li>

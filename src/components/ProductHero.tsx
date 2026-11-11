@@ -21,7 +21,7 @@ export function ProductHero({
   const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[16/11] overflow-hidden rounded-3xl border border-white/10 bg-surface-2 shadow-[0_30px_60px_-30px_rgba(29,78,216,.7)] sm:aspect-[4/3]">
+      <div className="on-dark relative aspect-[16/11] overflow-hidden rounded-3xl border border-white/10 bg-surface-2 sm:aspect-[4/3]">
         {src ? (
           <Image src={src} alt={name} fill priority sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
         ) : (

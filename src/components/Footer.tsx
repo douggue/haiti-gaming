@@ -33,7 +33,7 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
 
   const wa = `https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent(t("whatsappMessage"))}`;
   const head = "mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-text";
-  const link = "transition-colors hover:text-text";
+  const link = "inline-block py-2 transition-colors hover:text-text";
 
   return (
     <footer className="mt-20 border-t border-border bg-surface/80 backdrop-blur">
@@ -47,13 +47,13 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
               {settings.businessName} · {settings.businessAddress}
             </span>
           </p>
-          <a href={wa} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#1fa855] px-4 text-sm font-bold text-white shadow-[0_10px_24px_-14px_rgba(31,168,85,.9)] hover:bg-[#178a45]">
+          <a href={wa} target="_blank" rel="noopener" className="bg-wa inline-flex min-h-11 items-center gap-2 rounded-xl px-4 text-sm font-bold">
             <WhatsAppIcon width={18} height={18} /> +{settings.whatsappNumber}
           </a>
         </div>
         <div>
           <h2 className={head}>{t("store")}</h2>
-          <ul className="space-y-2.5 text-sm text-muted">
+          <ul className="text-sm text-muted">
             <li><Link href="/store" className={link}>{t("store")}</Link></li>
             <li><Link href="/categories" className={link}>{t("categories")}</Link></li>
             {settings.marketEnabled && <li><Link href="/market" className={link}>{t("market")}</Link></li>}
@@ -63,7 +63,7 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
         </div>
         <div>
           <h2 className={head}>{t("help")}</h2>
-          <ul className="space-y-2.5 text-sm text-muted">
+          <ul className="text-sm text-muted">
             <li><Link href="/guides" className={link}>{t("guides")}</Link></li>
             <li><Link href="/faq" className={link}>{t("faq")}</Link></li>
             <li><Link href="/contact" className={link}>{t("contact")}</Link></li>
@@ -78,7 +78,7 @@ export async function Footer({ settings, signedIn = false }: { settings: Setting
         </div>
         <div>
           <h2 className={head}>Legal</h2>
-          <ul className="space-y-2.5 text-sm text-muted">
+          <ul className="text-sm text-muted">
             <li><Link href="/terms" className={link}>{t("terms")}</Link></li>
             <li><Link href="/privacy" className={link}>{t("privacy")}</Link></li>
             <li><Link href="/refunds" className={link}>{t("refunds")}</Link></li>

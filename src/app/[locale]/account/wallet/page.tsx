@@ -1,3 +1,4 @@
+import * as UI from "@/components/Icons";
 import { getAppFormatter } from "@/lib/formatter";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
@@ -101,7 +102,7 @@ export default async function WalletPage({ params, searchParams }: { params: Pro
           initial={filter}
           title={<h2 className="display text-lg font-bold sm:text-xl">{tw("history")}</h2>}
           tabs={(Object.keys(FILTERS) as Filter[]).map((k) => ({ key: k, label: tw(`f_${k}`) }))}
-          empty={<p className="py-10 text-center text-sm text-muted"><span className="block text-3xl" aria-hidden>🪙</span>{tw("noHistory")}</p>}
+          empty={<p className="py-10 text-center text-sm text-muted"><span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><UI.CoinIcon width={28} height={28} /></span>{tw("noHistory")}</p>}
           items={[
             ...pending.map((p) => ({
               id: `dep-${p.id}`,

@@ -249,7 +249,7 @@ export function CartButton() {
     <Link href="/cart" className="btn-ghost relative min-h-10 px-2.5" aria-label={`${t("cart")} (${count})`}>
       <CartIcon />
       {ready && count > 0 && (
-        <CountBadge count={count} className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white shadow-[0_0_10px_var(--glow)]" />
+        <CountBadge count={count} className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white" />
       )}
     </Link>
   );

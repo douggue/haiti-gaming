@@ -7,7 +7,8 @@ import { indexWords, matchExact, matchFuzzy, tokens } from "@/lib/search";
 import { tagIcon } from "@/lib/platforms";
 import { useStore } from "./cart/CartProvider";
 import { Price } from "./Money";
-import { BoltIcon, CloseIcon, SearchIcon } from "./Icons";
+import { AndroidIcon, BoltIcon, ChatIcon, CloseIcon, FireIcon, GlobeIcon, HashIcon, LaptopIcon, SearchIcon, SmartphoneIcon, StarIcon } from "./Icons";
+import { GamepadIcon } from "./account/AccountIcons";
 import { ProductArt } from "./ProductArt";
 import { GameCard } from "./GameCard";
 
@@ -170,8 +171,8 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
   };
   const toggleTag = (tg: string) => setPicked(picked.includes(tg) ? picked.filter((x) => x !== tg) : [...picked, tg]);
 
-  const tab = (on: boolean) => `shrink-0 inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition-colors ${on ? "glow-btn border-transparent bg-primary text-white" : "border-border bg-surface/80 text-muted hover:text-text"}`;
-  const pill = (on: boolean) => `rounded-full px-1.5 py-px text-[11px] ${on ? "bg-white/25" : "bg-surface-2"}`;
+  const tab = (on: boolean) => `shrink-0 inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition-colors ${on ? "border-transparent bg-primary text-white" : "border-border bg-surface/80 text-muted hover:text-text"}`;
+  const pill = (on: boolean) => `rounded-full px-1.5 py-px text-xs ${on ? "bg-white/25" : "bg-surface-2"}`;
 
   return (
     <>
@@ -189,7 +190,7 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
         <ul className="relative mt-5 hidden grid-cols-3 gap-2 text-sm sm:grid">
           {(["promiseInstant", "promisePay", "promiseHelp"] as const).map((k, i) => (
             <li key={k} className="flex shrink-0 items-center gap-2 rounded-full bg-surface-2/60 py-1 pl-1 pr-3 sm:rounded-xl sm:px-3 sm:py-2">
-              <span aria-hidden className={`grid size-6 shrink-0 place-items-center rounded-full text-xs sm:size-7 sm:rounded-lg sm:text-sm ${["bg-emerald-500/20", "bg-[#831843]/40", "bg-[#1fa855]/20"][i]}`}>{["⚡", "📱", "💬"][i]}</span>
+              <span aria-hidden className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary-soft text-primary">{[<BoltIcon key="b" width={15} height={15} />, <SmartphoneIcon key="s" width={15} height={15} />, <ChatIcon key="c" width={15} height={15} />][i]}</span>
               <span className="whitespace-nowrap font-semibold">{ts(k)}</span>
             </li>
           ))}
@@ -278,7 +279,7 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
             const on = q.trim().toLowerCase() === name.toLowerCase();
             return (
               <button key={name} type="button" onClick={() => setQ(on ? "" : name)} aria-pressed={on} className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition-colors ${on ? "border-[#3b82f6] bg-[#1d4ed8]/25 text-text" : "border-border bg-surface/80 text-muted hover:text-text"}`}>
-                {i === 0 && <span aria-hidden className="text-amber-300">🔥</span>}
+                {i === 0 && <FireIcon width={16} height={16} className="text-amber-400" />}
                 {name}
               </button>
             );
@@ -295,13 +296,13 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
           const on = cat === c.slug;
           return (
             <button key={c.slug} type="button" onClick={() => setCat(on ? "" : c.slug)} aria-pressed={on} className={`${tab(on)} ${!n && !on ? "opacity-50" : ""}`}>
-              {c.icon} {c.name} <span className={pill(on)}>{n}</span>
+              {c.name} <span className={pill(on)}>{n}</span>
             </button>
           );
         })}
         {favs.length > 0 && (
           <button type="button" onClick={() => setFavOnly(!favOnly)} aria-pressed={favOnly} className={tab(favOnly)}>
-            <span className={favOnly ? "" : "text-[#ffc53d]"}>★</span> {ts("favorites")} <span className={pill(favOnly)}>{favs.filter((id) => products.some((p) => p.id === id)).length}</span>
+            <StarIcon width={16} height={16} className={favOnly ? "" : "text-[#ffc53d]"} /> {ts("favorites")} <span className={pill(favOnly)}>{favs.filter((id) => products.some((p) => p.id === id)).length}</span>
           </button>
         )}
       </nav>
@@ -333,7 +334,7 @@ export function StoreBrowser({ products, categories, tags, init }: { products: S
                           aria-pressed={on}
                           className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border py-1 pl-1.5 pr-3 text-sm font-semibold transition-colors ${on ? "border-primary bg-primary-soft text-primary" : "border-border bg-surface text-text hover:border-primary"} ${!n && !on ? "opacity-40" : ""}`}
                         >
-                          <span className="grid h-7 w-7 place-items-center rounded-full bg-surface-2 text-sm" aria-hidden>{on ? "✓" : icon || "#"}</span>
+                          <span className="grid h-7 w-7 place-items-center rounded-full bg-surface-2 text-sm" aria-hidden>{on ? "✓" : <TagGlyph emoji={icon} />}</span>
                           {tg}
                           <span className="text-xs font-normal text-muted">{n}</span>
                         </button>
@@ -409,9 +410,9 @@ function FavButton({ fav, onFav, small = false }: { fav: boolean; onFav: () => v
       }}
       aria-pressed={fav}
       aria-label={fav ? ts("unfavorite") : ts("favorite")}
-      className={`absolute left-1.5 top-1.5 grid place-items-center rounded-lg bg-[#060b1a]/55 backdrop-blur transition-transform active:scale-90 ${small ? "h-8 w-8 text-base" : "h-9 w-9 text-lg"} ${fav ? "text-[#ffc53d]" : "text-white"}`}
+      className={`absolute right-1.5 top-1.5 grid place-items-center rounded-full bg-black/45 transition-transform active:scale-90 ${small ? "h-8 w-8 text-sm" : "h-8 w-8 text-base"} ${fav ? "text-[#ffc53d]" : "text-white"}`}
     >
-      {fav ? "★" : "☆"}
+      <StarIcon width={16} height={16} fill={fav ? "currentColor" : "none"} />
     </button>
   );
 }
@@ -474,4 +475,12 @@ function Row({ p, fav, onFav }: { p: StoreProduct; fav: boolean; onFav: () => vo
       </div>
     </Link>
   );
+}
+
+/** Platform tags (Android, iPhone, PC…) as line icons; country flags stay flags. */
+function TagGlyph({ emoji }: { emoji: string }) {
+  const I = ({ "🤖": AndroidIcon, "📱": SmartphoneIcon, "💻": LaptopIcon, "🕹️": GamepadIcon, "🎮": GamepadIcon, "🍄": GamepadIcon, "🌐": GlobeIcon } as Record<string, typeof HashIcon>)[emoji];
+  if (I) return <I width={15} height={15} />;
+  if (emoji) return <>{emoji}</>;
+  return <HashIcon width={14} height={14} />;
 }

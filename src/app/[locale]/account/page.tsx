@@ -1,3 +1,4 @@
+import * as AI from "@/components/account/AccountIcons";
 import { getAppFormatter } from "@/lib/formatter";
 import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -23,7 +24,7 @@ import { ACTIVE_STATUSES, OrderCard, orderCardInclude, orderGroups, parseTab } f
 import { InstantTabs } from "@/components/InstantTabs";
 import { DataSaverSwitch } from "@/components/account/DataSaverSwitch";
 
-type Row = { href?: string; icon: React.ReactNode; tone: string; title: string; sub?: string; badge?: string; right?: React.ReactNode };
+type Row = { href?: string; icon: React.ReactNode; tone: string; title: string; sub?: string; badge?: string; badgeTone?: string; right?: React.ReactNode };
 
 export default async function Dashboard({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ tab?: string }> }) {
   const { locale } = await params;
@@ -87,7 +88,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
           { href: "/account/messages", icon: <ChatIcon width={20} height={20} />, tone: "text-violet-300", title: ta("messages"), sub: tu("messagesSub") },
         ]
       : []),
-    { href: "/account/notifications", icon: <BellIcon width={20} height={20} />, tone: "text-amber-300", title: tn("title"), sub: tu("notificationsSub"), badge: unread ? String(unread) : undefined },
+    { href: "/account/notifications", icon: <BellIcon width={20} height={20} />, tone: "text-amber-300", title: tn("title"), sub: tu("notificationsSub"), badge: unread ? String(unread) : undefined, badgeTone: "bg-danger text-white" },
     ...(settings.referralEnabled ? [{ href: "/account/referrals", icon: <GiftIcon width={20} height={20} />, tone: "text-pink-300", title: ta("referrals"), sub: tu("referralsSub") }] : []),
     { href: "/account/privacy", icon: <LockIcon width={20} height={20} />, tone: "text-sky-300", title: ta("privacy"), sub: tu("privacySub") },
     { icon: <GaugeIcon width={20} height={20} />, tone: "text-orange-400", title: tds("label"), sub: tds("hint"), right: <DataSaverSwitch label={tds("label")} /> },
@@ -98,7 +99,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
   return (
     <div className="space-y-6">
       {/* Profile: who, how to reach them, and three numbers */}
-      <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-[#1e293b] via-surface/90 to-[#1d4ed8]/25 p-4 sm:p-5">
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-surface-2 via-surface to-primary/15 p-4 sm:p-5">
         <span aria-hidden className="ds-hide pointer-events-none absolute -right-12 -top-16 size-48 rounded-full bg-[#3b82f6]/20 blur-3xl" />
         <div className="relative flex items-center gap-4">
           <span className="relative shrink-0">
@@ -199,12 +200,12 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
           tabs={(["all", "active", "done"] as const).map((k) => ({ key: k, label: tu(`tab_${k}`) }))}
           empty={
             <div className="rounded-3xl border border-border bg-surface/80 p-8 text-center text-sm text-muted">
-              <span className="mb-2 block text-3xl" aria-hidden>🎮</span>
+              <span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><AI.GamepadIcon width={28} height={28} /></span>
               {ta("noOrders")}
               <Link href="/store" className="btn-primary mx-auto mt-4 flex w-fit min-h-11 px-5">{tc("shopNow")}</Link>
             </div>
           }
-          emptyTab={<div className="rounded-3xl border border-border bg-surface/80 p-8 text-center text-sm text-muted"><span className="mb-2 block text-3xl" aria-hidden>🎮</span>{tu("noneInTab")}</div>}
+          emptyTab={<div className="rounded-3xl border border-border bg-surface/80 p-8 text-center text-sm text-muted"><span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><AI.GamepadIcon width={28} height={28} /></span>{tu("noneInTab")}</div>}
           items={orders.map((o) => ({ id: o.id, groups: orderGroups(o.status), node: <OrderCard order={o} locale={locale} /> }))}
         />
       </section>
@@ -220,7 +221,7 @@ export default async function Dashboard({ params, searchParams }: { params: Prom
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
                     <b className="display text-[15px] font-bold">{r.title}</b>
-                    {r.badge && <span className="rounded-md bg-emerald-500/20 px-1.5 py-0.5 text-[11px] font-bold text-emerald-300">{r.badge}</span>}
+                    {r.badge && <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${r.badgeTone ?? "bg-surface-2 text-muted"}`}>{r.badge}</span>}
                   </span>
                   {r.sub && <span className="block truncate text-xs text-muted sm:text-sm">{r.sub}</span>}
                 </span>

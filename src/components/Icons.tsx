@@ -45,3 +45,21 @@ export const GiftIcon = (p: P) => (<svg {...base} {...p}><rect x="3" y="8" width
 export const LockIcon = (p: P) => (<svg {...base} {...p}><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></svg>);
 export const HeadsetIcon = (p: P) => (<svg {...base} {...p}><path d="M4 14v-2a8 8 0 0 1 16 0v2" /><rect x="3" y="14" width="4" height="6" rx="1.5" /><rect x="17" y="14" width="4" height="6" rx="1.5" /><path d="M19 20a3 3 0 0 1-3 2h-2" /></svg>);
 export const SendIcon = (p: P) => (<svg {...base} {...p}><path d="M21 3 10 14" /><path d="m21 3-7 18-4-7-7-4Z" /></svg>);
+
+// ── Icons that replace emoji in the interface (same stroke style) ──
+export const SmartphoneIcon = (p: P) => (<svg {...base} {...p}><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M10.5 18.5h3" /></svg>);
+export const LaptopIcon = (p: P) => (<svg {...base} {...p}><rect x="4" y="5" width="16" height="11" rx="1.5" /><path d="M2 19h20" /></svg>);
+export const ClockIcon = (p: P) => (<svg {...base} {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>);
+export const HourglassIcon = (p: P) => (<svg {...base} {...p}><path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9" /></svg>);
+export const AlertIcon = (p: P) => (<svg {...base} {...p}><path d="M10.3 3.9 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17v.01" /></svg>);
+export const BanIcon = (p: P) => (<svg {...base} {...p}><circle cx="12" cy="12" r="9" /><path d="m5.7 5.7 12.6 12.6" /></svg>);
+export const CoinIcon = (p: P) => (<svg {...base} {...p}><ellipse cx="12" cy="7" rx="7" ry="3" /><path d="M5 7v5c0 1.7 3.1 3 7 3s7-1.3 7-3V7M5 12v5c0 1.7 3.1 3 7 3s7-1.3 7-3v-5" /></svg>);
+export const EyeIcon = (p: P) => (<svg {...base} {...p}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>);
+export const StarIcon = (p: P) => (<svg {...base} {...p}><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9Z" /></svg>);
+export const FireIcon = (p: P) => (<svg {...base} {...p}><path d="M12 22c4 0 7-2.7 7-6.6 0-3.4-2.2-5.6-3.6-7.4-.5 1.9-1.6 3-2.9 3.5.4-3.3-1-6.3-3.5-8.5C9 6.4 5 9.3 5 15.4 5 19.3 8 22 12 22Z" /></svg>);
+export const DownloadIcon = (p: P) => (<svg {...base} {...p}><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>);
+export const MoneyIcon = (p: P) => (<svg {...base} {...p}><rect x="2.5" y="6" width="19" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /><path d="M6 9v.01M18 15v.01" /></svg>);
+export const HashIcon = (p: P) => (<svg {...base} {...p}><path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16" /></svg>);
+export const MonitorIcon = (p: P) => (<svg {...base} {...p}><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></svg>);
+export const AndroidIcon = (p: P) => (<svg {...base} {...p}><path d="M6 10a6 6 0 0 1 12 0v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1Z" /><path d="M8 4.5 9.2 6.5M16 4.5l-1.2 2M9.5 11v.01M14.5 11v.01M6 13H4M20 13h-2" /></svg>);
+export const FlagIcon = (p: P) => (<svg {...base} {...p}><path d="M5 21V4M5 4h11l-2 4 2 4H5" /></svg>);

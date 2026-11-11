@@ -29,7 +29,7 @@ export function AccountNav({ items, backLabel }: { items: { href: string; label:
                 <Link
                   href={i.href}
                   aria-current={active(i.href) ? "page" : undefined}
-                  className={`flex min-h-11 items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition-colors ${active(i.href) ? "border-[#3b82f6]/50 bg-[#1d4ed8]/20 text-[#93c5fd] shadow-[0_0_16px_-6px_rgba(59,130,246,.8)]" : "border-transparent text-muted hover:bg-surface-2 hover:text-text"}`}
+                  className={`flex min-h-11 items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition-colors ${active(i.href) ? "border-[#3b82f6]/50 bg-[#1d4ed8]/20 text-[#93c5fd] " : "border-transparent text-muted hover:bg-surface-2 hover:text-text"}`}
                 >
                   <Icon width={17} height={17} />
                   {i.label}

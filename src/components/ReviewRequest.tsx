@@ -1,4 +1,5 @@
 "use client";
+import * as UI from "@/components/Icons";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { submitReview } from "@/actions/reviews";
@@ -17,7 +18,7 @@ export function ReviewRequest({ orderId, city, submitted = false }: { orderId: s
   if (done) {
     return (
       <section className="card animate-rise p-5 text-center">
-        <p className="text-2xl" aria-hidden>🙏</p>
+        <span className="mx-auto mb-2 grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary" aria-hidden><UI.StarIcon width={28} height={28} /></span>
         <p className="mt-1 font-bold">{t("thanks")}</p>
         <p className="text-sm text-muted">{t("thanksBody")}</p>
       </section>

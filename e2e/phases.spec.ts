@@ -418,7 +418,7 @@ test("Market chat: buyer and seller talk, contact details hidden, offer accepted
   await a.getByRole("button", { name: "Send as agent" }).click();
   await expect(a.getByText("Sent")).toBeVisible();
   await s.reload();
-  await expect(s.getByTestId("chat-messages").getByText("🛡️ Ajan Haiti Gaming")).toBeVisible();
+  await expect(s.getByTestId("chat-messages").getByText("Ajan Haiti Gaming", { exact: true })).toBeVisible();
   await expect(s.getByText("Bonjou tou de, se mwen k ajan an.")).toBeVisible();
 
   // Online dot: the seller has the chat open, so the buyer sees them online

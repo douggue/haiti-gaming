@@ -24,7 +24,7 @@ export async function HelpChannels({ settings }: { settings: S }) {
         {/* WhatsApp first and biggest: it's the fastest way */}
         <div className="flex flex-col rounded-2xl border border-[#1fa855]/40 bg-gradient-to-b from-[#1fa855]/15 to-surface/80 p-5 sm:col-span-2 lg:col-span-1 lg:row-span-2">
           <div className="flex items-center justify-between gap-2">
-            <span className="grid size-11 place-items-center rounded-xl bg-[#1fa855] text-white"><WhatsAppIcon /></span>
+            <span className="grid size-11 place-items-center rounded-xl bg-[#15803d] text-white"><WhatsAppIcon /></span>
             <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-300"><span className="size-1.5 rounded-full bg-emerald-400" /> WhatsApp</span>
           </div>
           <b className="display mt-3 text-lg">{tc("whatsappHelp")}</b>
@@ -34,7 +34,7 @@ export async function HelpChannels({ settings }: { settings: S }) {
             <dt className="text-muted">{tp("hours")}</dt>
             <dd className="font-semibold">{settings.supportHours}</dd>
           </dl>
-          <a href={wa} target="_blank" rel="noopener" className="btn mt-4 min-h-12 bg-[#1fa855] text-white hover:bg-[#178a45] lg:mt-auto">
+          <a href={wa} target="_blank" rel="noopener" className="btn mt-4 min-h-12 bg-wa lg:mt-auto">
             <WhatsAppIcon width={18} height={18} /> {t("chatNow")}
           </a>
         </div>

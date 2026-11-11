@@ -1,3 +1,5 @@
+import * as UI from "@/components/Icons";
+import * as AI from "@/components/account/AccountIcons";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ContentPage } from "@/components/ContentPage";
@@ -61,7 +63,7 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
       title: t("guidePlayerIdTitle"),
       sub: tg("playerIdSub"),
       steps: t.raw("guidePlayerId") as string[],
-      badge: <span className="grid size-[26px] place-items-center text-lg" aria-hidden>🎮</span>,
+      badge: <span className="grid size-[26px] place-items-center text-primary" aria-hidden><AI.GamepadIcon width={20} height={20} /></span>,
       tone: "from-[#1d4ed8]/25",
       minis: [null, <Mini key="id" label={tg("exPlayerId")} value="123456789" tone="text-[#93c5fd]" />, null],
     },
@@ -71,7 +73,7 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
     <ContentPage title={t("guidesTitle")} eyebrow={tg("eyebrow")} intro={tg("intro")} icon={<BookIcon />} wide>
       {/* Anti-fraud notice */}
       <div className="flex items-start gap-3 rounded-2xl border border-amber-400/40 border-l-4 border-l-amber-400 bg-amber-400/10 p-4 text-sm">
-        <span className="text-xl" aria-hidden>⚠️</span>
+        <span className="text-amber-500" aria-hidden><UI.AlertIcon width={22} height={22} /></span>
         <p className="min-w-0 flex-1"><b className="block">{t("fraudTitle")}</b><span className="text-muted">{t("fraudBody")}</span></p>
         <span className="hidden shrink-0 items-center gap-1.5 self-center rounded-lg border border-amber-400/40 px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-wide text-amber-300 sm:inline-flex"><LockIcon width={13} height={13} /> {tg("noPin")}</span>
       </div>
@@ -99,10 +101,9 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
           </div>
           <ol className={`mt-4 grid gap-3 sm:grid-cols-2 ${g.steps.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
             {g.steps.map((step, i) => {
-              const last = i === g.steps.length - 1;
               return (
                 <li key={i} className="flex flex-col rounded-2xl border border-border bg-surface-2/60 p-4">
-                  <span className={`eyebrow inline-block w-fit rounded-md px-2 py-0.5 ${last ? "bg-emerald-500/20 text-emerald-300" : "bg-red-600/20 text-red-300"}`}>{t("stepLabel")} {String(i + 1).padStart(2, "0")}</span>
+                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted"><span className="step-dot" aria-hidden>{i + 1}</span>{t("stepLabel")} {i + 1}</span>
                   <p className="mt-2 text-sm">{step}</p>
                   <div className="mt-auto">{g.minis[i]}</div>
                 </li>
@@ -119,7 +120,7 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
           <span className="text-sm text-muted">{th("helpBody", { hours: s.supportHours })}</span>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
-          <a href={wa} target="_blank" rel="noopener" className="btn min-h-12 bg-[#1fa855] px-5 text-white hover:bg-[#178a45]"><WhatsAppIcon width={18} height={18} /> {tc("whatsappHelp")}</a>
+          <a href={wa} target="_blank" rel="noopener" className="btn min-h-12 bg-wa px-5"><WhatsAppIcon width={18} height={18} /> {tc("whatsappHelp")}</a>
           <Link href="/faq" className="btn-secondary min-h-12 px-5">{tc("faqShort")}</Link>
         </div>
       </section>

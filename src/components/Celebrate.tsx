@@ -65,7 +65,9 @@ export function Celebrate({
   const ok = kind === "success";
   return createPortal(
     <div role="dialog" aria-modal="true" aria-labelledby="cel-title" className="cel-backdrop fixed inset-0 z-[80] grid place-items-center bg-[#05070d]/80 p-5 backdrop-blur-sm" onClick={close}>
-      <div className="cel-card relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/10 bg-[#131a2a] px-6 pb-6 pt-10 text-center shadow-[0_30px_80px_-20px_rgba(0,0,0,.9)]" onClick={(e) => e.stopPropagation()}>
+      <div className="cel-card on-dark relative w-full max-w-sm overflow-hidden rounded-3xl border border-white/10 bg-[#131a2a] px-6 pb-6 pt-10 text-center shadow-[0_30px_80px_-20px_rgba(0,0,0,.9)]" onClick={(e) => e.stopPropagation()}>
+        {/* Grab handle: on phones this opens as a bottom sheet */}
+        <span aria-hidden className="absolute left-1/2 top-2.5 h-1.5 w-10 -translate-x-1/2 rounded-full bg-white/25 sm:hidden" />
         <span aria-hidden className={`pointer-events-none absolute -top-24 left-1/2 size-64 -translate-x-1/2 rounded-full blur-3xl ${ok ? "bg-emerald-500/25" : "bg-amber-500/20"}`} />
         {ok && (
           <span aria-hidden className="cel-confetti pointer-events-none absolute left-1/2 top-[5.5rem]">

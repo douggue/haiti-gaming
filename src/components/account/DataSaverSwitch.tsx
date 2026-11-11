@@ -17,7 +17,7 @@ export function DataSaverSwitch({ label }: { label: string }) {
         document.cookie = `hg_ds=${v ? "1" : "0"}; path=/; max-age=31536000; samesite=lax`;
         document.documentElement.classList.toggle("data-saver", v);
       }}
-      className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${on ? "bg-[#1d4ed8] shadow-[0_0_14px_-2px_rgba(59,130,246,.8)]" : "bg-surface-2 ring-1 ring-border"}`}
+      className={`relative h-8 w-14 shrink-0 rounded-full transition-colors ${on ? "bg-[#1d4ed8] " : "bg-surface-2 ring-1 ring-border"}`}
     >
       <span className={`absolute top-1 size-6 rounded-full bg-white shadow transition-all ${on ? "left-7" : "left-1 bg-white/70"}`} />
     </button>

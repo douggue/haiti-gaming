@@ -4,7 +4,7 @@ export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { c
     return (
       <span className={`inline-flex items-center ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className={`h-8 w-auto max-w-[160px] object-contain ${darkSrc ? "dark:hidden" : ""}`} />
+        <img src={src} alt={alt} className={`h-8 w-auto max-w-[160px] object-contain dark:[filter:drop-shadow(0_0_1px_rgba(255,255,255,.55))_drop-shadow(0_0_6px_rgba(255,255,255,.15))] ${darkSrc ? "dark:hidden" : ""}`} />
         {darkSrc && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={darkSrc} alt={alt} className="hidden h-8 w-auto max-w-[160px] object-contain dark:block" />
@@ -16,7 +16,7 @@ export function Logo({ className = "", src, darkSrc, alt = "Haiti Gaming" }: { c
   return (
     <span className={`inline-flex items-center ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/logo.webp" alt={alt} width={151} height={36} className="h-8 w-auto max-[349px]:hidden min-[400px]:h-9" />
+      <img src="/brand/logo.webp" alt={alt} width={151} height={36} className="h-8 w-auto max-[349px]:hidden min-[400px]:h-9 dark:[filter:drop-shadow(0_0_1px_rgba(255,255,255,.6))_drop-shadow(0_0_5px_rgba(255,255,255,.18))]" />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/brand/mark.webp" alt={alt} width={49} height={32} className="hidden h-8 w-auto max-[349px]:block" />
     </span>
